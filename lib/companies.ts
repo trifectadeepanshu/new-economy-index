@@ -105,7 +105,7 @@ export const SECTOR_COLORS: Record<Sector, string> = {
 };
 
 // Base date for index calculation
-export const INDEX_BASE_DATE = "2022-01-03"; // first trading day of 2022
+export const INDEX_BASE_DATE = "2021-03-01"; // March 2021 inception
 export const INDEX_BASE_VALUE = 1000;
 export const INDEX_NAME = "New Economy Index";
 export const INDEX_SHORT = "NEI";

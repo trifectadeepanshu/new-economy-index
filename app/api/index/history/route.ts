@@ -12,7 +12,7 @@ function getFromDate(range: Range): string {
     case "1W":  return format(subDays(today, 7), "yyyy-MM-dd");
     case "1M":  return format(subMonths(today, 1), "yyyy-MM-dd");
     case "1Y":  return format(subYears(today, 1), "yyyy-MM-dd");
-    case "ALL": return "2021-01-01";
+    case "ALL": return "2021-03-01";
   }
 }
 

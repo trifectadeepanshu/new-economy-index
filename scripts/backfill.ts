@@ -85,7 +85,7 @@ async function bulkUpsertStockRows(
 async function main() {
   await ensureSchema();
 
-  const fromDate = new Date("2022-01-01");
+  const fromDate = new Date("2021-03-01");
   const toDate = new Date();
 
   const allPrices: Record<string, Record<string, number>> = {};
@@ -96,7 +96,7 @@ async function main() {
   for (let i = 0; i < COMPANIES.length; i++) {
     const company = COMPANIES[i];
     const effectiveFrom =
-      company.listedDate > "2022-01-01" ? parseISO(company.listedDate) : fromDate;
+      company.listedDate > "2021-03-01" ? parseISO(company.listedDate) : fromDate;
 
     process.stdout.write(
       `  [${i + 1}/${COMPANIES.length}] ${company.ticker.padEnd(14)} `
