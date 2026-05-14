@@ -37,45 +37,61 @@ export function IndexHero({ indexValue, indexChangePct, numCompanies, lastUpdate
   }, []);
 
   return (
-    <div className="py-10 sm:py-14">
-      <p className="text-sm font-medium text-zinc-500 mb-2">{INDEX_NAME}</p>
+    <section className="relative py-10 sm:py-14">
+      <div className="pointer-events-none absolute right-4 top-8 hidden h-28 w-px bg-gradient-to-b from-transparent via-[#E24929]/70 to-transparent md:block" />
+      <p className="tr-section-label mb-3">{INDEX_NAME}</p>
 
       {isLoading && indexValue === null ? (
-        <div className="h-16 w-64 animate-pulse rounded-lg bg-zinc-800" />
+        <div className="h-20 w-72 animate-pulse rounded-lg bg-white/10" />
       ) : (
         <div className="flex flex-wrap items-end gap-4">
-          <span className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+          <span
+            className={`tr-heading text-[clamp(48px,6vw,80px)] font-bold leading-none tracking-normal ${
+              up ? "bg-[linear-gradient(120deg,#fff_40%,rgba(226,73,41,0.75))] bg-clip-text text-transparent" : "text-white"
+            }`}
+          >
             {indexValue !== null ? fmt(indexValue) : "—"}
           </span>
 
           {indexChangePct !== null && (
-            <span className={`mb-1.5 text-xl font-semibold ${up ? "text-emerald-400" : "text-red-400"}`}>
+            <span
+              className={`mb-1.5 border px-3 py-1.5 font-sans text-sm font-semibold tabular-nums ${
+                up
+                  ? "border-[#E24929]/35 bg-[#E24929]/10 text-[#E24929]"
+                  : "border-red-400/35 bg-red-500/10 text-red-400"
+              }`}
+            >
               {fmtPct(indexChangePct)}
-              <span className="ml-1 text-xs font-normal text-zinc-500">today</span>
+              <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                today
+              </span>
             </span>
           )}
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-6 text-sm text-zinc-400">
+      <div className="mt-6 flex flex-wrap items-stretch gap-5 text-sm text-white/45">
         {sinceInceptionPct !== null && (
-          <div>
-            <span className={`font-semibold ${sinceInceptionPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+          <div className="border-l-2 border-[#E24929]/70 pl-4">
+            <span className={`font-sans text-sm font-semibold tabular-nums ${sinceInceptionPct >= 0 ? "text-[#E24929]" : "text-red-400"}`}>
               {fmtPct(sinceInceptionPct)}
             </span>
-            <span className="ml-1 text-zinc-500">since inception ({inceptionLabel})</span>
+            <span className="ml-2 font-sans text-xs text-white/45">
+              since inception ({inceptionLabel})
+            </span>
           </div>
         )}
-        <div>
-          <span className="font-semibold text-zinc-300">{numCompanies}</span>
-          <span className="ml-1 text-zinc-500">companies</span>
+        <div className="hidden w-px bg-gradient-to-b from-transparent via-[#E24929]/70 to-transparent sm:block" />
+        <div className="flex items-center">
+          <span className="font-sans text-sm font-semibold text-white">{numCompanies}</span>
+          <span className="ml-2 font-sans text-xs text-white/45">companies</span>
         </div>
         {lastUpdated && (
-          <div className="text-zinc-600">
+          <div className="flex items-center font-sans text-xs text-white/35">
             Updated {formatLastUpdated(lastUpdated, now)}
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }

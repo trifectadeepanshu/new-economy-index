@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  Area,
   CartesianGrid,
+  ComposedChart,
   Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -76,12 +77,12 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!rows.length) return null;
 
   return (
-    <div className="max-w-60 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm shadow-xl">
-      <p className="mb-1 text-zinc-400">{label}</p>
+    <div className="max-w-64 rounded-2xl border border-[rgba(255,255,255,0.13)] bg-[#0f1e41] px-3 py-2 text-sm shadow-2xl">
+      <p className="mb-1 font-sans text-xs text-white/45">{label}</p>
       <div className="space-y-1">
         {rows.map((item) => (
           <div key={item.name ?? "value"} className="flex items-center justify-between gap-4">
-            <span className="flex min-w-0 items-center gap-2 text-zinc-300">
+            <span className="flex min-w-0 items-center gap-2 font-sans text-white/70">
               {item.color && (
                 <span
                   className="h-2 w-2 shrink-0 rounded-full"
@@ -90,7 +91,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
               )}
               <span className="truncate">{item.name ?? "Value"}</span>
             </span>
-            <span className="font-semibold tabular-nums text-white">
+            <span className="tr-heading font-semibold tabular-nums text-white">
               {formatValue(item.value)}
             </span>
           </div>
@@ -100,7 +101,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   );
 }
 
-function SegmentButton({
+function ModeButton({
   active,
   children,
   onClick,
@@ -114,13 +115,37 @@ function SegmentButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`min-h-9 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+      className={`tr-focus min-h-11 border px-3 py-1.5 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors sm:min-h-9 ${
         active
-          ? "bg-indigo-600 text-white"
-          : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+          ? "border-[#E24929]/45 bg-[#E24929]/10 text-white"
+          : "border-white/10 text-white/45 hover:border-white/20 hover:text-white"
       }`}
     >
       {children}
+    </button>
+  );
+}
+
+function RangeButton({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`tr-focus relative min-h-11 px-2 py-1.5 font-sans text-[11px] font-semibold tracking-[0.12em] transition-colors sm:min-h-9 ${
+        active ? "text-white" : "text-white/45 hover:text-white"
+      }`}
+    >
+      {children}
+      {active && <span className="absolute inset-x-2 bottom-0 h-px bg-[#E24929]" />}
     </button>
   );
 }
@@ -241,8 +266,8 @@ export function IndexChart({
   const singleSeriesData = mode === "detail" ? detailData : indexData;
   const baseline = singleSeriesData[0]?.value ?? INDEX_BASE_VALUE;
   const finalValue = singleSeriesData[singleSeriesData.length - 1]?.value ?? baseline;
-  const indexLineColor = finalValue >= baseline ? "#34d399" : "#f87171";
-  const detailLineColor = SECTOR_COLORS[selectedSector];
+  const indexLineColor = finalValue >= baseline ? "#E24929" : "#ef4444";
+  const detailLineColor = "#E24929";
   const chartTitle =
     mode === "index"
       ? "NEI Performance"
@@ -257,32 +282,39 @@ export function IndexChart({
   };
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+    <div className="tr-card p-5">
       <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-        <h2 className="text-sm font-semibold text-zinc-300">{chartTitle}</h2>
+        <div>
+          <p className="tr-section-label">Performance</p>
+          <h2 className="tr-heading mt-1 text-lg font-semibold text-white">{chartTitle}</h2>
+        </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap xl:justify-end">
-          <div className="flex flex-wrap gap-1 rounded-lg bg-zinc-950/70 p-1">
+          <div
+            className="flex flex-wrap gap-1"
+            role="group"
+            aria-label="Chart mode"
+          >
             {CHART_MODES.map((chartMode) => (
-              <SegmentButton
+              <ModeButton
                 key={chartMode.value}
                 active={mode === chartMode.value}
                 onClick={() => setMode(chartMode.value)}
               >
                 {chartMode.label}
-              </SegmentButton>
+              </ModeButton>
             ))}
           </div>
 
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1" role="group" aria-label="Date range">
             {RANGES.map((r) => (
-              <SegmentButton
+              <RangeButton
                 key={r}
                 active={range === r}
                 onClick={() => selectRange(r)}
               >
                 {r}
-              </SegmentButton>
+              </RangeButton>
             ))}
           </div>
         </div>
@@ -296,10 +328,10 @@ export function IndexChart({
               type="button"
               aria-pressed={selectedSector === sector}
               onClick={() => setSelectedSector(sector)}
-              className={`min-h-9 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`tr-focus min-h-11 border px-3 py-1.5 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors sm:min-h-9 ${
                 selectedSector === sector
                   ? "border-transparent text-white"
-                  : "border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white"
+                  : "border-white/10 text-white/45 hover:border-white/20 hover:text-white"
               }`}
               style={{
                 backgroundColor:
@@ -313,37 +345,43 @@ export function IndexChart({
       )}
 
       {loading ? (
-        <div className="h-64 animate-pulse rounded-lg bg-zinc-800" />
+        <div className="h-64 animate-pulse rounded-2xl bg-white/10" />
       ) : error ? (
-        <div className="flex h-64 items-center justify-center text-sm text-red-300">
+        <div className="flex h-64 items-center justify-center font-sans text-sm text-red-300">
           Could not load historical data: {error}
         </div>
       ) : currentData.length === 0 ? (
-        <div className="flex h-64 items-center justify-center text-sm text-zinc-600">
+        <div className="flex h-64 items-center justify-center font-sans text-sm text-white/35">
           No historical data yet — run the backfill to populate history.
         </div>
       ) : (
         <>
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={currentData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+            <ComposedChart data={currentData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="trIndexArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#E24929" stopOpacity={0.18} />
+                  <stop offset="100%" stopColor="#E24929" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
               <XAxis
                 dataKey="date"
-                tick={{ fill: "#71717a", fontSize: 11 }}
+                tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "var(--font-inter)" }}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
                 domain={["auto", "auto"]}
-                tick={{ fill: "#71717a", fontSize: 11 }}
+                tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "var(--font-inter)" }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v: number) => v.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                 width={56}
               />
               <Tooltip content={<CustomTooltip />} />
-              <ReferenceLine y={INDEX_BASE_VALUE} stroke="#3f3f46" strokeDasharray="4 4" />
+              <ReferenceLine y={INDEX_BASE_VALUE} stroke="rgba(255,255,255,0.13)" strokeDasharray="4 4" />
 
               {mode === "compare" ? (
                 SECTORS.map((sector) => (
@@ -360,26 +398,35 @@ export function IndexChart({
                   />
                 ))
               ) : (
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  name={mode === "detail" ? selectedSector : "NEI"}
-                  stroke={mode === "detail" ? detailLineColor : indexLineColor}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{
-                    r: 4,
-                    fill: mode === "detail" ? detailLineColor : indexLineColor,
-                  }}
-                />
+                <>
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="none"
+                    fill="url(#trIndexArea)"
+                    isAnimationActive={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name={mode === "detail" ? selectedSector : "NEI"}
+                    stroke={mode === "detail" ? detailLineColor : indexLineColor}
+                    strokeWidth={2.4}
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                      fill: mode === "detail" ? detailLineColor : indexLineColor,
+                    }}
+                  />
+                </>
               )}
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
 
           {mode === "compare" && (
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
               {SECTORS.map((sector) => (
-                <div key={sector} className="flex items-center gap-2 text-xs text-zinc-400">
+                <div key={sector} className="flex items-center gap-2 font-sans text-xs text-white/45">
                   <span
                     className="h-2 w-2 rounded-full"
                     style={{ backgroundColor: SECTOR_COLORS[sector] }}

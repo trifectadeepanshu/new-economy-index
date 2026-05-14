@@ -26,7 +26,7 @@ export interface QuoteResult {
 }
 
 async function getAccessToken(): Promise<string> {
-  // Try DB-stored token first (set via /api/auth/upstox/callback)
+  // Try DB-stored token first, then fall back to an environment token.
   try {
     const { getUpstoxToken } = await import("@/lib/db");
     const token = await getUpstoxToken();
@@ -35,7 +35,7 @@ async function getAccessToken(): Promise<string> {
     // fall through to env var
   }
   const token = process.env.UPSTOX_ACCESS_TOKEN;
-  if (!token) throw new Error("No Upstox access token available. Visit /auth to authenticate.");
+  if (!token) throw new Error("No Upstox access token available.");
   return token;
 }
 

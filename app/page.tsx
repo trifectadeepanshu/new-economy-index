@@ -1,16 +1,21 @@
 import { Header } from "@/components/Header";
 import { IndexDashboard } from "@/components/IndexDashboard";
+import { TrifectaMark } from "@/components/TrifectaMark";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="tr-grid-bg min-h-screen text-white">
       <Header />
       <IndexDashboard />
 
-      <footer className="border-t border-zinc-800 py-6 text-center text-xs text-zinc-600">
-        Data via Yahoo Finance · 15-min delayed during market hours · NSE trading days only
-        <br />
-        © {new Date().getFullYear()} Trifecta Capital. Index is for informational purposes only.
+      <footer className="border-t border-white/[0.08] py-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-center font-sans text-[11px] text-white/35 sm:flex-row sm:px-8 sm:text-left xl:px-[52px]">
+          <span>Data via Upstox &middot; Real-time during market hours</span>
+          <span className="inline-flex items-center gap-2">
+            <TrifectaMark className="h-4 w-4" />
+            <span>&copy; {new Date().getFullYear()} Trifecta Capital</span>
+          </span>
+        </div>
       </footer>
     </div>
   );

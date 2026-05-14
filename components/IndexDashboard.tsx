@@ -16,9 +16,9 @@ export function IndexDashboard() {
       : null;
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-7xl px-4 sm:px-8 xl:px-[52px]">
       {data?.isStale && (
-        <div className="mt-4 rounded-lg border border-zinc-700 bg-zinc-900/60 px-4 py-2 text-xs text-zinc-500">
+        <div className="mt-4 border border-white/10 bg-[#0f1e41]/80 px-4 py-2 font-sans text-xs text-white/45">
           Showing last market close · Live prices unavailable
         </div>
       )}
