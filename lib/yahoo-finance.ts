@@ -1,5 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const yahooFinance = require("yahoo-finance2").default;
+const YahooFinanceClass = require("yahoo-finance2").default;
+// yahoo-finance2 v3 requires instantiation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const yahooFinance: any = new YahooFinanceClass({ suppressNotices: ["yahooSurvey"] });
 
 export interface QuoteResult {
   ticker: string;
@@ -21,8 +24,8 @@ export async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const q: any = await yahooFinance.quote(yfTicker, {}, { validateResult: false });
-    const price: number | null = q.regularMarketPrice ?? null;
-    const prev: number | null = q.regularMarketPreviousClose ?? null;
+    const price: number | null = q?.regularMarketPrice ?? null;
+    const prev: number | null = q?.regularMarketPreviousClose ?? null;
     const changePct =
       price !== null && prev !== null && prev !== 0
         ? ((price - prev) / prev) * 100
@@ -33,8 +36,8 @@ export async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
       price,
       previousClose: prev,
       changePct,
-      marketCap: q.marketCap ?? null,
-      currency: q.currency ?? "INR",
+      marketCap: q?.marketCap ?? null,
+      currency: q?.currency ?? "INR",
     };
   } catch {
     return { ticker: yfTicker.replace(".NS", ""), yfTicker, price: null, previousClose: null, changePct: null, marketCap: null, currency: "INR" };
@@ -43,7 +46,6 @@ export async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
 
 // Fetch quotes for all tickers (batched)
 export async function fetchAllQuotes(yfTickers: string[]): Promise<QuoteResult[]> {
-  // yahoo-finance2 quoteSummary doesn't batch; use Promise.allSettled for concurrency
   const BATCH = 10;
   const results: QuoteResult[] = [];
   for (let i = 0; i < yfTickers.length; i += BATCH) {

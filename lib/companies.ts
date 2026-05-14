@@ -17,7 +17,7 @@ export interface Company {
 
 export const COMPANIES: Company[] = [
   // PLATFORMS
-  { name: "Eternal (Zomato)",         ticker: "ZOMATO",      yfTicker: "ZOMATO.NS",      sector: "Platforms",       listedDate: "2021-07-23" },
+  { name: "Eternal (Zomato)",         ticker: "ETERNAL",     yfTicker: "ETERNAL.NS",     sector: "Platforms",       listedDate: "2021-07-23" },
   { name: "Swiggy",                   ticker: "SWIGGY",      yfTicker: "SWIGGY.NS",      sector: "Platforms",       listedDate: "2024-11-13" },
   { name: "PB Fintech (PolicyBazaar)",ticker: "POLICYBZR",   yfTicker: "POLICYBZR.NS",   sector: "Platforms",       listedDate: "2021-11-15" },
   { name: "Meesho",                   ticker: "MEESHO",      yfTicker: "MEESHO.NS",      sector: "Platforms",       listedDate: "2025-06-11" },
@@ -32,7 +32,7 @@ export const COMPANIES: Company[] = [
   { name: "Go Colors",                ticker: "GOCOLORS",    yfTicker: "GOCOLORS.NS",    sector: "Consumer Brands", listedDate: "2021-11-30" },
   { name: "Sula Vineyards",           ticker: "SULA",        yfTicker: "SULA.NS",        sector: "Consumer Brands", listedDate: "2022-12-22" },
   { name: "Wakefit",                  ticker: "WAKEFIT",     yfTicker: "WAKEFIT.NS",     sector: "Consumer Brands", listedDate: "2025-07-10" },
-  { name: "BlackBuck",                ticker: "ZINKA",       yfTicker: "ZINKA.NS",       sector: "Consumer Brands", listedDate: "2024-11-22" },
+  { name: "BlackBuck",                ticker: "BLACKBUCK",   yfTicker: "BLACKBUCK.NS",   sector: "Consumer Brands", listedDate: "2024-11-22" },
   { name: "Ola Electric",             ticker: "OLAELEC",     yfTicker: "OLAELEC.NS",     sector: "Consumer Brands", listedDate: "2024-08-09" },
   { name: "Bikaji Foods",             ticker: "BIKAJI",      yfTicker: "BIKAJI.NS",      sector: "Consumer Brands", listedDate: "2022-11-07" },
   { name: "Tracxn Technologies",      ticker: "TRACXN",      yfTicker: "TRACXN.NS",      sector: "Consumer Brands", listedDate: "2022-10-20" },
@@ -40,7 +40,7 @@ export const COMPANIES: Company[] = [
   { name: "BlueStone Jewellery",      ticker: "BLUESTONE",   yfTicker: "BLUESTONE.NS",   sector: "Consumer Brands", listedDate: "2025-06-25" },
   { name: "ixigo",                    ticker: "IXIGO",       yfTicker: "IXIGO.NS",       sector: "Consumer Brands", listedDate: "2024-06-18" },
   { name: "Yatra Online",             ticker: "YATRA",       yfTicker: "YATRA.NS",       sector: "Consumer Brands", listedDate: "2023-09-21" },
-  { name: "Ather Energy",             ticker: "ATHER",       yfTicker: "ATHER.NS",       sector: "Consumer Brands", listedDate: "2025-05-06" },
+  { name: "Ather Energy",             ticker: "ATHERENERG",  yfTicker: "ATHERENERG.NS",  sector: "Consumer Brands", listedDate: "2025-05-06" },
 
   // FINTECH
   { name: "Groww",                    ticker: "GROWW",       yfTicker: "GROWW.NS",       sector: "Fintech",         listedDate: "2025-06-12" },
@@ -48,23 +48,23 @@ export const COMPANIES: Company[] = [
   { name: "Pine Labs",                ticker: "PINELABS",    yfTicker: "PINELABS.NS",    sector: "Fintech",         listedDate: "2025-07-24" },
   { name: "Zaggle",                   ticker: "ZAGGLE",      yfTicker: "ZAGGLE.NS",      sector: "Fintech",         listedDate: "2023-09-22" },
   { name: "MobiKwik",                 ticker: "MOBIKWIK",    yfTicker: "MOBIKWIK.NS",    sector: "Fintech",         listedDate: "2024-12-18" },
-  { name: "Kissht (OnEMI)",           ticker: "ONEMI",       yfTicker: "ONEMI.NS",       sector: "Fintech",         listedDate: "2026-05-08" },
+  { name: "Kissht (OnEMI)",           ticker: "KISSHT",      yfTicker: "KISSHT.NS",      sector: "Fintech",         listedDate: "2026-05-08" },
 
   // B2B
   { name: "Delhivery",                ticker: "DELHIVERY",   yfTicker: "DELHIVERY.NS",   sector: "B2B",             listedDate: "2022-05-24" },
   { name: "IndiaMart",                ticker: "INDIAMART",   yfTicker: "INDIAMART.NS",   sector: "B2B",             listedDate: "2019-07-04" },
   { name: "Awfis",                    ticker: "AWFIS",       yfTicker: "AWFIS.NS",       sector: "B2B",             listedDate: "2024-05-30" },
-  { name: "Medi Assist",              ticker: "MEDIASSIT",   yfTicker: "MEDIASSIT.NS",   sector: "B2B",             listedDate: "2024-02-15" },
+  { name: "Medi Assist",              ticker: "MEDIASSIST",  yfTicker: "MEDIASSIST.NS",  sector: "B2B",             listedDate: "2024-02-15" },
   { name: "IdeaForge",                ticker: "IDEAFORGE",   yfTicker: "IDEAFORGE.NS",   sector: "B2B",             listedDate: "2023-06-26" },
   { name: "IndiQube",                 ticker: "INDIQUBE",    yfTicker: "INDIQUBE.NS",    sector: "B2B",             listedDate: "2024-08-19" },
-  { name: "UniCommerce",              ticker: "UNICOMMERCE", yfTicker: "UNICOMMERCE.NS", sector: "B2B",             listedDate: "2024-08-13" },
-  { name: "Shadowfax",                ticker: "SADO",        yfTicker: "SADO.NS",        sector: "B2B",             listedDate: "2026-01-28" },
+  { name: "UniCommerce",              ticker: "UNIECOM",     yfTicker: "UNIECOM.NS",     sector: "B2B",             listedDate: "2024-08-13" },
+  { name: "Shadowfax",                ticker: "SHADOWFAX",   yfTicker: "SHADOWFAX.NS",   sector: "B2B",             listedDate: "2026-01-28" },
 
   // BFSI
   { name: "Go Digit Insurance",       ticker: "GODIGIT",     yfTicker: "GODIGIT.NS",     sector: "BFSI",            listedDate: "2024-05-23" },
   { name: "Aadhar Housing Finance",   ticker: "AADHARHFC",   yfTicker: "AADHARHFC.NS",   sector: "BFSI",            listedDate: "2024-05-15" },
   { name: "Five Star Business Finance",ticker:"FIVESTAR",    yfTicker: "FIVESTAR.NS",    sector: "BFSI",            listedDate: "2022-11-21" },
-  { name: "HomFirst Finance",         ticker: "HOMFIRST",    yfTicker: "HOMFIRST.NS",    sector: "BFSI",            listedDate: "2022-02-03" },
+  { name: "HomFirst Finance",         ticker: "HOMEFIRST",   yfTicker: "HOMEFIRST.NS",   sector: "BFSI",            listedDate: "2022-02-03" },
   { name: "India Shelter Finance",    ticker: "INDIASHLTR",  yfTicker: "INDIASHLTR.NS",  sector: "BFSI",            listedDate: "2023-12-20" },
   { name: "Northern Arc Capital",     ticker: "NORTHARC",    yfTicker: "NORTHARC.NS",    sector: "BFSI",            listedDate: "2024-09-19" },
   { name: "AYE Finance",              ticker: "AYE",         yfTicker: "AYE.NS",         sector: "BFSI",            listedDate: "2026-02-26" },
