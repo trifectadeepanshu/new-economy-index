@@ -246,32 +246,6 @@ export async function getLatestStockPrices(): Promise<Record<string, { price: nu
   return map;
 }
 
-// Get the earliest stored close price for each ticker (used as base prices)
-export async function getBasePrices(): Promise<Record<string, number>> {
-  const sql = getSql();
-  // For each company, get the price on the effective base date
-  const rows = await sql`
-    SELECT DISTINCT ON (ticker) ticker, close_price::float, date::text
-    FROM stock_snapshots
-    ORDER BY ticker, date ASC
-  `;
-  const map: Record<string, number> = {};
-  for (const r of rows) map[r.ticker] = Number(r.close_price);
-  return map;
-}
-
-export async function getStockPricesOnDate(
-  date: string
-): Promise<Record<string, number>> {
-  const sql = getSql();
-  const rows = await sql`
-    SELECT ticker, close_price::float FROM stock_snapshots WHERE date = ${date}
-  `;
-  const map: Record<string, number> = {};
-  for (const r of rows) map[r.ticker] = Number(r.close_price);
-  return map;
-}
-
 // Get the earliest stored price for each ticker (used as that ticker's base price)
 export async function getEarliestPricesPerTicker(): Promise<Record<string, number>> {
   const sql = getSql();

@@ -33,9 +33,19 @@ async function runSnapshot() {
   const today = getISTDate();
   const active = COMPANIES.filter((c) => c.listedDate <= today);
 
-  const quotes = await fetchAllQuotes(
-    active.map((c) => ({ ticker: c.ticker, instrumentKey: c.instrumentKey }))
-  );
+  let quotes;
+  try {
+    quotes = await fetchAllQuotes(
+      active.map((c) => ({ ticker: c.ticker, instrumentKey: c.instrumentKey }))
+    );
+  } catch (err) {
+    console.error("[/api/cron/snapshot] Upstox fetch failed:", err);
+    return NextResponse.json(
+      { error: "Failed to fetch quotes from Upstox", detail: String(err) },
+      { status: 502 }
+    );
+  }
+
   const quoteMap = Object.fromEntries(quotes.map((q) => [q.ticker, q]));
 
   const stockRows = active
