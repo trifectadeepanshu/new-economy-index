@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, ReferenceLine, CartesianGrid,
@@ -30,27 +30,55 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 
 export function IndexChart({ liveValue }: { liveValue: number | null }) {
   const [range, setRange] = useState<Range>("1Y");
-  const [data, setData] = useState<DataPoint[]>([]);
+  const [historyData, setHistoryData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/index/history?range=${range}`)
-      .then((r) => r.json())
+    const controller = new AbortController();
+    let active = true;
+
+    fetch(`/api/index/history?range=${range}`, { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((json) => {
         const pts: DataPoint[] = (json.data ?? []).map((d: DataPoint) => ({
           date: format(parseISO(d.date), range === "1W" ? "dd MMM" : range === "1M" ? "dd MMM" : "MMM ''yy"),
           value: Number(d.value),
         }));
-        // Append live value as the last point (today)
-        if (liveValue && pts.length > 0) {
-          pts.push({ date: "Now", value: liveValue });
-        }
-        setData(pts);
+        if (!active) return;
+        setHistoryData(pts);
+        setError(null);
       })
-      .catch(() => setData([]))
-      .finally(() => setLoading(false));
-  }, [range, liveValue]);
+      .catch((e: unknown) => {
+        if (!active || (e instanceof DOMException && e.name === "AbortError")) {
+          return;
+        }
+        setHistoryData([]);
+        setError(e instanceof Error ? e.message : "Failed to load chart data");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [range]);
+
+  const data = useMemo(() => {
+    if (liveValue === null || historyData.length === 0) return historyData;
+    return [...historyData, { date: "Now", value: liveValue }];
+  }, [historyData, liveValue]);
+
+  const selectRange = (nextRange: Range) => {
+    if (nextRange === range) return;
+    setLoading(true);
+    setRange(nextRange);
+  };
 
   const baseline = data[0]?.value ?? 1000;
   const isUp = data.length > 1 ? data[data.length - 1].value >= baseline : true;
@@ -64,8 +92,10 @@ export function IndexChart({ liveValue }: { liveValue: number | null }) {
           {RANGES.map((r) => (
             <button
               key={r}
-              onClick={() => setRange(r)}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              type="button"
+              aria-pressed={range === r}
+              onClick={() => selectRange(r)}
+              className={`min-h-9 min-w-11 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                 range === r
                   ? "bg-indigo-600 text-white"
                   : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
@@ -79,6 +109,10 @@ export function IndexChart({ liveValue }: { liveValue: number | null }) {
 
       {loading ? (
         <div className="h-64 animate-pulse rounded-lg bg-zinc-800" />
+      ) : error ? (
+        <div className="flex h-64 items-center justify-center text-sm text-red-300">
+          Could not load historical data: {error}
+        </div>
       ) : data.length === 0 ? (
         <div className="flex h-64 items-center justify-center text-sm text-zinc-600">
           No historical data yet — run the backfill to populate history.

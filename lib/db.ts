@@ -103,12 +103,31 @@ export async function upsertStockSnapshotsBatch(
 ) {
   if (!rows.length) return;
   const sql = getSql();
-  for (const r of rows) {
-    await upsertStockSnapshot(r.date, r.ticker, r.closePrice, r.changePct);
+  const CHUNK_SIZE = 500;
+
+  for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+    const chunk = rows.slice(i, i + CHUNK_SIZE);
+    const dates = chunk.map((r) => r.date);
+    const tickers = chunk.map((r) => r.ticker);
+    const prices = chunk.map((r) => r.closePrice);
+    const changes = chunk.map((r) => r.changePct);
+
+    await sql`
+      INSERT INTO stock_snapshots (date, ticker, close_price, change_pct)
+      SELECT * FROM unnest(
+        ${dates}::date[],
+        ${tickers}::varchar[],
+        ${prices}::decimal[],
+        ${changes}::decimal[]
+      ) AS t(date, ticker, close_price, change_pct)
+      ON CONFLICT (date, ticker) DO UPDATE
+        SET close_price = EXCLUDED.close_price,
+            change_pct = EXCLUDED.change_pct
+    `;
   }
 }
 
-// Get the most recent close price for each ticker (used as base prices)
+// Get the earliest stored close price for each ticker (used as base prices)
 export async function getBasePrices(): Promise<Record<string, number>> {
   const sql = getSql();
   // For each company, get the price on the effective base date

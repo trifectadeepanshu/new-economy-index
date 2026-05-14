@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-LOGOS_DIR="/Users/deepanshu/Documents/new-economy-index/public/logos"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+LOGOS_DIR="$ROOT_DIR/public/logos"
 mkdir -p "$LOGOS_DIR"
 cd "$LOGOS_DIR"
 
@@ -9,11 +10,28 @@ download() {
   local ticker=$1
   local domain=$2
   local http_code
-  http_code=$(curl -sL -o "${ticker}.png" -w "%{http_code}" \
+  local tmp_file="${ticker}.tmp"
+  http_code=$(curl -sL -o "$tmp_file" -w "%{http_code}" \
     "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=64")
   local size
-  size=$(wc -c < "${ticker}.png")
-  echo "$ticker ($domain): HTTP $http_code, ${size}b"
+  size=$(wc -c < "$tmp_file")
+  local mime
+  mime=$(file -b --mime-type "$tmp_file")
+
+  if [[ "$http_code" != "200" ]]; then
+    rm -f "$tmp_file"
+    echo "$ticker ($domain): skipped HTTP $http_code, ${mime}, ${size}b"
+    return
+  fi
+
+  if [[ "$mime" != "image/png" && "$mime" != "image/jpeg" ]]; then
+    rm -f "$tmp_file"
+    echo "$ticker ($domain): skipped HTTP $http_code, ${mime}, ${size}b"
+    return
+  fi
+
+  mv "$tmp_file" "${ticker}.png"
+  echo "$ticker ($domain): HTTP $http_code, ${mime}, ${size}b"
 }
 
 download ETERNAL    zomato.com

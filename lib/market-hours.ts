@@ -23,8 +23,9 @@ export function getISTDate(now: Date = new Date()): string {
   return `${y}-${mo}-${d}`;
 }
 
-export function formatLastUpdated(date: Date): string {
-  const diffMs = Date.now() - date.getTime();
+export function formatLastUpdated(date: Date, now: number | Date = Date.now()): string {
+  const nowMs = typeof now === "number" ? now : now.getTime();
+  const diffMs = nowMs - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
   if (diffMin < 1) return "just now";
   if (diffMin === 1) return "1 min ago";

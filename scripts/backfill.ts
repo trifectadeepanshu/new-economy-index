@@ -18,11 +18,27 @@ for (const line of envContent.split("\n")) {
 
 import { neon } from "@neondatabase/serverless";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const YahooFinanceClass = require("yahoo-finance2").default;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const yf: any = new YahooFinanceClass({ suppressNotices: ["yahooSurvey"] });
+const YahooFinanceClass = require("yahoo-finance2").default as YahooFinanceConstructor;
+const yf = new YahooFinanceClass({ suppressNotices: ["yahooSurvey"] });
 
 import { COMPANIES } from "../lib/companies";
+
+interface YahooHistoricalRow {
+  date: Date | string | number;
+  close?: number | null;
+}
+
+interface YahooFinanceClient {
+  historical(
+    yfTicker: string,
+    queryOptions: { period1: Date; period2: Date; interval: "1d" },
+    moduleOptions?: { validateResult?: boolean }
+  ): Promise<YahooHistoricalRow[]>;
+}
+
+type YahooFinanceConstructor = new (options?: {
+  suppressNotices?: string[];
+}) => YahooFinanceClient;
 
 const DATABASE_URL = process.env.DATABASE_URL!;
 if (!DATABASE_URL) {
@@ -108,18 +124,20 @@ async function main() {
         { period1: effectiveFrom, period2: toDate, interval: "1d" },
         { validateResult: false }
       );
-      const filtered = (rows as any[]).filter(
-        (r: any) => r.close !== null && r.close !== undefined
+      const filtered = rows.filter(
+        (r): r is YahooHistoricalRow & { close: number } =>
+          typeof r.close === "number" && Number.isFinite(r.close)
       );
       allPrices[company.ticker] = {};
       for (const r of filtered) {
-        const dateStr = r.date.toISOString().slice(0, 10);
+        const dateStr = new Date(r.date).toISOString().slice(0, 10);
         allPrices[company.ticker][dateStr] = r.close;
         allRows.push({ date: dateStr, ticker: company.ticker, close: r.close });
       }
       console.log(`${filtered.length} days`);
-    } catch (e: any) {
-      console.log(`ERROR: ${e.message}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Unknown error";
+      console.log(`ERROR: ${message}`);
     }
   }
 

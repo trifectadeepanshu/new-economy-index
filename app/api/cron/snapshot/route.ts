@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { COMPANIES } from "@/lib/companies";
 import { fetchAllQuotes } from "@/lib/yahoo-finance";
-import { upsertStockSnapshotsBatch, upsertIndexSnapshot, getEarliestPricesPerTicker } from "@/lib/db";
+import {
+  ensureSchema,
+  getEarliestPricesPerTicker,
+  upsertIndexSnapshot,
+  upsertStockSnapshotsBatch,
+} from "@/lib/db";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +29,8 @@ export async function POST(req: NextRequest) {
 }
 
 async function runSnapshot() {
+  await ensureSchema();
+
   const today = getISTDate();
   const active = COMPANIES.filter((c) => c.listedDate <= today);
   const yfTickers = active.map((c) => c.yfTicker);
@@ -35,7 +42,7 @@ async function runSnapshot() {
   const stockRows = active
     .map((c) => {
       const q = quoteMap[c.ticker];
-      if (!q?.price) return null;
+      if (q?.price == null) return null;
       return { date: today, ticker: c.ticker, closePrice: q.price, changePct: q.changePct };
     })
     .filter(Boolean) as { date: string; ticker: string; closePrice: number; changePct: number | null }[];
@@ -47,7 +54,7 @@ async function runSnapshot() {
   const currentPrices = Object.fromEntries(stockRows.map((r) => [r.ticker, r.closePrice]));
 
   const eligible = active.filter(
-    (c) => basePrices[c.ticker] && currentPrices[c.ticker]
+    (c) => basePrices[c.ticker] !== undefined && currentPrices[c.ticker] !== undefined
   );
 
   if (eligible.length === 0) {

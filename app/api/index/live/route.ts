@@ -31,7 +31,7 @@ export async function GET() {
       const q = quoteMap[c.ticker];
       const base = basePrices[c.ticker];
       const price = q?.price ?? null;
-      const ratio = price && base ? price / base : null;
+      const ratio = price !== null && base !== undefined && base !== 0 ? price / base : null;
       return {
         ticker: c.ticker,
         name: c.name,
@@ -64,7 +64,7 @@ export async function GET() {
     return NextResponse.json({
       indexValue: Math.round(indexValue * 100) / 100,
       indexChangePct: indexChangePct !== null ? Math.round(indexChangePct * 100) / 100 : null,
-      numCompanies: allStocks.filter((s) => s.price !== null).length,
+      numCompanies: allStocks.length,
       lastUpdated: new Date().toISOString(),
       stocks: allStocks,
     });

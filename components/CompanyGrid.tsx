@@ -1,18 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { SECTORS, SECTOR_COLORS, type Sector } from "@/lib/companies";
 
-// Tickers that have a static logo in /public/logos/
-const HAS_LOGO = new Set([
-  "AMAGI","ATHERENERG","AWFIS","AYE","BIKAJI","BLACKBUCK","BLUESTONE",
-  "CAPILLARY","CARTRADE","DELHIVERY","ETERNAL","FIRSTCRY","FRACTAL",
-  "GOCOLORS","GODIGIT","GROWW","HOMEFIRST","HONASA","IDEAFORGE","INDIAMART",
-  "INDIASHLTR","INDIGOPNTS","INDIQUBE","IXIGO","KISSHT","LENSKART",
-  "MAPMYINDIA","MEDIASSIST","MEESHO","MOBIKWIK","NAUKRI","NAZARA",
-  "NORTHARC","NYKAA","OLAELEC","PAYTM","PINELABS","POLICYBZR","PWL",
-  "RATEGAIN","SHADOWFAX","SULA","SWIGGY","TBOTEK","TRACXN","UNIECOM",
-  "URBANCO","WAKEFIT","YATRA","ZAGGLE",
+// Only use local files that are valid image assets and large enough to render cleanly.
+const USABLE_LOGOS = new Set([
+  "AMAGI", "AWFIS", "AYE", "BIKAJI", "BLACKBUCK", "BLUESTONE",
+  "CARTRADE", "DELHIVERY", "ETERNAL", "FIRSTCRY", "FRACTAL",
+  "GODIGIT", "GROWW", "HONASA", "INDIAMART", "INDIASHLTR",
+  "INDIGOPNTS", "INDIQUBE", "IXIGO", "KISSHT", "LENSKART",
+  "MAPMYINDIA", "MEDIASSIST", "MEESHO", "NAUKRI", "NAZARA",
+  "NYKAA", "OLAELEC", "PAYTM", "POLICYBZR", "PWL", "RATEGAIN",
+  "SHADOWFAX", "SWIGGY", "TBOTEK", "TRACXN", "URBANCO", "ZAGGLE",
 ]);
 
 interface StockData {
@@ -30,19 +30,27 @@ interface Props {
 
 function CompanyLogo({ ticker, name, color }: { ticker: string; name: string; color: string }) {
   const [failed, setFailed] = useState(false);
-  const initials = name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  const initials = name
+    .replace(/\([^)]*\)/g, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
 
-  if (HAS_LOGO.has(ticker) && !failed) {
+  if (USABLE_LOGOS.has(ticker) && !failed) {
     return (
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md overflow-hidden bg-white">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1.5 ring-1 ring-white/10">
+        <Image
           src={`/logos/${ticker}.png`}
-          alt={name}
-          width={36}
-          height={36}
-          className="h-full w-full object-contain p-0.5"
+          alt=""
+          width={32}
+          height={32}
+          sizes="40px"
+          className="h-full w-full object-contain"
           onError={() => setFailed(true)}
+          unoptimized
         />
       </div>
     );
@@ -50,8 +58,9 @@ function CompanyLogo({ ticker, name, color }: { ticker: string; name: string; co
 
   return (
     <div
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-xs font-bold"
-      style={{ backgroundColor: color + "33", color }}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-xs font-bold"
+      style={{ backgroundColor: `${color}24`, color, borderColor: `${color}55` }}
+      aria-hidden="true"
     >
       {initials}
     </div>
@@ -63,7 +72,7 @@ function CompanyCard({ stock }: { stock: StockData }) {
   const color = SECTOR_COLORS[stock.sector as Sector] ?? "#6b7280";
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 p-3 hover:border-zinc-700 transition-colors">
+    <div className="flex min-h-16 items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 p-3 transition-colors hover:border-zinc-700">
       <CompanyLogo ticker={stock.ticker} name={stock.name} color={color} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-white">{stock.name}</p>
@@ -76,7 +85,7 @@ function CompanyCard({ stock }: { stock: StockData }) {
               ₹{stock.price.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
             </p>
             {stock.changePct !== null && (
-              <p className={`text-xs font-medium ${up ? "text-emerald-400" : "text-red-400"}`}>
+              <p className={`text-xs font-medium tabular-nums ${up ? "text-emerald-400" : "text-red-400"}`}>
                 {up ? "+" : ""}{stock.changePct.toFixed(2)}%
               </p>
             )}
@@ -92,7 +101,7 @@ function CompanyCard({ stock }: { stock: StockData }) {
 function SkeletonCard() {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
-      <div className="h-9 w-9 animate-pulse rounded-md bg-zinc-800" />
+      <div className="h-10 w-10 animate-pulse rounded-lg bg-zinc-800" />
       <div className="flex-1 space-y-2">
         <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-800" />
         <div className="h-2 w-1/2 animate-pulse rounded bg-zinc-800" />
@@ -110,7 +119,7 @@ export function CompanyGrid({ stocks, isLoading }: Props) {
     return (
       <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
         <h2 className="mb-4 text-sm font-semibold text-zinc-300">All Companies</h2>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       </div>
@@ -137,7 +146,7 @@ export function CompanyGrid({ stocks, isLoading }: Props) {
             >
               {sector}
             </h3>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {sectorStocks.map((s) => (
                 <CompanyCard key={s.ticker} stock={s} />
               ))}

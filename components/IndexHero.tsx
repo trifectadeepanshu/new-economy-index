@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { formatLastUpdated } from "@/lib/market-hours";
-import { INDEX_NAME } from "@/lib/companies";
+import { INDEX_BASE_DATE, INDEX_NAME } from "@/lib/companies";
 
 interface Props {
   indexValue: number | null;
@@ -21,8 +22,19 @@ function fmtPct(n: number) {
   return `${sign}${n.toFixed(2)}%`;
 }
 
+const inceptionLabel = new Date(`${INDEX_BASE_DATE}T00:00:00+05:30`).toLocaleString(
+  "en-IN",
+  { month: "short", year: "numeric", timeZone: "Asia/Kolkata" }
+);
+
 export function IndexHero({ indexValue, indexChangePct, numCompanies, lastUpdated, sinceInceptionPct, isLoading }: Props) {
+  const [now, setNow] = useState(() => Date.now());
   const up = indexChangePct !== null ? indexChangePct >= 0 : true;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
     <div className="py-10 sm:py-14">
@@ -32,7 +44,7 @@ export function IndexHero({ indexValue, indexChangePct, numCompanies, lastUpdate
         <div className="h-16 w-64 animate-pulse rounded-lg bg-zinc-800" />
       ) : (
         <div className="flex flex-wrap items-end gap-4">
-          <span className="text-5xl sm:text-6xl font-bold text-white tracking-tight">
+          <span className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
             {indexValue !== null ? fmt(indexValue) : "—"}
           </span>
 
@@ -51,7 +63,7 @@ export function IndexHero({ indexValue, indexChangePct, numCompanies, lastUpdate
             <span className={`font-semibold ${sinceInceptionPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
               {fmtPct(sinceInceptionPct)}
             </span>
-            <span className="ml-1 text-zinc-500">since inception (Jan 2022)</span>
+            <span className="ml-1 text-zinc-500">since inception ({inceptionLabel})</span>
           </div>
         )}
         <div>
@@ -60,7 +72,7 @@ export function IndexHero({ indexValue, indexChangePct, numCompanies, lastUpdate
         </div>
         {lastUpdated && (
           <div className="text-zinc-600">
-            Updated {formatLastUpdated(lastUpdated)}
+            Updated {formatLastUpdated(lastUpdated, now)}
           </div>
         )}
       </div>

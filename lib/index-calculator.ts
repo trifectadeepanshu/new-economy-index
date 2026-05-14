@@ -26,7 +26,10 @@ export function calculateIndex(
   asOfDate: string = new Date().toISOString().slice(0, 10)
 ): IndexSnapshot {
   const eligible = COMPANIES.filter(
-    (c) => c.listedDate <= asOfDate && basePrices[c.ticker] && currentPrices[c.ticker]
+    (c) =>
+      c.listedDate <= asOfDate &&
+      basePrices[c.ticker] !== undefined &&
+      currentPrices[c.ticker] !== undefined
   );
 
   if (eligible.length === 0) {

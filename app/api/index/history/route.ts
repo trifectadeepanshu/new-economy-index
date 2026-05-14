@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIndexHistory } from "@/lib/db";
-import { format, subDays, subMonths, subYears } from "date-fns";
+import { format, parseISO, subDays, subMonths, subYears } from "date-fns";
+import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
 
 type Range = "1W" | "1M" | "1Y" | "ALL";
 
 function getFromDate(range: Range): string {
-  const today = new Date();
+  const today = parseISO(getISTDate());
   switch (range) {
     case "1W":  return format(subDays(today, 7), "yyyy-MM-dd");
     case "1M":  return format(subMonths(today, 1), "yyyy-MM-dd");
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
   }
 
   const fromDate = getFromDate(range);
-  const toDate = format(new Date(), "yyyy-MM-dd");
+  const toDate = getISTDate();
 
   try {
     const data = await getIndexHistory(fromDate, toDate);

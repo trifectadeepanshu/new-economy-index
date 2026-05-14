@@ -1,8 +1,36 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const YahooFinanceClass = require("yahoo-finance2").default;
+const YahooFinanceClass = require("yahoo-finance2").default as YahooFinanceConstructor;
 // yahoo-finance2 v3 requires instantiation
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const yahooFinance: any = new YahooFinanceClass({ suppressNotices: ["yahooSurvey"] });
+const yahooFinance = new YahooFinanceClass({ suppressNotices: ["yahooSurvey"] });
+
+interface YahooQuote {
+  regularMarketPrice?: number | null;
+  regularMarketPreviousClose?: number | null;
+  marketCap?: number | null;
+  currency?: string | null;
+}
+
+interface YahooHistoricalRow {
+  date: Date | string | number;
+  close?: number | null;
+}
+
+interface YahooFinanceClient {
+  quote(
+    yfTicker: string,
+    queryOptions?: Record<string, never>,
+    moduleOptions?: { validateResult?: boolean }
+  ): Promise<YahooQuote>;
+  historical(
+    yfTicker: string,
+    queryOptions: { period1: Date; period2: Date; interval: "1d" },
+    moduleOptions?: { validateResult?: boolean }
+  ): Promise<YahooHistoricalRow[]>;
+}
+
+type YahooFinanceConstructor = new (options?: {
+  suppressNotices?: string[];
+}) => YahooFinanceClient;
 
 export interface QuoteResult {
   ticker: string;
@@ -22,8 +50,7 @@ export interface HistoricalPrice {
 // Fetch current quote for a single ticker
 export async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const q: any = await yahooFinance.quote(yfTicker, {}, { validateResult: false });
+    const q = await yahooFinance.quote(yfTicker, {}, { validateResult: false });
     const price: number | null = q?.regularMarketPrice ?? null;
     const prev: number | null = q?.regularMarketPreviousClose ?? null;
     const changePct =
@@ -66,16 +93,17 @@ export async function fetchHistorical(
   to: Date
 ): Promise<HistoricalPrice[]> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rows: any[] = await yahooFinance.historical(yfTicker, {
+    const rows = await yahooFinance.historical(yfTicker, {
       period1: from,
       period2: to,
       interval: "1d",
     }, { validateResult: false });
     return rows
-      .filter((r: any) => r.close !== null && r.close !== undefined)
-      .map((r: any) => ({
-        date: r.date.toISOString().slice(0, 10),
+      .filter((r): r is YahooHistoricalRow & { close: number } => (
+        typeof r.close === "number" && Number.isFinite(r.close)
+      ))
+      .map((r) => ({
+        date: new Date(r.date).toISOString().slice(0, 10),
         close: r.close,
       }));
   } catch {
