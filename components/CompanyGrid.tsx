@@ -1,6 +1,64 @@
 "use client";
 
+import { useState } from "react";
 import { SECTORS, SECTOR_COLORS, type Sector } from "@/lib/companies";
+
+// Clearbit logo domains keyed by NSE ticker
+const LOGO_DOMAINS: Record<string, string> = {
+  ETERNAL:    "zomato.com",
+  SWIGGY:     "swiggy.com",
+  POLICYBZR:  "policybazaar.com",
+  MEESHO:     "meesho.com",
+  NYKAA:      "nykaa.com",
+  URBANCO:    "urbancompany.com",
+  FIRSTCRY:   "firstcry.com",
+  TBOTEK:     "tbo.com",
+  PWL:        "pw.live",
+  INDIGOPNTS: "indigopaints.com",
+  GOCOLORS:   "gocolors.com",
+  SULA:       "sulawines.com",
+  WAKEFIT:    "wakefit.co",
+  BLACKBUCK:  "blackbuck.com",
+  OLAELEC:    "olaelectric.com",
+  BIKAJI:     "bikaji.com",
+  TRACXN:     "tracxn.com",
+  HONASA:     "mamaearth.in",
+  BLUESTONE:  "bluestone.com",
+  IXIGO:      "ixigo.com",
+  YATRA:      "yatra.com",
+  ATHERENERG: "atherenergy.com",
+  GROWW:      "groww.in",
+  PAYTM:      "paytm.com",
+  PINELABS:   "pinelabs.com",
+  ZAGGLE:     "zaggle.in",
+  MOBIKWIK:   "mobikwik.com",
+  KISSHT:     "kissht.com",
+  DELHIVERY:  "delhivery.com",
+  INDIAMART:  "indiamart.com",
+  AWFIS:      "awfis.com",
+  MEDIASSIST: "mediassist.in",
+  IDEAFORGE:  "ideaforge.in",
+  INDIQUBE:   "indiqube.com",
+  UNIECOM:    "unicommerce.com",
+  SHADOWFAX:  "shadowfax.in",
+  GODIGIT:    "godigit.com",
+  AADHARHFC:  "aadharhfc.com",
+  FIVESTAR:   "fivestarfinance.in",
+  HOMEFIRST:  "homfirst.com",
+  INDIASHLTR: "indiashelter.in",
+  NORTHARC:   "northernarc.com",
+  AYE:        "ayefin.com",
+  MAPMYINDIA: "mapmyindia.com",
+  FRACTAL:    "fractal.ai",
+  CAPILLARY:  "capillarytech.com",
+  AMAGI:      "amagi.com",
+  RATEGAIN:   "rategain.com",
+  LENSKART:   "lenskart.com",
+  NAUKRI:     "naukri.com",
+  NAZARA:     "nazara.com",
+  CARTRADE:   "cartrade.com",
+  SEDEMAC:    "sedemac.com",
+};
 
 interface StockData {
   ticker: string;
@@ -15,24 +73,46 @@ interface Props {
   isLoading: boolean;
 }
 
+function CompanyLogo({ ticker, name, color }: { ticker: string; name: string; color: string }) {
+  const [failed, setFailed] = useState(false);
+  const domain = LOGO_DOMAINS[ticker];
+  const initials = name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+
+  if (domain && !failed) {
+    return (
+      <div
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md overflow-hidden bg-white"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`https://logo.clearbit.com/${domain}?size=64`}
+          alt={name}
+          width={36}
+          height={36}
+          className="h-full w-full object-contain p-0.5"
+          onError={() => setFailed(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-xs font-bold"
+      style={{ backgroundColor: color + "33", color }}
+    >
+      {initials}
+    </div>
+  );
+}
+
 function CompanyCard({ stock }: { stock: StockData }) {
   const up = (stock.changePct ?? 0) >= 0;
   const color = SECTOR_COLORS[stock.sector as Sector] ?? "#6b7280";
-  const initials = stock.name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 p-3 hover:border-zinc-700 transition-colors">
-      <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white"
-        style={{ backgroundColor: color + "33", color }}
-      >
-        {initials}
-      </div>
+      <CompanyLogo ticker={stock.ticker} name={stock.name} color={color} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-white">{stock.name}</p>
         <p className="text-xs text-zinc-500">{stock.ticker}</p>
