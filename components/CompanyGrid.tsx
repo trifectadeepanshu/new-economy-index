@@ -6,13 +6,13 @@ import { SECTORS, SECTOR_COLORS, type Sector } from "@/lib/companies";
 
 // Only use local files that are valid image assets and large enough to render cleanly.
 const USABLE_LOGOS = new Set([
-  "AMAGI", "AWFIS", "AYE", "BIKAJI", "BLACKBUCK", "BLUESTONE",
-  "CARTRADE", "DELHIVERY", "ETERNAL", "FIRSTCRY", "FRACTAL",
+  "AADHARHFC", "AMAGI", "AWFIS", "AYE", "BIKAJI", "BLACKBUCK", "BLUESTONE",
+  "CARTRADE", "DELHIVERY", "ETERNAL", "FIRSTCRY", "FIVESTAR", "FRACTAL",
   "GODIGIT", "GROWW", "HONASA", "INDIAMART", "INDIASHLTR",
   "INDIGOPNTS", "INDIQUBE", "IXIGO", "KISSHT", "LENSKART",
   "MAPMYINDIA", "MEDIASSIST", "MEESHO", "NAUKRI", "NAZARA",
   "NYKAA", "OLAELEC", "PAYTM", "POLICYBZR", "PWL", "RATEGAIN",
-  "SHADOWFAX", "SWIGGY", "TBOTEK", "TRACXN", "URBANCO", "ZAGGLE",
+  "SEDEMAC", "SHADOWFAX", "SWIGGY", "TBOTEK", "TRACXN", "URBANCO", "ZAGGLE",
 ]);
 
 interface StockData {
