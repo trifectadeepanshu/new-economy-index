@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Image from "next/image";
-import { useIndexData } from "@/hooks/useIndexData";
+import { useIndexData, type StockData } from "@/hooks/useIndexData";
 import { IndexChart } from "@/components/IndexChart";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import {
@@ -31,6 +31,7 @@ const inceptionLabel = new Date(`${INDEX_BASE_DATE}T00:00:00+05:30`).toLocaleStr
   "en-IN",
   { month: "short", year: "numeric", timeZone: "Asia/Kolkata" }
 );
+const EMPTY_STOCKS: StockData[] = [];
 
 // ─── Sparkline ────────────────────────────────────────────────────────────────
 
@@ -199,8 +200,10 @@ function MoversCard({
 
 function SectorCard({
   stocks,
+  embedded = false,
 }: {
   stocks: { sector: string; changePct: number | null }[];
+  embedded?: boolean;
 }) {
   const sectors = useMemo(() => {
     const map: Record<string, { total: number; count: number }> = {};
@@ -219,9 +222,16 @@ function SectorCard({
   }, [stocks]);
 
   return (
-    <div className="nei-card" style={{ padding: "18px 20px" }}>
+    <div
+      className={embedded ? undefined : "nei-card"}
+      style={{
+        padding: embedded ? "20px 0 0" : "18px 20px",
+        marginTop: embedded ? 20 : 0,
+        borderTop: embedded ? "1px solid var(--nei-grid)" : undefined,
+      }}
+    >
       <div className="nei-label" style={{ marginBottom: 14 }}>
-        Sector performance
+        Sector snapshot
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {sectors.map((s) => (
@@ -281,6 +291,37 @@ function SectorCard({
   );
 }
 
+function IndexFacts({ numCompanies }: { numCompanies: number }) {
+  const facts = [
+    { label: "Base value", value: "1,000" },
+    { label: "Weighting", value: "Equal" },
+    { label: "Coverage", value: `${numCompanies} companies` },
+    { label: "Refresh", value: "15 min" },
+  ];
+
+  return (
+    <div className="nei-fact-grid">
+      {facts.map((fact) => (
+        <div key={fact.label}>
+          <div className="nei-label" style={{ marginBottom: 5 }}>
+            {fact.label}
+          </div>
+          <div
+            className="nei-mono"
+            style={{
+              fontSize: 16,
+              fontWeight: 600,
+              color: "var(--nei-fg)",
+            }}
+          >
+            {fact.value}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Skeleton pulse ───────────────────────────────────────────────────────────
 
 function Skeleton({ w, h, r = 6 }: { w?: string | number; h: number; r?: number }) {
@@ -323,7 +364,7 @@ export function IndexDashboard() {
   const indexValue = data?.indexValue ?? null;
   const changePct = data?.indexChangePct ?? null;
   const numCompanies = data?.numCompanies ?? COMPANIES.length;
-  const stocks = data?.stocks ?? [];
+  const stocks = data?.stocks ?? EMPTY_STOCKS;
 
   const sinceInception =
     indexValue !== null
@@ -351,10 +392,10 @@ export function IndexDashboard() {
     [stocks]
   );
 
-  const maxW: React.CSSProperties = { maxWidth: 1240, margin: "0 auto" };
+  const maxW: CSSProperties = { maxWidth: 1240, margin: "0 auto" };
   const section = (
-    extra: React.CSSProperties = {}
-  ): React.CSSProperties => ({
+    extra: CSSProperties = {}
+  ): CSSProperties => ({
     padding: "40px 32px",
     ...extra,
   });
@@ -507,7 +548,7 @@ export function IndexDashboard() {
                   color: "var(--nei-fg)",
                 }}
               >
-                India's new economy,
+                India&apos;s new economy,
                 <br />
                 in one number.
               </h1>
@@ -735,19 +776,6 @@ export function IndexDashboard() {
             </div>
           </div>
 
-          {/* ─── Movers row ─── */}
-          <div
-            style={{
-              marginTop: 20,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 14,
-            }}
-          >
-            <MoversCard title="Top gainers" rows={topGainers} />
-            <MoversCard title="Top decliners" rows={topLosers} />
-            <SectorCard stocks={stocks} />
-          </div>
         </div>
       </section>
 
@@ -779,11 +807,26 @@ export function IndexDashboard() {
                   margin: 0,
                 }}
               >
-                Equal-weighted · base 1,000 on {inceptionLabel} · hover to
-                inspect
+                Equal-weighted · base 1,000 on {inceptionLabel} · compare
+                sectors or isolate one detail view.
               </p>
             </div>
-            <IndexChart liveValue={indexValue} />
+            <IndexChart liveValue={indexValue} stocks={stocks} />
+            <SectorCard stocks={stocks} embedded />
+            <IndexFacts numCompanies={numCompanies} />
+          </div>
+
+          <div
+            className="nei-movers-row"
+            style={{
+              marginTop: 14,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 14,
+            }}
+          >
+            <MoversCard title="Top gainers" rows={topGainers} />
+            <MoversCard title="Top decliners" rows={topLosers} />
           </div>
         </div>
       </section>

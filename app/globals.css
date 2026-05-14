@@ -131,6 +131,46 @@
     gap: 56px;
     align-items: start;
   }
+
+  .nei-chart-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .nei-chart-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nei-segmented-control {
+    display: inline-flex;
+    padding: 4px;
+    background: var(--nei-chip);
+    border-radius: 10px;
+    gap: 2px;
+  }
+
+  .nei-sector-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 4px;
+  }
+
+  .nei-fact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--nei-grid);
+  }
 }
 
 @media (max-width: 900px) {
@@ -146,6 +186,31 @@
 
   .nei-nav-links {
     display: none !important;
+  }
+
+  .nei-chart-toolbar {
+    flex-direction: column;
+    margin-bottom: 14px;
+  }
+
+  .nei-chart-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .nei-segmented-control {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .nei-sector-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .nei-fact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Area,
   CartesianGrid,
   ComposedChart,
   Line,
+  ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -13,24 +14,100 @@ import {
   YAxis,
 } from "recharts";
 import { format, parseISO } from "date-fns";
-import { INDEX_BASE_VALUE } from "@/lib/companies";
+import { INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
+import type { StockData } from "@/hooks/useIndexData";
 
 type Range = "1W" | "1M" | "1Y" | "ALL";
+type ChartMode = "index" | "compare" | "detail";
+
 const RANGES: Range[] = ["1W", "1M", "1Y", "ALL"];
+const CHART_MODES: { value: ChartMode; label: string }[] = [
+  { value: "index", label: "Index" },
+  { value: "compare", label: "Sector Compare" },
+  { value: "detail", label: "Sector Detail" },
+];
+
+const SECTOR_CHART_COLORS: Record<Sector, string> = {
+  Platforms: "#1E3A5F",
+  "Consumer Brands": "#B45A2E",
+  Fintech: "#2C6E3C",
+  B2B: "#346C8C",
+  BFSI: "#8B5D77",
+  Software: "#5E5A8A",
+  Others: "#747B86",
+};
 
 interface HistoryPoint {
   date: string;
   value: number;
 }
 
+interface SectorHistoryPoint {
+  date: string;
+  sector: Sector;
+  value: number;
+  numCompanies: number;
+}
+
 interface ChartPoint {
   date: string;
+  label: string;
   value: number;
 }
+
+type ComparePoint = {
+  date: string;
+  label: string;
+} & Partial<Record<Sector, number>>;
 
 function formatLabel(date: string, range: Range): string {
   const pattern = range === "1W" || range === "1M" ? "dd MMM" : "MMM ''yy";
   return format(parseISO(date), pattern);
+}
+
+function formatValue(value: number) {
+  return value.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function formatPctFromBase(value: number) {
+  const pct = ((value - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100;
+  return `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+}
+
+function buildCompareData(sectorData: SectorHistoryPoint[], range: Range): ComparePoint[] {
+  const byDate = new Map<string, ComparePoint>();
+
+  for (const point of sectorData) {
+    const row = byDate.get(point.date) ?? {
+      date: point.date,
+      label: formatLabel(point.date, range),
+    };
+    row[point.sector] = Number(point.value);
+    byDate.set(point.date, row);
+  }
+
+  return Array.from(byDate.values());
+}
+
+function getLiveSectorValues(stocks: StockData[]) {
+  const values = {} as Partial<Record<Sector, number>>;
+
+  for (const sector of SECTORS) {
+    const sectorStocks = stocks.filter(
+      (stock) => stock.sector === sector && typeof stock.ratio === "number"
+    );
+    if (!sectorStocks.length) continue;
+
+    const avgRatio =
+      sectorStocks.reduce((sum, stock) => sum + (stock.ratio ?? 0), 0) /
+      sectorStocks.length;
+    values[sector] = Math.round(INDEX_BASE_VALUE * avgRatio * 100) / 100;
+  }
+
+  return values;
 }
 
 function CustomTooltip({
@@ -39,24 +116,29 @@ function CustomTooltip({
   label,
 }: {
   active?: boolean;
-  payload?: { value: number }[];
+  payload?: Array<{ value?: number; name?: string; color?: string }>;
   label?: string;
 }) {
   if (!active || !payload?.length) return null;
-  const v = payload[0]?.value;
-  if (v == null) return null;
-  const pctFromBase = ((v - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100;
+
+  const rows = payload
+    .filter((item): item is { value: number; name?: string; color?: string } => (
+      typeof item.value === "number"
+    ))
+    .sort((a, b) => b.value - a.value);
+
+  if (!rows.length) return null;
 
   return (
     <div
       style={{
         background: "#FFFFFF",
         border: "1px solid var(--nei-grid-strong)",
-        padding: "9px 12px",
+        padding: "10px 12px",
         borderRadius: 9,
         fontSize: 12,
         boxShadow: "var(--nei-card-shadow)",
-        minWidth: 130,
+        minWidth: rows.length > 1 ? 190 : 142,
       }}
     >
       <div
@@ -65,135 +147,371 @@ function CustomTooltip({
           fontSize: 10,
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          marginBottom: 5,
+          marginBottom: 7,
         }}
       >
         {label}
       </div>
-      <div
-        style={{
-          fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-          fontSize: 18,
-          fontWeight: 600,
-          color: "var(--nei-fg)",
-          fontVariantNumeric: "tabular-nums",
-          letterSpacing: "-0.01em",
-        }}
-      >
-        {v.toLocaleString("en-IN", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
+      <div style={{ display: "grid", gap: 6 }}>
+        {rows.map((item) => (
+          <div
+            key={item.name ?? "value"}
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 14,
+            }}
+          >
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                minWidth: 0,
+                color: "var(--nei-muted)",
+              }}
+            >
+              {item.color && (
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: item.color,
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+              <span
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: 112,
+                }}
+              >
+                {item.name ?? "NEI"}
+              </span>
+            </span>
+            <span
+              className="nei-mono"
+              style={{
+                color: "var(--nei-fg)",
+                fontSize: 14,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {formatValue(item.value)}
+            </span>
+          </div>
+        ))}
       </div>
-      <div
-        style={{
-          fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-          fontSize: 12,
-          marginTop: 3,
-          color: pctFromBase >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
-        }}
-      >
-        {pctFromBase >= 0 ? "+" : ""}
-        {pctFromBase.toFixed(2)}%{" "}
-        <span style={{ color: "var(--nei-muted)" }}>from base</span>
-      </div>
+      {rows.length === 1 && (
+        <div
+          className="nei-mono"
+          style={{
+            marginTop: 6,
+            fontSize: 12,
+            color:
+              rows[0].value >= INDEX_BASE_VALUE ? "var(--nei-pos)" : "var(--nei-neg)",
+          }}
+        >
+          {formatPctFromBase(rows[0].value)}{" "}
+          <span style={{ color: "var(--nei-muted)" }}>from base</span>
+        </div>
+      )}
     </div>
   );
 }
 
-export function IndexChart({ liveValue }: { liveValue: number | null }) {
+function ControlButton({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      style={{
+        minHeight: 38,
+        padding: "7px 12px",
+        fontSize: 11,
+        letterSpacing: "0.04em",
+        fontWeight: 600,
+        background: active ? "#FFFFFF" : "transparent",
+        color: active ? "var(--nei-fg)" : "var(--nei-muted)",
+        border: "none",
+        borderRadius: 7,
+        cursor: "pointer",
+        boxShadow: active ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+        transition: "color 120ms, background 120ms, box-shadow 120ms",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function LegendButton({
+  sector,
+  active,
+  muted,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  sector: Sector;
+  active: boolean;
+  muted: boolean;
+  onClick: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      style={{
+        minHeight: 36,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 7,
+        border: "1px solid var(--nei-grid-strong)",
+        borderRadius: 999,
+        background: active ? "rgba(30,58,95,0.07)" : "#FFFFFF",
+        color: active ? "var(--nei-fg)" : "var(--nei-muted)",
+        opacity: muted ? 0.4 : 1,
+        padding: "6px 10px",
+        fontSize: 11,
+        fontWeight: 600,
+        cursor: "pointer",
+        transition: "opacity 120ms, color 120ms, background 120ms",
+      }}
+    >
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: SECTOR_CHART_COLORS[sector],
+          flexShrink: 0,
+        }}
+      />
+      {sector}
+    </button>
+  );
+}
+
+export function IndexChart({
+  liveValue,
+  stocks,
+}: {
+  liveValue: number | null;
+  stocks: StockData[];
+}) {
   const [range, setRange] = useState<Range>("1Y");
+  const [mode, setMode] = useState<ChartMode>("index");
+  const [selectedSector, setSelectedSector] = useState<Sector>("Platforms");
+  const [focusedSector, setFocusedSector] = useState<Sector | null>(null);
   const [historyData, setHistoryData] = useState<HistoryPoint[]>([]);
+  const [sectorData, setSectorData] = useState<SectorHistoryPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
-    fetch(`/api/index/history?range=${range}`, { signal: controller.signal })
-      .then((r) => r.json())
-      .then((json) => {
-        setHistoryData(json.data ?? []);
-        setLoading(false);
+    let active = true;
+
+    fetch(`/api/index/history?range=${range}&includeSectors=1`, {
+      signal: controller.signal,
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
       })
-      .catch(() => setLoading(false));
-    return () => controller.abort();
+      .then((json) => {
+        if (!active) return;
+        setHistoryData(json.data ?? []);
+        setSectorData(json.sectorData ?? []);
+        setError(null);
+      })
+      .catch((e: unknown) => {
+        if (!active || (e instanceof DOMException && e.name === "AbortError")) {
+          return;
+        }
+        setHistoryData([]);
+        setSectorData([]);
+        setError(e instanceof Error ? e.message : "Failed to load chart data");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [range]);
 
-  const chartData = useMemo<ChartPoint[]>(() => {
-    const pts = historyData.map((p) => ({
-      date: formatLabel(p.date, range),
-      value: Number(p.value),
+  const liveSectorValues = useMemo(() => getLiveSectorValues(stocks), [stocks]);
+
+  const indexData = useMemo<ChartPoint[]>(() => {
+    const points = historyData.map((point) => ({
+      date: point.date,
+      label: formatLabel(point.date, range),
+      value: Number(point.value),
     }));
-    if (liveValue !== null && pts.length > 0) {
-      return [...pts, { date: "Now", value: liveValue }];
+    if (liveValue !== null && points.length > 0) {
+      return [...points, { date: "now", label: "Now", value: liveValue }];
     }
-    return pts;
+    return points;
   }, [historyData, liveValue, range]);
+
+  const compareData = useMemo<ComparePoint[]>(() => {
+    const points = buildCompareData(sectorData, range);
+    const hasLiveSectors = SECTORS.some((sector) => liveSectorValues[sector] !== undefined);
+    if (!hasLiveSectors || points.length === 0) return points;
+    return [...points, { date: "now", label: "Now", ...liveSectorValues }];
+  }, [liveSectorValues, range, sectorData]);
+
+  const detailData = useMemo<ChartPoint[]>(() => {
+    const points = sectorData
+      .filter((point) => point.sector === selectedSector)
+      .map((point) => ({
+        date: point.date,
+        label: formatLabel(point.date, range),
+        value: Number(point.value),
+      }));
+    const liveSectorValue = liveSectorValues[selectedSector];
+    if (liveSectorValue === undefined || points.length === 0) return points;
+    return [...points, { date: "now", label: "Now", value: liveSectorValue }];
+  }, [liveSectorValues, range, sectorData, selectedSector]);
+
+  const currentData =
+    mode === "index" ? indexData : mode === "detail" ? detailData : compareData;
+  const singleSeriesData = mode === "detail" ? detailData : indexData;
+  const latestPoint = singleSeriesData[singleSeriesData.length - 1];
+  const latestColor =
+    mode === "detail"
+      ? SECTOR_CHART_COLORS[selectedSector]
+      : latestPoint && latestPoint.value < INDEX_BASE_VALUE
+        ? "var(--nei-neg)"
+        : "var(--nei-accent)";
+  const chartTitle =
+    mode === "index"
+      ? "NEI performance"
+      : mode === "compare"
+        ? "Sector compare"
+        : `${selectedSector} performance`;
+
+  const selectedOrFocusedSector = focusedSector ?? selectedSector;
 
   return (
     <div style={{ marginTop: 20 }}>
-      {/* Range toggle */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: 20,
-        }}
-      >
-        <div
-          style={{
-            display: "inline-flex",
-            padding: 4,
-            background: "var(--nei-chip)",
-            borderRadius: 10,
-            gap: 2,
-          }}
-        >
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              onClick={() => {
-                if (r !== range) {
-                  setLoading(true);
-                  setRange(r);
-                }
-              }}
-              style={{
-                padding: "6px 14px",
-                fontFamily:
-                  "var(--font-jetbrains), ui-monospace, monospace",
-                fontSize: 11,
-                letterSpacing: "0.04em",
-                fontWeight: 500,
-                background: range === r ? "#FFFFFF" : "transparent",
-                color: range === r ? "var(--nei-fg)" : "var(--nei-muted)",
-                border: "none",
-                borderRadius: 7,
-                cursor: "pointer",
-                boxShadow:
-                  range === r ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                transition: "all 100ms",
-              }}
-            >
-              {r}
-            </button>
-          ))}
+      <div className="nei-chart-toolbar">
+        <div>
+          <div className="nei-label" style={{ marginBottom: 4 }}>
+            Chart View
+          </div>
+          <div
+            className="nei-heading"
+            style={{
+              fontSize: 17,
+              fontWeight: 600,
+              letterSpacing: "-0.015em",
+              color: "var(--nei-fg)",
+            }}
+          >
+            {chartTitle}
+          </div>
+        </div>
+
+        <div className="nei-chart-controls">
+          <div className="nei-segmented-control" role="group" aria-label="Chart mode">
+            {CHART_MODES.map((chartMode) => (
+              <ControlButton
+                key={chartMode.value}
+                active={mode === chartMode.value}
+                onClick={() => setMode(chartMode.value)}
+              >
+                {chartMode.label}
+              </ControlButton>
+            ))}
+          </div>
+
+          <div className="nei-segmented-control" role="group" aria-label="Date range">
+            {RANGES.map((r) => (
+              <ControlButton
+                key={r}
+                active={range === r}
+                onClick={() => {
+                  if (r !== range) {
+                    setLoading(true);
+                    setRange(r);
+                  }
+                }}
+              >
+                {r}
+              </ControlButton>
+            ))}
+          </div>
         </div>
       </div>
+
+      {mode === "detail" && (
+        <div className="nei-sector-tabs" role="group" aria-label="Sector detail">
+          {SECTORS.map((sector) => (
+            <LegendButton
+              key={sector}
+              sector={sector}
+              active={selectedSector === sector}
+              muted={false}
+              onClick={() => setSelectedSector(sector)}
+              onMouseEnter={() => setFocusedSector(sector)}
+              onMouseLeave={() => setFocusedSector(null)}
+            />
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div
           style={{
-            height: 320,
+            height: 330,
             background: "rgba(16,24,38,0.04)",
             borderRadius: 8,
             animation: "nei-pulse 1.8s ease-in-out infinite",
           }}
         />
-      ) : chartData.length === 0 ? (
+      ) : error ? (
         <div
           style={{
-            height: 320,
+            height: 330,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--nei-neg)",
+            fontSize: 13,
+          }}
+        >
+          Could not load historical data.
+        </div>
+      ) : currentData.length === 0 ? (
+        <div
+          style={{
+            height: 330,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -204,77 +522,158 @@ export function IndexChart({ liveValue }: { liveValue: number | null }) {
           No historical data yet — run the backfill script to populate history.
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={320}>
-          <ComposedChart
-            data={chartData}
-            margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
-          >
-            <defs>
-              <linearGradient id="neiAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#1E3A5F" stopOpacity={0.1} />
-                <stop offset="100%" stopColor="#1E3A5F" stopOpacity={0.01} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="rgba(16,24,38,0.05)"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="date"
-              tick={{
-                fill: "rgba(16,24,38,0.42)",
-                fontSize: 11,
-                fontFamily: "var(--font-inter), system-ui",
-              }}
-              axisLine={false}
-              tickLine={false}
-              interval="preserveStartEnd"
-            />
-            <YAxis
-              domain={["auto", "auto"]}
-              tick={{
-                fill: "rgba(16,24,38,0.42)",
-                fontSize: 11,
-                fontFamily:
-                  "var(--font-jetbrains), ui-monospace, monospace",
-              }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v: number) =>
-                v.toLocaleString("en-IN", { maximumFractionDigits: 0 })
-              }
-              width={54}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine
-              y={INDEX_BASE_VALUE}
-              stroke="rgba(16,24,38,0.12)"
-              strokeDasharray="4 4"
-            />
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke="none"
-              fill="url(#neiAreaGrad)"
-              isAnimationActive={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#1E3A5F"
-              strokeWidth={2}
-              dot={false}
-              isAnimationActive={false}
-              activeDot={{
-                r: 4,
-                fill: "#1E3A5F",
-                stroke: "#FFFFFF",
-                strokeWidth: 2,
-              }}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+        <>
+          <ResponsiveContainer width="100%" height={330}>
+            <ComposedChart
+              data={currentData}
+              margin={{ top: 16, right: 78, bottom: 0, left: 0 }}
+            >
+              <defs>
+                <linearGradient id="neiAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1E3A5F" stopOpacity={0.1} />
+                  <stop offset="100%" stopColor="#1E3A5F" stopOpacity={0.01} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(16,24,38,0.05)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="label"
+                tick={{
+                  fill: "rgba(16,24,38,0.42)",
+                  fontSize: 11,
+                  fontFamily: "var(--font-inter), system-ui",
+                }}
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                domain={["auto", "auto"]}
+                tick={{
+                  fill: "rgba(16,24,38,0.42)",
+                  fontSize: 11,
+                  fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+                }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v: number) =>
+                  v.toLocaleString("en-IN", { maximumFractionDigits: 0 })
+                }
+                width={54}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine
+                y={INDEX_BASE_VALUE}
+                stroke="rgba(16,24,38,0.16)"
+                strokeDasharray="4 4"
+                label={{
+                  value: "Base 1,000",
+                  position: "insideTopLeft",
+                  fill: "rgba(16,24,38,0.42)",
+                  fontSize: 10,
+                  fontFamily: "var(--font-inter), system-ui",
+                }}
+              />
+
+              {mode === "compare" ? (
+                SECTORS.map((sector) => {
+                  const focused = focusedSector ?? null;
+                  const isMuted = Boolean(focused && focused !== sector);
+                  return (
+                    <Line
+                      key={sector}
+                      type="monotone"
+                      dataKey={sector}
+                      name={sector}
+                      stroke={SECTOR_CHART_COLORS[sector]}
+                      strokeWidth={focused === sector ? 2.7 : 1.7}
+                      strokeOpacity={isMuted ? 0.18 : 1}
+                      dot={false}
+                      connectNulls
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 4,
+                        fill: SECTOR_CHART_COLORS[sector],
+                        stroke: "#FFFFFF",
+                        strokeWidth: 2,
+                      }}
+                      onMouseEnter={() => setFocusedSector(sector)}
+                      onMouseLeave={() => setFocusedSector(null)}
+                    />
+                  );
+                })
+              ) : (
+                <>
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="none"
+                    fill="url(#neiAreaGrad)"
+                    isAnimationActive={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name={mode === "detail" ? selectedSector : "NEI"}
+                    stroke={latestColor}
+                    strokeWidth={2.2}
+                    dot={false}
+                    isAnimationActive={false}
+                    activeDot={{
+                      r: 4,
+                      fill: latestColor,
+                      stroke: "#FFFFFF",
+                      strokeWidth: 2,
+                    }}
+                  />
+                  {latestPoint && (
+                    <ReferenceDot
+                      x={latestPoint.label}
+                      y={latestPoint.value}
+                      r={5}
+                      fill={latestColor}
+                      stroke="#FFFFFF"
+                      strokeWidth={2}
+                      label={{
+                        value: formatValue(latestPoint.value),
+                        position: "right",
+                        fill: "var(--nei-fg)",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </ComposedChart>
+          </ResponsiveContainer>
+
+          {mode === "compare" && (
+            <div className="nei-sector-tabs" role="group" aria-label="Sector focus">
+              {SECTORS.map((sector) => {
+                const isActive = selectedOrFocusedSector === sector;
+                const isMuted = Boolean(focusedSector && focusedSector !== sector);
+                return (
+                  <LegendButton
+                    key={sector}
+                    sector={sector}
+                    active={isActive}
+                    muted={isMuted}
+                    onClick={() =>
+                      setFocusedSector((current) => (current === sector ? null : sector))
+                    }
+                    onMouseEnter={() => setFocusedSector(sector)}
+                    onMouseLeave={() => setFocusedSector(null)}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

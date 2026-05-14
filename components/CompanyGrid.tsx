@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { COMPANIES } from "@/lib/companies";
 
 const LOGO_ASSETS: Record<string, { width: number; height: number }> = {
@@ -62,7 +62,15 @@ function tickerHue(ticker: string): number {
   return h;
 }
 
-function CompanyLogo({ ticker, name }: { ticker: string; name: string }) {
+function CompanyLogo({
+  ticker,
+  name,
+  size = 40,
+}: {
+  ticker: string;
+  name: string;
+  size?: number;
+}) {
   const [failed, setFailed] = useState(false);
   const logo = LOGO_ASSETS[ticker];
   const wideLogo = logo ? logo.width / logo.height > 1.8 : false;
@@ -75,23 +83,23 @@ function CompanyLogo({ ticker, name }: { ticker: string; name: string }) {
     .join("")
     .toUpperCase();
   const h = tickerHue(ticker);
+  const tileStyle: CSSProperties = {
+    width: size,
+    height: size,
+    borderRadius: Math.max(8, Math.round(size * 0.25)),
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "1px solid var(--nei-grid-strong)",
+    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
+    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.72)",
+    overflow: "hidden",
+  };
 
   if (logo && !failed) {
     return (
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          overflow: "hidden",
-          border: "1px solid var(--nei-grid-strong)",
-          background: "#FFFFFF",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
+      <div style={tileStyle}>
         <Image
           src={`/logos/${ticker}.png`}
           alt=""
@@ -99,8 +107,8 @@ function CompanyLogo({ ticker, name }: { ticker: string; name: string }) {
           height={logo.height}
           sizes="40px"
           style={{
-            maxWidth: wideLogo ? 34 : 28,
-            maxHeight: 28,
+            maxWidth: wideLogo ? size * 0.84 : size * 0.7,
+            maxHeight: size * 0.7,
             width: "auto",
             height: "auto",
             objectFit: "contain",
@@ -113,25 +121,26 @@ function CompanyLogo({ ticker, name }: { ticker: string; name: string }) {
   }
 
   return (
-    <div
-      style={{
-        width: 40,
-        height: 40,
-        borderRadius: 10,
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: `oklch(0.94 0.025 ${h})`,
-        color: `oklch(0.28 0.07 ${h})`,
-        fontFamily: "var(--font-sora), var(--font-inter), system-ui",
-        fontWeight: 600,
-        fontSize: 13,
-        letterSpacing: "-0.01em",
-        lineHeight: 1,
-      }}
-    >
-      {initials}
+    <div style={tileStyle}>
+      <span
+        style={{
+          width: size * 0.68,
+          height: size * 0.68,
+          borderRadius: Math.max(6, Math.round(size * 0.18)),
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: `oklch(0.94 0.025 ${h})`,
+          color: `oklch(0.28 0.07 ${h})`,
+          fontFamily: "var(--font-sora), var(--font-inter), system-ui",
+          fontWeight: 600,
+          fontSize: Math.max(10, Math.round(size * 0.31)),
+          letterSpacing: "-0.01em",
+          lineHeight: 1,
+        }}
+      >
+        {initials}
+      </span>
     </div>
   );
 }
@@ -314,7 +323,25 @@ function TableView({ stocks }: { stocks: StockData[] }) {
                       fontSize: 13,
                     }}
                   >
-                    {r.name}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        minWidth: 0,
+                      }}
+                    >
+                      <CompanyLogo ticker={r.ticker} name={r.name} size={30} />
+                      <span
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {r.name}
+                      </span>
+                    </div>
                   </td>
                   <td
                     style={{
