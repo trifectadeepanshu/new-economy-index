@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { COMPANIES } from "@/lib/companies";
-import { fetchAllQuotes } from "@/lib/upstox";
+import { fetchAllQuotes } from "@/lib/yahoo-finance";
 import {
   ensureSchema,
   getEarliestPricesPerTicker,
@@ -35,13 +35,11 @@ async function runSnapshot() {
 
   let quotes;
   try {
-    quotes = await fetchAllQuotes(
-      active.map((c) => ({ ticker: c.ticker, instrumentKey: c.instrumentKey }))
-    );
+    quotes = await fetchAllQuotes(active.map((c) => c.yfTicker));
   } catch (err) {
-    console.error("[/api/cron/snapshot] Upstox fetch failed:", err);
+    console.error("[/api/cron/snapshot] Yahoo Finance fetch failed:", err);
     return NextResponse.json(
-      { error: "Failed to fetch quotes from Upstox", detail: String(err) },
+      { error: "Failed to fetch quotes", detail: String(err) },
       { status: 502 }
     );
   }
