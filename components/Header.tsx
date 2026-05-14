@@ -1,6 +1,6 @@
+import Image from "next/image";
 import { MarketBadge } from "./MarketBadge";
 import { INDEX_NAME, INDEX_SHORT } from "@/lib/companies";
-import { TrifectaMark } from "@/components/TrifectaMark";
 
 export function Header() {
   return (
@@ -8,11 +8,15 @@ export function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-8 xl:px-[52px]">
         <div className="flex h-16 items-center justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <TrifectaMark className="h-8 w-8 shrink-0" title="Trifecta Capital" />
-            <div className="flex min-w-0 flex-col gap-1 leading-none">
-              <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#E24929]">
-                Trifecta Capital
-              </span>
+            <Image
+              src="/trifecta-capital-logo.png"
+              alt="Trifecta Capital"
+              width={166}
+              height={48}
+              priority
+              className="h-7 w-auto shrink-0 sm:h-8 lg:h-9"
+            />
+            <div className="hidden min-w-0 border-l border-white/10 pl-3 leading-none sm:block">
               <span className="tr-heading truncate text-sm font-semibold text-white">
                 {INDEX_NAME}
               </span>
