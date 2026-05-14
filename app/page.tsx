@@ -10,7 +10,7 @@ export default function Home() {
 
       <footer className="border-t border-white/[0.08] py-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-center font-sans text-[11px] text-white/35 sm:flex-row sm:px-8 sm:text-left xl:px-[52px]">
-          <span>Data via Upstox &middot; Real-time during market hours</span>
+          <span>Data via NSE &middot; Real-time during market hours</span>
           <span className="inline-flex items-center gap-2">
             <Image
               src="/trifecta-capital-logo.png"

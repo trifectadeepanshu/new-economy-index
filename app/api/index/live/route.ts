@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { COMPANIES } from "@/lib/companies";
-import { fetchAllQuotes } from "@/lib/upstox";
+import { fetchAllQuotes as fetchYahooQuotes } from "@/lib/yahoo-finance";
 import {
   getEarliestPricesPerTicker,
   getLatestIndexSnapshot,
@@ -18,10 +18,10 @@ export async function GET() {
   const today = getISTDate();
   const active = COMPANIES.filter((c) => c.listedDate <= today);
 
-  // Try live Upstox data first
+  // Try live Yahoo Finance data first
   try {
     const [quotes, basePrices] = await Promise.all([
-      fetchAllQuotes(active.map((c) => ({ ticker: c.ticker, instrumentKey: c.instrumentKey }))),
+      fetchYahooQuotes(active.map((c) => c.yfTicker)),
       getEarliestPricesPerTicker(),
     ]);
 
@@ -46,7 +46,12 @@ export async function GET() {
 
     const stocks = allStocks.filter((s) => s.ratio !== null);
     const ratios = stocks.map((s) => s.ratio!);
-    const avgRatio = ratios.length > 0 ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 1;
+
+    if (ratios.length === 0) {
+      throw new Error("Yahoo Finance returned no prices");
+    }
+
+    const avgRatio = ratios.reduce((a, b) => a + b, 0) / ratios.length;
 
     const dailyChanges = allStocks.filter((s) => s.changePct !== null).map((s) => s.changePct!);
     const indexChangePct =
@@ -63,8 +68,7 @@ export async function GET() {
       stocks: allStocks,
     });
   } catch (err) {
-    // Upstox unavailable (no token, expired, network) — fall back to last DB snapshot
-    console.warn("[/api/index/live] Upstox unavailable, serving last snapshot:", err);
+    console.warn("[/api/index/live] Live quotes unavailable, serving last snapshot:", err);
   }
 
   // Fallback: serve last known data from DB
