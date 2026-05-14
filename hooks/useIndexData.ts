@@ -12,7 +12,6 @@ export interface StockData {
   sector: string;
   price: number | null;
   changePct: number | null;
-  marketCap: number | null;
   basePrice: number | null;
   ratio: number | null;
 }
@@ -40,7 +39,7 @@ export function useIndexData() {
     lastFetchRef.current = Date.now();
 
     try {
-      const res = await fetch("/api/index/live", { cache: "no-store" });
+      const res = await fetch("/api/index/live");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const serverTimestamp =

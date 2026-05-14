@@ -6,7 +6,6 @@ const yahooFinance = new YahooFinanceClass({ suppressNotices: ["yahooSurvey"] })
 interface YahooQuote {
   regularMarketPrice?: number | null;
   regularMarketPreviousClose?: number | null;
-  marketCap?: number | null;
   currency?: string | null;
 }
 
@@ -38,7 +37,6 @@ export interface QuoteResult {
   price: number | null;
   previousClose: number | null;
   changePct: number | null;
-  marketCap: number | null;
   currency: string;
 }
 
@@ -63,11 +61,17 @@ export async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
       price,
       previousClose: prev,
       changePct,
-      marketCap: q?.marketCap ?? null,
       currency: q?.currency ?? "INR",
     };
   } catch {
-    return { ticker: yfTicker.replace(".NS", ""), yfTicker, price: null, previousClose: null, changePct: null, marketCap: null, currency: "INR" };
+    return {
+      ticker: yfTicker.replace(".NS", ""),
+      yfTicker,
+      price: null,
+      previousClose: null,
+      changePct: null,
+      currency: "INR",
+    };
   }
 }
 
@@ -80,7 +84,16 @@ export async function fetchAllQuotes(yfTickers: string[]): Promise<QuoteResult[]
     const settled = await Promise.allSettled(slice.map(fetchQuote));
     for (const r of settled) {
       if (r.status === "fulfilled") results.push(r.value);
-      else results.push({ ticker: "", yfTicker: "", price: null, previousClose: null, changePct: null, marketCap: null, currency: "INR" });
+      else {
+        results.push({
+          ticker: "",
+          yfTicker: "",
+          price: null,
+          previousClose: null,
+          changePct: null,
+          currency: "INR",
+        });
+      }
     }
   }
   return results;

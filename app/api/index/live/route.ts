@@ -10,7 +10,10 @@ import {
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
+const LIVE_CACHE_HEADERS = {
+  "Cache-Control": "s-maxage=60, stale-while-revalidate=300",
+};
 
 export async function GET() {
   await ensureSchema();
@@ -66,7 +69,7 @@ export async function GET() {
       lastUpdated: new Date().toISOString(),
       isStale: false,
       stocks: allStocks,
-    });
+    }, { headers: LIVE_CACHE_HEADERS });
   } catch (err) {
     console.warn("[/api/index/live] Live quotes unavailable, serving last snapshot:", err);
   }
@@ -108,7 +111,7 @@ export async function GET() {
       lastUpdated,
       isStale: true,
       stocks: allStocks,
-    });
+    }, { headers: LIVE_CACHE_HEADERS });
   } catch (err) {
     console.error("[/api/index/live] DB fallback also failed:", err);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });

@@ -1,7 +1,7 @@
 /**
  * Local backfill script — run with: npx tsx scripts/backfill.ts
  * Reads DATABASE_URL from .env.local and populates stock_snapshots + index_snapshots
- * from Jan 2022 to today.
+ * from the index inception date to today.
  */
 
 import { readFileSync } from "fs";

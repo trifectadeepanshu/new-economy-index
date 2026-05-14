@@ -8,7 +8,7 @@ import { SectorBreakdown } from "@/components/SectorBreakdown";
 import { INDEX_BASE_VALUE } from "@/lib/companies";
 
 export function IndexDashboard() {
-  const { data, isLoading } = useIndexData();
+  const { data, isLoading, error } = useIndexData();
 
   const sinceInceptionPct =
     data?.indexValue != null
@@ -20,6 +20,12 @@ export function IndexDashboard() {
       {data?.isStale && (
         <div className="mt-4 border border-white/10 bg-[#0f1e41]/80 px-4 py-2 font-sans text-xs text-white/45">
           Showing last market close · Live prices unavailable
+        </div>
+      )}
+
+      {error && !data && (
+        <div className="mt-4 border border-red-400/25 bg-red-500/10 px-4 py-2 font-sans text-xs text-red-200">
+          Live index data is temporarily unavailable.
         </div>
       )}
 

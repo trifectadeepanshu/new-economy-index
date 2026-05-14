@@ -11,17 +11,20 @@ import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
 
+function isAuthorized(req: NextRequest) {
+  const secret = process.env.CRON_SECRET;
+  return Boolean(secret && req.headers.get("authorization") === `Bearer ${secret}`);
+}
+
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return runSnapshot();
 }
 
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return runSnapshot();
