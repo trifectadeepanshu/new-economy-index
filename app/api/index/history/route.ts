@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getIndexHistory } from "@/lib/db";
+import { getIndexHistory, getSectorIndexHistory } from "@/lib/db";
 import { format, parseISO, subDays, subMonths, subYears } from "date-fns";
 import { getISTDate } from "@/lib/market-hours";
 
@@ -26,10 +26,18 @@ export async function GET(req: NextRequest) {
 
   const fromDate = getFromDate(range);
   const toDate = getISTDate();
+  const includeSectors = req.nextUrl.searchParams.get("includeSectors") === "1";
 
   try {
-    const data = await getIndexHistory(fromDate, toDate);
-    return NextResponse.json({ range, data }, {
+    const [data, sectorData] = await Promise.all([
+      getIndexHistory(fromDate, toDate),
+      includeSectors ? getSectorIndexHistory(fromDate, toDate) : Promise.resolve([]),
+    ]);
+    return NextResponse.json({
+      range,
+      data,
+      ...(includeSectors ? { sectorData } : {}),
+    }, {
       headers: { "Cache-Control": "s-maxage=3600, stale-while-revalidate" },
     });
   } catch (err) {

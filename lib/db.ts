@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { COMPANIES, INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
 
 function getSql() {
   const url = process.env.DATABASE_URL;
@@ -89,6 +90,81 @@ export async function getIndexHistory(
   return rows.map((r) => ({ date: r.date, value: Number(r.value) }));
 }
 
+export interface SectorIndexHistoryPoint {
+  date: string;
+  sector: Sector;
+  value: number;
+  numCompanies: number;
+}
+
+export async function getSectorIndexHistory(
+  fromDate: string,
+  toDate: string
+): Promise<SectorIndexHistoryPoint[]> {
+  const sql = getSql();
+  const [rows, basePrices] = await Promise.all([
+    sql`
+      SELECT date::text, ticker, close_price::float
+      FROM stock_snapshots
+      WHERE date >= ${fromDate} AND date <= ${toDate}
+      ORDER BY date ASC
+    `,
+    getEarliestPricesPerTicker(),
+  ]);
+
+  const pricesByDate = new Map<string, Map<string, number>>();
+  for (const r of rows) {
+    const date = r.date as string;
+    const ticker = r.ticker as string;
+    const price = Number(r.close_price);
+    const prices = pricesByDate.get(date) ?? new Map<string, number>();
+    prices.set(ticker, price);
+    pricesByDate.set(date, prices);
+  }
+
+  const companiesBySector = new Map(
+    SECTORS.map((sector) => [
+      sector,
+      COMPANIES.filter((company) => company.sector === sector),
+    ])
+  );
+
+  const points: SectorIndexHistoryPoint[] = [];
+
+  for (const [date, prices] of pricesByDate) {
+    for (const sector of SECTORS) {
+      const sectorCompanies = companiesBySector.get(sector) ?? [];
+      const eligible = sectorCompanies.filter(
+        (company) =>
+          company.listedDate <= date &&
+          basePrices[company.ticker] !== undefined &&
+          prices.has(company.ticker)
+      );
+
+      if (eligible.length === 0) continue;
+
+      const avgRatio =
+        eligible.reduce((sum, company) => {
+          const basePrice = basePrices[company.ticker];
+          const closePrice = prices.get(company.ticker);
+          if (basePrice === undefined || closePrice === undefined || basePrice === 0) {
+            return sum;
+          }
+          return sum + closePrice / basePrice;
+        }, 0) / eligible.length;
+
+      points.push({
+        date,
+        sector,
+        value: Math.round(INDEX_BASE_VALUE * avgRatio * 10000) / 10000,
+        numCompanies: eligible.length,
+      });
+    }
+  }
+
+  return points;
+}
+
 export async function getLatestIndexSnapshot(): Promise<{
   date: string;
   value: number;
@@ -150,6 +226,24 @@ export async function upsertStockSnapshotsBatch(
             change_pct = EXCLUDED.change_pct
     `;
   }
+}
+
+// Get the most recent stored close price + changePct per ticker
+export async function getLatestStockPrices(): Promise<Record<string, { price: number; changePct: number | null }>> {
+  const sql = getSql();
+  const rows = await sql`
+    SELECT DISTINCT ON (ticker) ticker, close_price::float, change_pct::float
+    FROM stock_snapshots
+    ORDER BY ticker, date DESC
+  `;
+  const map: Record<string, { price: number; changePct: number | null }> = {};
+  for (const r of rows) {
+    map[r.ticker as string] = {
+      price: Number(r.close_price),
+      changePct: r.change_pct != null ? Number(r.change_pct) : null,
+    };
+  }
+  return map;
 }
 
 // Get the earliest stored close price for each ticker (used as base prices)

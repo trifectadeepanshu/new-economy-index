@@ -1,19 +1,25 @@
 import { NextResponse } from "next/server";
 import { COMPANIES } from "@/lib/companies";
 import { fetchAllQuotes } from "@/lib/upstox";
-import { getEarliestPricesPerTicker, ensureSchema } from "@/lib/db";
+import {
+  getEarliestPricesPerTicker,
+  getLatestIndexSnapshot,
+  getLatestStockPrices,
+  ensureSchema,
+} from "@/lib/db";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
+  await ensureSchema();
+
+  const today = getISTDate();
+  const active = COMPANIES.filter((c) => c.listedDate <= today);
+
+  // Try live Upstox data first
   try {
-    await ensureSchema();
-
-    const today = getISTDate();
-    const active = COMPANIES.filter((c) => c.listedDate <= today);
-
     const [quotes, basePrices] = await Promise.all([
       fetchAllQuotes(active.map((c) => ({ ticker: c.ticker, instrumentKey: c.instrumentKey }))),
       getEarliestPricesPerTicker(),
@@ -41,7 +47,6 @@ export async function GET() {
     const stocks = allStocks.filter((s) => s.ratio !== null);
     const ratios = stocks.map((s) => s.ratio!);
     const avgRatio = ratios.length > 0 ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 1;
-    const indexValue = 1000 * avgRatio;
 
     const dailyChanges = allStocks.filter((s) => s.changePct !== null).map((s) => s.changePct!);
     const indexChangePct =
@@ -50,18 +55,58 @@ export async function GET() {
         : null;
 
     return NextResponse.json({
-      indexValue: Math.round(indexValue * 100) / 100,
+      indexValue: Math.round(1000 * avgRatio * 100) / 100,
       indexChangePct: indexChangePct !== null ? Math.round(indexChangePct * 100) / 100 : null,
       numCompanies: allStocks.length,
       lastUpdated: new Date().toISOString(),
+      isStale: false,
       stocks: allStocks,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (message === "UPSTOX_TOKEN_EXPIRED") {
-      return NextResponse.json({ error: "UPSTOX_TOKEN_EXPIRED" }, { status: 401 });
-    }
-    console.error("[/api/index/live]", err);
-    return NextResponse.json({ error: "Failed to fetch live data" }, { status: 500 });
+    // Upstox unavailable (no token, expired, network) — fall back to last DB snapshot
+    console.warn("[/api/index/live] Upstox unavailable, serving last snapshot:", err);
+  }
+
+  // Fallback: serve last known data from DB
+  try {
+    const [snapshot, latestPrices, basePrices] = await Promise.all([
+      getLatestIndexSnapshot(),
+      getLatestStockPrices(),
+      getEarliestPricesPerTicker(),
+    ]);
+
+    const allStocks = active.map((c) => {
+      const latest = latestPrices[c.ticker];
+      const base = basePrices[c.ticker];
+      const price = latest?.price ?? null;
+      const ratio = price !== null && base !== undefined && base !== 0 ? price / base : null;
+      return {
+        ticker: c.ticker,
+        name: c.name,
+        sector: c.sector,
+        price,
+        previousClose: null,
+        changePct: latest?.changePct ?? null,
+        basePrice: base ?? null,
+        ratio,
+      };
+    });
+
+    // lastUpdated = end of trading on the snapshot date
+    const lastUpdated = snapshot?.date
+      ? new Date(`${snapshot.date}T15:30:00+05:30`).toISOString()
+      : null;
+
+    return NextResponse.json({
+      indexValue: snapshot ? Math.round(snapshot.value * 100) / 100 : null,
+      indexChangePct: snapshot?.changePct ?? null,
+      numCompanies: allStocks.length,
+      lastUpdated,
+      isStale: true,
+      stocks: allStocks,
+    });
+  } catch (err) {
+    console.error("[/api/index/live] DB fallback also failed:", err);
+    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
   }
 }

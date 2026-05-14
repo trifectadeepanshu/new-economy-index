@@ -13,6 +13,8 @@ export interface StockData {
   price: number | null;
   changePct: number | null;
   marketCap: number | null;
+  basePrice: number | null;
+  ratio: number | null;
 }
 
 export interface LiveIndexData {
@@ -20,6 +22,7 @@ export interface LiveIndexData {
   indexChangePct: number | null;
   numCompanies: number;
   lastUpdated: Date;
+  isStale: boolean;
   stocks: StockData[];
 }
 

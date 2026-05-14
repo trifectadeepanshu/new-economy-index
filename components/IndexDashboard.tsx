@@ -8,7 +8,7 @@ import { SectorBreakdown } from "@/components/SectorBreakdown";
 import { INDEX_BASE_VALUE } from "@/lib/companies";
 
 export function IndexDashboard() {
-  const { data, isLoading, error } = useIndexData();
+  const { data, isLoading } = useIndexData();
 
   const sinceInceptionPct =
     data?.indexValue != null
@@ -17,9 +17,9 @@ export function IndexDashboard() {
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-      {error && (
-        <div className="mt-4 rounded-lg border border-red-800 bg-red-900/20 px-4 py-3 text-sm text-red-300">
-          Failed to load live data: {error}
+      {data?.isStale && (
+        <div className="mt-4 rounded-lg border border-zinc-700 bg-zinc-900/60 px-4 py-2 text-xs text-zinc-500">
+          Showing last market close · Live prices unavailable
         </div>
       )}
 
@@ -34,7 +34,10 @@ export function IndexDashboard() {
 
       <div className="grid grid-cols-1 gap-6 pb-12 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
         <div className="min-w-0 space-y-6">
-          <IndexChart liveValue={data?.indexValue ?? null} />
+          <IndexChart
+            liveValue={data?.indexValue ?? null}
+            stocks={data?.stocks ?? []}
+          />
           <CompanyGrid stocks={data?.stocks ?? []} isLoading={isLoading} />
         </div>
         <div className="min-w-0 space-y-6">
