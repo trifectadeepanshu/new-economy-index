@@ -29,6 +29,31 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_stock_ticker_date
       ON stock_snapshots(ticker, date DESC)
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS settings (
+      key        VARCHAR(100) PRIMARY KEY,
+      value      TEXT NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+}
+
+// ── Settings / token storage ─────────────────────────────────────────────────
+
+export async function getUpstoxToken(): Promise<string | null> {
+  const sql = getSql();
+  const rows = await sql`SELECT value FROM settings WHERE key = 'upstox_access_token'`;
+  return rows.length ? (rows[0].value as string) : null;
+}
+
+export async function setUpstoxToken(token: string): Promise<void> {
+  const sql = getSql();
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES ('upstox_access_token', ${token}, NOW())
+    ON CONFLICT (key) DO UPDATE
+      SET value = EXCLUDED.value, updated_at = NOW()
+  `;
 }
 
 // ── Index snapshots ─────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { COMPANIES } from "@/lib/companies";
-import { fetchAllQuotes } from "@/lib/yahoo-finance";
+import { fetchAllQuotes } from "@/lib/upstox";
 import {
   ensureSchema,
   getEarliestPricesPerTicker,
@@ -12,7 +12,6 @@ import { getISTDate } from "@/lib/market-hours";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  // Vercel Cron sends Authorization header with CRON_SECRET
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,12 +32,12 @@ async function runSnapshot() {
 
   const today = getISTDate();
   const active = COMPANIES.filter((c) => c.listedDate <= today);
-  const yfTickers = active.map((c) => c.yfTicker);
 
-  const quotes = await fetchAllQuotes(yfTickers);
+  const quotes = await fetchAllQuotes(
+    active.map((c) => ({ ticker: c.ticker, instrumentKey: c.instrumentKey }))
+  );
   const quoteMap = Object.fromEntries(quotes.map((q) => [q.ticker, q]));
 
-  // Persist individual stock closes
   const stockRows = active
     .map((c) => {
       const q = quoteMap[c.ticker];
@@ -49,7 +48,6 @@ async function runSnapshot() {
 
   await upsertStockSnapshotsBatch(stockRows);
 
-  // Recalculate index
   const basePrices = await getEarliestPricesPerTicker();
   const currentPrices = Object.fromEntries(stockRows.map((r) => [r.ticker, r.closePrice]));
 

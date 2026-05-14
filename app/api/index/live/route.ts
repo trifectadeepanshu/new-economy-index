@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { COMPANIES } from "@/lib/companies";
-import { fetchAllQuotes } from "@/lib/yahoo-finance";
+import { fetchAllQuotes } from "@/lib/upstox";
 import { getEarliestPricesPerTicker, ensureSchema } from "@/lib/db";
 import { getISTDate } from "@/lib/market-hours";
 
@@ -12,21 +12,15 @@ export async function GET() {
     await ensureSchema();
 
     const today = getISTDate();
-
-    // Only include companies that have already listed
     const active = COMPANIES.filter((c) => c.listedDate <= today);
-    const yfTickers = active.map((c) => c.yfTicker);
 
     const [quotes, basePrices] = await Promise.all([
-      fetchAllQuotes(yfTickers),
+      fetchAllQuotes(active.map((c) => ({ ticker: c.ticker, instrumentKey: c.instrumentKey }))),
       getEarliestPricesPerTicker(),
     ]);
 
-    const quoteMap = Object.fromEntries(
-      quotes.map((q) => [q.ticker, q])
-    );
+    const quoteMap = Object.fromEntries(quotes.map((q) => [q.ticker, q]));
 
-    // Build per-stock data — always return price/changePct even if no base price yet
     const allStocks = active.map((c) => {
       const q = quoteMap[c.ticker];
       const base = basePrices[c.ticker];
@@ -39,27 +33,21 @@ export async function GET() {
         price,
         previousClose: q?.previousClose ?? null,
         changePct: q?.changePct ?? null,
-        marketCap: q?.marketCap ?? null,
         basePrice: base ?? null,
         ratio,
       };
     });
 
-    // Only stocks with a base price contribute to the index value
     const stocks = allStocks.filter((s) => s.ratio !== null);
-
-    // Equal-weighted index value
     const ratios = stocks.map((s) => s.ratio!);
-    const avgRatio = ratios.length > 0
-      ? ratios.reduce((a, b) => a + b, 0) / ratios.length
-      : 1;
+    const avgRatio = ratios.length > 0 ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 1;
     const indexValue = 1000 * avgRatio;
 
-    // Index 1-day change = average of all stock 1-day changes
     const dailyChanges = allStocks.filter((s) => s.changePct !== null).map((s) => s.changePct!);
-    const indexChangePct = dailyChanges.length > 0
-      ? dailyChanges.reduce((a, b) => a + b, 0) / dailyChanges.length
-      : null;
+    const indexChangePct =
+      dailyChanges.length > 0
+        ? dailyChanges.reduce((a, b) => a + b, 0) / dailyChanges.length
+        : null;
 
     return NextResponse.json({
       indexValue: Math.round(indexValue * 100) / 100,
@@ -69,6 +57,10 @@ export async function GET() {
       stocks: allStocks,
     });
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message === "UPSTOX_TOKEN_EXPIRED") {
+      return NextResponse.json({ error: "UPSTOX_TOKEN_EXPIRED" }, { status: 401 });
+    }
     console.error("[/api/index/live]", err);
     return NextResponse.json({ error: "Failed to fetch live data" }, { status: 500 });
   }
