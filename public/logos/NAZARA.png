@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/N-CyrtXiHt.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&display=swap" rel="stylesheet">
+
+
+    <link 
+    rel="preload" 
+    as="image" 
+    href="/assets/Nazara_ToSend-B4SOqyU7.jpg" 
+    type="image/jpeg" 
+  />
+    <title>Nazara</title>
+
+  <style>
+ 
+  </style>
+    <script type="module" crossorigin src="/assets/index-CuW3C9Fi.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DfZDVX4o.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    
+  </body>
+
+</html>
+
+
+<!-- actually i have to build a pretty hero section a a website nazara ni which the concept is on the hero section we will have a logo reveal 
+ N the n arrow followed by 3 stars and on scroll there is a pretty smooth scroll effect the star will expand and reveal the main section so what would it require -->

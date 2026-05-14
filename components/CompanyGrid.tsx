@@ -3,62 +3,17 @@
 import { useState } from "react";
 import { SECTORS, SECTOR_COLORS, type Sector } from "@/lib/companies";
 
-// Clearbit logo domains keyed by NSE ticker
-const LOGO_DOMAINS: Record<string, string> = {
-  ETERNAL:    "zomato.com",
-  SWIGGY:     "swiggy.com",
-  POLICYBZR:  "policybazaar.com",
-  MEESHO:     "meesho.com",
-  NYKAA:      "nykaa.com",
-  URBANCO:    "urbancompany.com",
-  FIRSTCRY:   "firstcry.com",
-  TBOTEK:     "tbo.com",
-  PWL:        "pw.live",
-  INDIGOPNTS: "indigopaints.com",
-  GOCOLORS:   "gocolors.com",
-  SULA:       "sulawines.com",
-  WAKEFIT:    "wakefit.co",
-  BLACKBUCK:  "blackbuck.com",
-  OLAELEC:    "olaelectric.com",
-  BIKAJI:     "bikaji.com",
-  TRACXN:     "tracxn.com",
-  HONASA:     "mamaearth.in",
-  BLUESTONE:  "bluestone.com",
-  IXIGO:      "ixigo.com",
-  YATRA:      "yatra.com",
-  ATHERENERG: "atherenergy.com",
-  GROWW:      "groww.in",
-  PAYTM:      "paytm.com",
-  PINELABS:   "pinelabs.com",
-  ZAGGLE:     "zaggle.in",
-  MOBIKWIK:   "mobikwik.com",
-  KISSHT:     "kissht.com",
-  DELHIVERY:  "delhivery.com",
-  INDIAMART:  "indiamart.com",
-  AWFIS:      "awfis.com",
-  MEDIASSIST: "mediassist.in",
-  IDEAFORGE:  "ideaforge.in",
-  INDIQUBE:   "indiqube.com",
-  UNIECOM:    "unicommerce.com",
-  SHADOWFAX:  "shadowfax.in",
-  GODIGIT:    "godigit.com",
-  AADHARHFC:  "aadharhfc.com",
-  FIVESTAR:   "fivestarfinance.in",
-  HOMEFIRST:  "homfirst.com",
-  INDIASHLTR: "indiashelter.in",
-  NORTHARC:   "northernarc.com",
-  AYE:        "ayefin.com",
-  MAPMYINDIA: "mapmyindia.com",
-  FRACTAL:    "fractal.ai",
-  CAPILLARY:  "capillarytech.com",
-  AMAGI:      "amagi.com",
-  RATEGAIN:   "rategain.com",
-  LENSKART:   "lenskart.com",
-  NAUKRI:     "naukri.com",
-  NAZARA:     "nazara.com",
-  CARTRADE:   "cartrade.com",
-  SEDEMAC:    "sedemac.com",
-};
+// Tickers that have a static logo in /public/logos/
+const HAS_LOGO = new Set([
+  "AMAGI","ATHERENERG","AWFIS","AYE","BIKAJI","BLACKBUCK","BLUESTONE",
+  "CAPILLARY","CARTRADE","DELHIVERY","ETERNAL","FIRSTCRY","FRACTAL",
+  "GOCOLORS","GODIGIT","GROWW","HOMEFIRST","HONASA","IDEAFORGE","INDIAMART",
+  "INDIASHLTR","INDIGOPNTS","INDIQUBE","IXIGO","KISSHT","LENSKART",
+  "MAPMYINDIA","MEDIASSIST","MEESHO","MOBIKWIK","NAUKRI","NAZARA",
+  "NORTHARC","NYKAA","OLAELEC","PAYTM","PINELABS","POLICYBZR","PWL",
+  "RATEGAIN","SHADOWFAX","SULA","SWIGGY","TBOTEK","TRACXN","UNIECOM",
+  "URBANCO","WAKEFIT","YATRA","ZAGGLE",
+]);
 
 interface StockData {
   ticker: string;
@@ -75,17 +30,14 @@ interface Props {
 
 function CompanyLogo({ ticker, name, color }: { ticker: string; name: string; color: string }) {
   const [failed, setFailed] = useState(false);
-  const domain = LOGO_DOMAINS[ticker];
   const initials = name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
-  if (domain && !failed) {
+  if (HAS_LOGO.has(ticker) && !failed) {
     return (
-      <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md overflow-hidden bg-white"
-      >
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md overflow-hidden bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`https://logo.clearbit.com/${domain}?size=64`}
+          src={`/logos/${ticker}.png`}
           alt={name}
           width={36}
           height={36}
