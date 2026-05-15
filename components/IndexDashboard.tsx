@@ -520,8 +520,11 @@ export function IndexDashboard() {
               </p>
             </div>
 
-            {/* Right: index level — open right-aligned layout */}
-            <div style={{ textAlign: "right" }}>
+            {/* Right: index level card */}
+            <div
+              className="nei-card"
+              style={{ padding: "28px 28px 24px", overflow: "hidden", textAlign: "right" }}
+            >
               {data?.isStale && (
                 <div
                   style={{
