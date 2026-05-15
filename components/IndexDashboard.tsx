@@ -424,7 +424,7 @@ function HeroNav({ compact }: { compact: boolean }) {
   );
 }
 
-function TickerDrift({ compact, stocks }: { compact: boolean; stocks: StockData[] }) {
+function TickerDrift({ stocks }: { stocks: StockData[] }) {
   const items = useMemo(() => {
     const rows = stocks.length
       ? stocks
@@ -448,7 +448,7 @@ function TickerDrift({ compact, stocks }: { compact: boolean; stocks: StockData[
 
   return (
     <div
-      className={`nei-ticker-drift${compact ? " is-hidden" : ""}`}
+      className="nei-ticker-drift"
       aria-label="Constituent ticker tape"
     >
       <div className="nei-ticker-track">
@@ -586,8 +586,10 @@ export function IndexDashboard() {
         minHeight: "100vh",
         color: "var(--nei-fg)",
         fontFamily: "var(--font-inter), system-ui, sans-serif",
+        paddingTop: 40,
       }}
     >
+      <TickerDrift stocks={stocks} />
       <section
         data-screen-label="01 Hero"
         style={{
@@ -791,7 +793,6 @@ export function IndexDashboard() {
 
           </div>
         </div>
-        <TickerDrift compact={compactChrome} stocks={stocks} />
       </section>
 
       <ShoulderDivider from="#172C54" to="var(--nei-bg)" height={64} />
