@@ -61,12 +61,16 @@ export async function GET() {
         ? dailyChanges.reduce((a, b) => a + b, 0) / dailyChanges.length
         : null;
 
+    const marketCaps = quotes.map((q) => q.marketCap).filter((v): v is number => v !== null && v > 0);
+    const totalMarketCap = marketCaps.length > 0 ? marketCaps.reduce((a, b) => a + b, 0) : null;
+
     return NextResponse.json({
       indexValue: Math.round(1000 * avgRatio * 100) / 100,
       indexChangePct: indexChangePct !== null ? Math.round(indexChangePct * 100) / 100 : null,
       numCompanies: allStocks.length,
       lastUpdated: new Date().toISOString(),
       isStale: false,
+      totalMarketCap,
       stocks: allStocks,
     }, { headers: LIVE_CACHE_HEADERS });
   } catch (err) {

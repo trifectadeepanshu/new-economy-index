@@ -22,6 +22,7 @@ export interface LiveIndexData {
   numCompanies: number;
   lastUpdated: Date;
   isStale: boolean;
+  totalMarketCap: number | null;
   stocks: StockData[];
 }
 

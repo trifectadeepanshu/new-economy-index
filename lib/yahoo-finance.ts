@@ -6,6 +6,7 @@ const yahooFinance = new YahooFinanceClass({ suppressNotices: ["yahooSurvey"] })
 interface YahooQuote {
   regularMarketPrice?: number | null;
   regularMarketPreviousClose?: number | null;
+  marketCap?: number | null;
   currency?: string | null;
 }
 
@@ -27,6 +28,7 @@ export interface QuoteResult {
   price: number | null;
   previousClose: number | null;
   changePct: number | null;
+  marketCap: number | null;
   currency: string;
 }
 
@@ -45,6 +47,7 @@ async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
       price,
       previousClose: prev,
       changePct,
+      marketCap: q?.marketCap ?? null,
       currency: q?.currency ?? "INR",
     };
   } catch {
@@ -54,6 +57,7 @@ async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
       price: null,
       previousClose: null,
       changePct: null,
+      marketCap: null,
       currency: "INR",
     };
   }
@@ -75,6 +79,7 @@ export async function fetchAllQuotes(yfTickers: string[]): Promise<QuoteResult[]
           price: null,
           previousClose: null,
           changePct: null,
+          marketCap: null,
           currency: "INR",
         });
       }

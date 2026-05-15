@@ -334,12 +334,29 @@ html.dark {
     box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 24px 60px rgba(7,11,22,0.35);
   }
 
+  .nei-mktcap-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 14px 0 14px;
+    border-top: 1px solid rgba(232,235,240,0.10);
+    border-bottom: 1px solid rgba(232,235,240,0.06);
+    margin-bottom: 16px;
+  }
+
+  .nei-mktcap-value {
+    font-size: 22px;
+    font-weight: 500;
+    color: #A9C0FF;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
   .nei-hero-card-stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
-    padding-top: 18px;
-    border-top: 1px solid rgba(232,235,240,0.10);
   }
 
   .nei-hero-stat-label {

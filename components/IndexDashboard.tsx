@@ -35,6 +35,13 @@ function fmtPct(n: number): string {
   return (n >= 0 ? "+" : "") + n.toFixed(2) + "%";
 }
 
+function fmtMarketCap(n: number): string {
+  const lCr = n / 1e12; // 1 lakh crore = 10^12 INR
+  if (lCr >= 0.1) return `₹${lCr.toFixed(1)} L Cr`;
+  const cr = n / 1e7;
+  return `₹${Math.round(cr).toLocaleString("en-IN")} Cr`;
+}
+
 const inceptionLabel = new Date(`${INDEX_BASE_DATE}T00:00:00+05:30`).toLocaleString(
   "en-IN",
   { month: "short", year: "numeric", timeZone: "Asia/Kolkata" }
@@ -590,6 +597,7 @@ export function IndexDashboard() {
   const dayChange = changePct ?? 0;
   const numCompanies = data?.numCompanies ?? COMPANIES.length;
   const lastUpdated = data?.lastUpdated ?? null;
+  const totalMarketCap = data?.totalMarketCap ?? null;
 
   const sinceInception =
     indexValue !== null
@@ -848,6 +856,13 @@ export function IndexDashboard() {
                       ) : (
                         <Skeleton h={82} r={6} />
                       )}
+                    </div>
+
+                    <div className="nei-mktcap-row">
+                      <span className="nei-hero-stat-label">New Economy · Total Market Cap</span>
+                      <span className="nei-mono nei-mktcap-value">
+                        {totalMarketCap !== null ? fmtMarketCap(totalMarketCap) : "—"}
+                      </span>
                     </div>
 
                     <div className="nei-hero-card-stats">
