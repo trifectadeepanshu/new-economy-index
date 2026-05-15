@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -222,66 +221,11 @@ function SectorComposition({
 
 // ─── Reference-frame helpers ──────────────────────────────────────────────────
 
-function useMouseGlow<T extends HTMLElement>() {
-  const ref = useRef<T | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    let frame = 0;
-    let targetX = 50;
-    let targetY = 42;
-    let currentX = 50;
-    let currentY = 42;
-
-    const tick = () => {
-      currentX += (targetX - currentX) * 0.12;
-      currentY += (targetY - currentY) * 0.12;
-      el.style.setProperty("--mx", `${currentX.toFixed(2)}%`);
-      el.style.setProperty("--my", `${currentY.toFixed(2)}%`);
-
-      if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
-        frame = window.requestAnimationFrame(tick);
-      } else {
-        frame = 0;
-      }
-    };
-
-    const handleMove = (event: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      targetX = ((event.clientX - rect.left) / rect.width) * 100;
-      targetY = ((event.clientY - rect.top) / rect.height) * 100;
-      if (!frame) frame = window.requestAnimationFrame(tick);
-    };
-
-    const handleLeave = () => {
-      targetX = 50;
-      targetY = 42;
-      if (!frame) frame = window.requestAnimationFrame(tick);
-    };
-
-    el.style.setProperty("--mx", "50%");
-    el.style.setProperty("--my", "42%");
-    el.addEventListener("mousemove", handleMove);
-    el.addEventListener("mouseleave", handleLeave);
-
-    return () => {
-      el.removeEventListener("mousemove", handleMove);
-      el.removeEventListener("mouseleave", handleLeave);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  return ref;
-}
-
 function KineticBackdrop() {
   return (
     <div aria-hidden="true" className="nei-kinetic-backdrop">
       <div className="nei-kinetic-sheen" />
       <div className="nei-kinetic-field" />
-      <div className="nei-kinetic-glow" />
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
@@ -460,22 +404,6 @@ function HeroNav({ compact }: { compact: boolean }) {
             className="nei-brand-logo"
           />
         </Link>
-        <span
-          style={{
-            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-            fontSize: 10,
-            padding: "3px 8px",
-            borderRadius: 5,
-            background: "rgba(122,149,242,0.14)",
-            color: "#A9C0FF",
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            fontWeight: 600,
-            border: "1px solid rgba(122,149,242,0.28)",
-          }}
-        >
-          NEI
-        </span>
       </div>
       <nav className="nei-v2-links" aria-label="Primary navigation">
         {[
@@ -557,7 +485,6 @@ export function IndexDashboard() {
   const [compactChrome, setCompactChrome] = useState(() =>
     typeof window === "undefined" ? false : window.scrollY > 36
   );
-  const heroRef = useMouseGlow<HTMLElement>();
   const open = isMarketOpen();
 
   useEffect(() => {
@@ -662,7 +589,6 @@ export function IndexDashboard() {
       }}
     >
       <section
-        ref={heroRef}
         data-screen-label="01 Hero"
         style={{
           ...heroStyle,
@@ -674,16 +600,7 @@ export function IndexDashboard() {
         }}
       >
         <KineticBackdrop />
-        <TickFrame
-          className="nei-hero-frame"
-          inset={24}
-          tone="paper"
-          lineLen={90}
-          corner={22}
-          opacity={0.7}
-          padded={false}
-          style={{ position: "relative", zIndex: 3, minHeight: "94dvh" }}
-        >
+        <div style={{ position: "relative", zIndex: 3, minHeight: "94dvh" }}>
           <HeroNav compact={compactChrome} />
 
           <div className="nei-hero-inner">
@@ -701,30 +618,10 @@ export function IndexDashboard() {
                 />
                 Market {open ? "open" : "closed"} · {nowIST}
               </span>
-              <span style={{ opacity: 0.5 }}>—</span>
-              <span>NEI · equal-weighted</span>
-              <span style={{ opacity: 0.5 }}>—</span>
-              <span>{numCompanies} listings · since {inceptionLabel}</span>
             </div>
 
             <div className="nei-hero-grid">
               <div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.22em",
-                    textTransform: "uppercase",
-                    color: "rgba(232,235,240,0.55)",
-                    marginBottom: 20,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                  }}
-                >
-                  <span style={{ display: "inline-block", width: 28, height: 1, background: "rgba(232,235,240,0.45)" }} />
-                  Trifecta Capital presents
-                </div>
                 <h1
                   className="nei-heading"
                   style={{
@@ -769,7 +666,7 @@ export function IndexDashboard() {
               </div>
 
               <div style={{ position: "relative" }}>
-                <TickFrame inset={0} tone="paper" lineLen={48} corner={14} opacity={0.45} padded={false}>
+                <TickFrame inset={0} tone="paper" lineLen={32} corner={10} opacity={0.35} padded={false}>
                   <div className="nei-hero-card">
                     {data?.isStale && (
                       <div
@@ -910,12 +807,8 @@ export function IndexDashboard() {
               </div>
             </div>
 
-            <div className="nei-scroll-cue">
-              <span />
-              Scroll to explore
-            </div>
           </div>
-        </TickFrame>
+        </div>
         <TickerDrift compact={compactChrome} stocks={stocks} />
       </section>
 
@@ -925,11 +818,11 @@ export function IndexDashboard() {
       <section id="performance" className="nei-reference-section">
         <TickFrame
           className="nei-reference-frame"
-          inset={20}
+          inset={32}
           tone="ink"
-          lineLen={72}
-          corner={18}
-          opacity={0.45}
+          lineLen={44}
+          corner={14}
+          opacity={0.35}
           padded={false}
         >
           <div className="nei-reference-inner">
@@ -967,11 +860,11 @@ export function IndexDashboard() {
         />
         <TickFrame
           className="nei-index-frame"
-          inset={24}
+          inset={32}
           tone="paper"
-          lineLen={88}
-          corner={20}
-          opacity={0.46}
+          lineLen={44}
+          corner={14}
+          opacity={0.36}
           padded={false}
         >
           <div className="nei-index-inner">
@@ -1005,11 +898,11 @@ export function IndexDashboard() {
       <section id="sectors" className="nei-reference-section">
         <TickFrame
           className="nei-reference-frame"
-          inset={20}
+          inset={32}
           tone="ink"
-          lineLen={72}
-          corner={18}
-          opacity={0.45}
+          lineLen={44}
+          corner={14}
+          opacity={0.35}
           padded={false}
         >
           <div className="nei-reference-inner">
@@ -1039,11 +932,11 @@ export function IndexDashboard() {
       >
         <TickFrame
           className="nei-method-frame"
-          inset={20}
+          inset={32}
           tone="paper"
-          lineLen={72}
-          corner={18}
-          opacity={0.55}
+          lineLen={44}
+          corner={14}
+          opacity={0.42}
           padded={false}
         >
           <div className="nei-method-inner">
@@ -1114,7 +1007,7 @@ export function IndexDashboard() {
 
       {/* ─── FOOTER ─── */}
       <footer className="nei-footer-v2">
-        <TickFrame inset={20} tone="paper" lineLen={48} corner={14} opacity={0.4} padded={false}>
+        <TickFrame inset={32} tone="paper" lineLen={36} corner={12} opacity={0.3} padded={false}>
           <div className="nei-footer-inner">
             <div className="nei-footer-top">
               <div className="nei-footer-brand">
