@@ -653,6 +653,7 @@ export function IndexDashboard() {
         minHeight: "100vh",
         color: "var(--nei-fg)",
         fontFamily: "var(--font-inter), system-ui, sans-serif",
+        paddingTop: 40,
       }}
     >
       <TickerDrift stocks={stocks} />
