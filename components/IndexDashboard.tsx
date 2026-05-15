@@ -687,30 +687,12 @@ export function IndexDashboard() {
                     <div
                       style={{
                         display: "flex",
-                        justifyContent: "space-between",
+                        justifyContent: "flex-end",
                         alignItems: "flex-start",
                         gap: 12,
                         marginBottom: 12,
                       }}
                     >
-                      <div>
-                        <div
-                          style={{
-                            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-                            fontSize: 11,
-                            letterSpacing: "0.18em",
-                            textTransform: "uppercase",
-                            color: "rgba(232,235,240,0.55)",
-                            fontWeight: 600,
-                            marginBottom: 6,
-                          }}
-                        >
-                          NEI · Index Level
-                        </div>
-                        <div style={{ fontSize: 12, color: "rgba(232,235,240,0.58)" }}>
-                          {open ? "Live" : "15:30 IST · close"} · updated {lastUpdatedLabel}
-                        </div>
-                      </div>
                       {changePct !== null && (
                         <span
                           style={{
