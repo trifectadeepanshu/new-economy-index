@@ -656,7 +656,6 @@ export function IndexDashboard() {
       }}
     >
       <TickerDrift stocks={stocks} />
-      <HeroNav />
       <section
         data-screen-label="01 Hero"
         style={{
@@ -670,7 +669,7 @@ export function IndexDashboard() {
       >
         <KineticBackdrop />
         <div style={{ position: "relative", zIndex: 3, minHeight: "100dvh" }}>
-
+          <HeroNav />
           <div className="nei-hero-inner">
             <div className="nei-hero-grid">
               <div>

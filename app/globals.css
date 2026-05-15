@@ -215,15 +215,14 @@ html.dark {
   }
 
   .nei-v2-nav {
-    position: fixed;
-    top: 40px;
-    left: 0;
-    right: 0;
-    z-index: 190;
+    position: relative;
+    z-index: 5;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 56px;
+    padding: 20px 56px 0;
+    max-width: 1480px;
+    margin: 0 auto;
   }
 
   .nei-brand-lockup {
@@ -283,7 +282,7 @@ html.dark {
   }
 
   .nei-hero-inner {
-    padding: 120px 56px 96px;
+    padding: 32px 56px 96px;
     position: relative;
     z-index: 2;
     max-width: 1480px;
@@ -1161,8 +1160,7 @@ html.dark {
   }
 
   .nei-v2-nav {
-    padding: 10px 20px;
-    top: 40px;
+    padding: 10px 20px 0;
   }
 
   .nei-brand-logo {
@@ -1174,7 +1172,7 @@ html.dark {
   }
 
   .nei-hero-inner {
-    padding: 104px 20px 104px;
+    padding: 24px 20px 104px;
   }
 
   .nei-hero-meta {
