@@ -310,7 +310,8 @@ html.dark {
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: rgba(232,235,240,0.55);
-    margin-bottom: 24px;
+    margin-top: 16px;
+    margin-bottom: 28px;
   }
 
   .nei-hero-card {

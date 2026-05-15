@@ -672,23 +672,24 @@ export function IndexDashboard() {
         <div style={{ position: "relative", zIndex: 3, minHeight: "100dvh" }}>
 
           <div className="nei-hero-inner">
+            <div className="nei-hero-meta">
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: 999,
+                    background: open ? "#5FBE7E" : "rgba(232,235,240,0.45)",
+                    boxShadow: open ? "0 0 0 0 rgba(95,190,126,0.6)" : "none",
+                    animation: open ? "nei-live-pulse 2.2s ease-out infinite" : "none",
+                  }}
+                />
+                Market {open ? "open" : "closed"} · {nowIST}
+              </span>
+            </div>
+
             <div className="nei-hero-grid">
               <div>
-                <div className="nei-hero-meta">
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <span
-                      style={{
-                        width: 7,
-                        height: 7,
-                        borderRadius: 999,
-                        background: open ? "#5FBE7E" : "rgba(232,235,240,0.45)",
-                        boxShadow: open ? "0 0 0 0 rgba(95,190,126,0.6)" : "none",
-                        animation: open ? "nei-live-pulse 2.2s ease-out infinite" : "none",
-                      }}
-                    />
-                    Market {open ? "open" : "closed"} · {nowIST}
-                  </span>
-                </div>
                 <h1
                   className="nei-heading"
                   style={{
