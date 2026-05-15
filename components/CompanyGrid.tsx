@@ -53,6 +53,8 @@ interface StockData {
 interface Props {
   stocks: StockData[];
   isLoading: boolean;
+  view?: "table" | "grid";
+  onViewChange?: (v: "table" | "grid") => void;
 }
 
 // Deterministic hue from ticker string
@@ -598,21 +600,26 @@ function ViewToggle({
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export function CompanyGrid({ stocks, isLoading }: Props) {
-  const [view, setView] = useState<"table" | "grid">("table");
+export function CompanyGrid({ stocks, isLoading, view: externalView, onViewChange }: Props) {
+  const [internalView, setInternalView] = useState<"table" | "grid">("table");
+  const view = externalView ?? internalView;
+  const setView = onViewChange ?? setInternalView;
+  const showToggle = externalView === undefined;
 
   if (isLoading && stocks.length === 0) {
     return (
       <div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginBottom: 16,
-          }}
-        >
-          <ViewToggle value={view} onChange={setView} />
-        </div>
+        {showToggle && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: 16,
+            }}
+          >
+            <ViewToggle value={view} onChange={setView} />
+          </div>
+        )}
         <div
           style={{
             display: "grid",
@@ -638,15 +645,17 @@ export function CompanyGrid({ stocks, isLoading }: Props) {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: 16,
-        }}
-      >
-        <ViewToggle value={view} onChange={setView} />
-      </div>
+      {showToggle && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: 16,
+          }}
+        >
+          <ViewToggle value={view} onChange={setView} />
+        </div>
+      )}
       {view === "table" ? (
         <TableView stocks={stocks} />
       ) : (
