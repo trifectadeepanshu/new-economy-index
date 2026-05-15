@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Image from "next/image";
 import { useIndexData, type StockData } from "@/hooks/useIndexData";
+import { useDarkMode } from "@/hooks/useDarkMode";
 import { IndexChart } from "@/components/IndexChart";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import {
@@ -332,7 +333,7 @@ function Skeleton({ w, h, r = 6 }: { w?: string | number; h: number; r?: number 
         width: w ?? "100%",
         height: h,
         borderRadius: r,
-        background: "rgba(16,24,38,0.07)",
+        background: "var(--nei-grid-strong)",
         animation: "nei-pulse 1.8s ease-in-out infinite",
       }}
     />
@@ -343,6 +344,7 @@ function Skeleton({ w, h, r = 6 }: { w?: string | number; h: number; r?: number 
 
 export function IndexDashboard() {
   const { data, isLoading } = useIndexData();
+  const { isDark, toggle: toggleDark } = useDarkMode();
   const [sparkSeries, setSparkSeries] = useState<number[]>([]);
   const [now, setNow] = useState(() => Date.now());
 
@@ -420,7 +422,7 @@ export function IndexDashboard() {
           position: "sticky",
           top: 0,
           zIndex: 10,
-          background: "rgba(236,238,242,0.88)",
+          background: "color-mix(in oklab, var(--nei-bg) 88%, transparent)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
           borderBottom: "1px solid var(--nei-grid)",
@@ -475,6 +477,35 @@ export function IndexDashboard() {
           >
             Methodology
           </a>
+          <button
+            onClick={toggleDark}
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: "1px solid var(--nei-grid-strong)",
+              background: "transparent",
+              cursor: "pointer",
+              color: "var(--nei-muted)",
+              fontSize: 15,
+              flexShrink: 0,
+              transition: "border-color 100ms, color 100ms",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--nei-accent)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--nei-fg)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--nei-grid-strong)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--nei-muted)";
+            }}
+          >
+            {isDark ? "☀" : "☽"}
+          </button>
           <a
             href="https://trifectacapital.in"
             target="_blank"
@@ -611,8 +642,8 @@ export function IndexDashboard() {
               {data?.isStale && (
                 <div
                   style={{
-                    background: "rgba(180, 90, 46, 0.08)",
-                    border: "1px solid rgba(180, 90, 46, 0.2)",
+                    background: "color-mix(in oklab, var(--nei-neg) 12%, transparent)",
+                    border: "1px solid color-mix(in oklab, var(--nei-neg) 28%, transparent)",
                     borderRadius: 8,
                     padding: "7px 12px",
                     fontSize: 12,
@@ -655,8 +686,8 @@ export function IndexDashboard() {
                       fontWeight: 600,
                       background:
                         changePct >= 0
-                          ? "rgba(44,110,60,0.12)"
-                          : "rgba(180,90,46,0.12)",
+                          ? "color-mix(in oklab, var(--nei-pos) 18%, transparent)"
+                          : "color-mix(in oklab, var(--nei-neg) 18%, transparent)",
                       color:
                         changePct >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
                     }}

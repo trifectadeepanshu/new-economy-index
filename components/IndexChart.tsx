@@ -132,7 +132,7 @@ function CustomTooltip({
   return (
     <div
       style={{
-        background: "#FFFFFF",
+        background: "var(--nei-surface)",
         border: "1px solid var(--nei-grid-strong)",
         padding: "10px 12px",
         borderRadius: 9,
@@ -246,7 +246,7 @@ function ControlButton({
         fontSize: 11,
         letterSpacing: "0.04em",
         fontWeight: 600,
-        background: active ? "#FFFFFF" : "transparent",
+        background: active ? "var(--nei-surface)" : "transparent",
         color: active ? "var(--nei-fg)" : "var(--nei-muted)",
         border: "none",
         borderRadius: 7,
@@ -290,7 +290,9 @@ function LegendButton({
         gap: 7,
         border: "1px solid var(--nei-grid-strong)",
         borderRadius: 999,
-        background: active ? "rgba(30,58,95,0.07)" : "#FFFFFF",
+        background: active
+          ? "color-mix(in oklab, var(--nei-accent) 12%, transparent)"
+          : "var(--nei-surface)",
         color: active ? "var(--nei-fg)" : "var(--nei-muted)",
         opacity: muted ? 0.4 : 1,
         padding: "6px 10px",
@@ -490,7 +492,7 @@ export function IndexChart({
         <div
           style={{
             height: 330,
-            background: "rgba(16,24,38,0.04)",
+            background: "var(--nei-chip)",
             borderRadius: 8,
             animation: "nei-pulse 1.8s ease-in-out infinite",
           }}
@@ -530,19 +532,19 @@ export function IndexChart({
             >
               <defs>
                 <linearGradient id="neiAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1E3A5F" stopOpacity={0.1} />
-                  <stop offset="100%" stopColor="#1E3A5F" stopOpacity={0.01} />
+                  <stop offset="0%" style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.12 }} />
+                  <stop offset="100%" style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.01 }} />
                 </linearGradient>
               </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="rgba(16,24,38,0.05)"
+                stroke="var(--nei-grid)"
                 vertical={false}
               />
               <XAxis
                 dataKey="label"
                 tick={{
-                  fill: "rgba(16,24,38,0.42)",
+                  fill: "var(--nei-muted)",
                   fontSize: 11,
                   fontFamily: "var(--font-inter), system-ui",
                 }}
@@ -553,7 +555,7 @@ export function IndexChart({
               <YAxis
                 domain={["auto", "auto"]}
                 tick={{
-                  fill: "rgba(16,24,38,0.42)",
+                  fill: "var(--nei-muted)",
                   fontSize: 11,
                   fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
                 }}
@@ -567,12 +569,12 @@ export function IndexChart({
               <Tooltip content={<CustomTooltip />} />
               <ReferenceLine
                 y={INDEX_BASE_VALUE}
-                stroke="rgba(16,24,38,0.16)"
+                stroke="var(--nei-grid-strong)"
                 strokeDasharray="4 4"
                 label={{
                   value: "Base 1,000",
                   position: "insideTopLeft",
-                  fill: "rgba(16,24,38,0.42)",
+                  fill: "var(--nei-muted)",
                   fontSize: 10,
                   fontFamily: "var(--font-inter), system-ui",
                 }}

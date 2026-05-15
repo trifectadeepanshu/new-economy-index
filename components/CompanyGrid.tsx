@@ -221,7 +221,7 @@ function TableView({ stocks }: { stocks: StockData[] }) {
           onChange={(e) => setQ(e.target.value)}
           placeholder="Filter by ticker, company, sector…"
           style={{
-            background: "rgba(16,24,38,0.04)",
+            background: "var(--nei-chip)",
             border: "1px solid var(--nei-grid-strong)",
             color: "var(--nei-fg)",
             padding: "7px 12px",
@@ -269,7 +269,7 @@ function TableView({ stocks }: { stocks: StockData[] }) {
                     borderBottom: "1px solid var(--nei-grid-strong)",
                     width: c.w,
                     whiteSpace: "nowrap",
-                    background: "#FFFFFF",
+                    background: "var(--nei-surface)",
                     fontFamily: "var(--font-inter), system-ui",
                   }}
                 >
@@ -296,8 +296,7 @@ function TableView({ stocks }: { stocks: StockData[] }) {
                     transition: "background 80ms",
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background =
-                      "rgba(16,24,38,0.02)")
+                    (e.currentTarget.style.background = "var(--nei-hover)")
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.background = "transparent")
@@ -581,7 +580,7 @@ function ViewToggle({
             fontSize: 12,
             fontWeight: 500,
             fontFamily: "var(--font-inter), system-ui",
-            background: value === o.v ? "#FFFFFF" : "transparent",
+            background: value === o.v ? "var(--nei-surface)" : "transparent",
             color: value === o.v ? "var(--nei-fg)" : "var(--nei-muted)",
             border: "none",
             borderRadius: 7,
@@ -626,7 +625,7 @@ export function CompanyGrid({ stocks, isLoading }: Props) {
               key={i}
               style={{
                 height: 96,
-                background: "rgba(16,24,38,0.04)",
+                background: "var(--nei-chip)",
                 borderRadius: "var(--nei-radius-sm)",
                 animation: "nei-pulse 1.8s ease-in-out infinite",
               }}

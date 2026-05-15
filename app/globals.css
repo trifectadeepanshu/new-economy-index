@@ -35,6 +35,48 @@
   --radius-xl: calc(var(--radius) * 1.3);
 }
 
+/* ─── Dark mode overrides (toggled via html.dark class) ──────────────────── */
+html.dark {
+  --nei-bg:          #0B121C;
+  --nei-surface:     #131B27;
+  --nei-fg:          #E8EBF0;
+  --nei-muted:       rgba(232, 235, 240, 0.58);
+  --nei-muted-faint: rgba(232, 235, 240, 0.35);
+  --nei-grid:        rgba(232, 235, 240, 0.07);
+  --nei-grid-strong: rgba(232, 235, 240, 0.12);
+  --nei-hover:       rgba(232, 235, 240, 0.04);
+  --nei-accent:      #7BA3D4;
+  --nei-pos:         #7DB390;
+  --nei-neg:         #DD7A4E;
+  --nei-chip:        rgba(232, 235, 240, 0.06);
+  --nei-card-shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.25);
+  --nei-radius:      14px;
+  --nei-radius-sm:   10px;
+
+  --background:           #0B121C;
+  --foreground:           #E8EBF0;
+  --card:                 #131B27;
+  --card-foreground:      #E8EBF0;
+  --popover:              #131B27;
+  --popover-foreground:   #E8EBF0;
+  --primary:              #7BA3D4;
+  --primary-foreground:   #0B121C;
+  --secondary:            rgba(232, 235, 240, 0.06);
+  --secondary-foreground: #E8EBF0;
+  --muted:                rgba(232, 235, 240, 0.06);
+  --muted-foreground:     rgba(232, 235, 240, 0.58);
+  --accent:               rgba(123, 163, 212, 0.12);
+  --accent-foreground:    #7BA3D4;
+  --border:               rgba(232, 235, 240, 0.12);
+  --input:                rgba(232, 235, 240, 0.12);
+  --ring:                 rgba(123, 163, 212, 0.4);
+  --chart-1:              #7BA3D4;
+  --chart-2:              #7DB390;
+  --chart-3:              #DD7A4E;
+  --chart-4:              oklch(0.65 0 0);
+  --chart-5:              oklch(0.5 0 0);
+}
+
 :root {
   /* NEI Design System — Modern Fintech, light */
   --nei-bg:          #ECEEF2;
@@ -220,6 +262,6 @@
 }
 
 @keyframes nei-live-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(44, 110, 60, 0.22); }
-  50%       { box-shadow: 0 0 0 5px rgba(44, 110, 60, 0.08); }
+  0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--nei-pos) 30%, transparent); }
+  50%       { box-shadow: 0 0 0 5px color-mix(in oklab, var(--nei-pos) 10%, transparent); }
 }
