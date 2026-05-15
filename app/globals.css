@@ -218,3 +218,8 @@
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.5; }
 }
+
+@keyframes nei-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(44, 110, 60, 0.22); }
+  50%       { box-shadow: 0 0 0 5px rgba(44, 110, 60, 0.08); }
+}

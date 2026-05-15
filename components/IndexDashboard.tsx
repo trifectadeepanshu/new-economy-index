@@ -105,6 +105,7 @@ function MarketStatus() {
           background: open ? "var(--nei-pos)" : "var(--nei-muted)",
           boxShadow: open ? "0 0 0 3px rgba(44, 110, 60, 0.22)" : "none",
           flexShrink: 0,
+          animation: open ? "nei-live-pulse 2s ease-in-out infinite" : "none",
         }}
       />
       Market {open ? "Open" : "Closed"}
@@ -296,7 +297,7 @@ function IndexFacts({ numCompanies }: { numCompanies: number }) {
     { label: "Base value", value: "1,000" },
     { label: "Weighting", value: "Equal" },
     { label: "Coverage", value: `${numCompanies} companies` },
-    { label: "Refresh", value: "15 min" },
+    { label: "Refresh", value: "5 min" },
   ];
 
   return (
@@ -807,8 +808,8 @@ export function IndexDashboard() {
                   margin: 0,
                 }}
               >
-                Equal-weighted · base 1,000 on {inceptionLabel} · compare
-                sectors or isolate one detail view.
+                Equal-weighted · base 1,000 on {inceptionLabel} · daily
+                EOD snapshots, live during market hours.
               </p>
             </div>
             <IndexChart liveValue={indexValue} stocks={stocks} />
@@ -1010,8 +1011,7 @@ export function IndexDashboard() {
                 lineHeight: 1.7,
               }}
             >
-              Data via NSE · Real-time during market hours · Updated every 15
-              minutes
+              Data via NSE · Live during market hours · Refreshed every 5 min
               <br />© 2026 Trifecta Capital. Index is for informational
               purposes only. Not investment advice.
             </div>

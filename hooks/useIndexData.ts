@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isMarketOpen } from "@/lib/market-hours";
 
-const POLL_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes during market hours
 const MARKET_CHECK_INTERVAL_MS = 60 * 1000;
 
 export interface StockData {
