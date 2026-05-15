@@ -9,22 +9,12 @@ interface YahooQuote {
   currency?: string | null;
 }
 
-interface YahooHistoricalRow {
-  date: Date | string | number;
-  close?: number | null;
-}
-
 interface YahooFinanceClient {
   quote(
     yfTicker: string,
     queryOptions?: Record<string, never>,
     moduleOptions?: { validateResult?: boolean }
   ): Promise<YahooQuote>;
-  historical(
-    yfTicker: string,
-    queryOptions: { period1: Date; period2: Date; interval: "1d" },
-    moduleOptions?: { validateResult?: boolean }
-  ): Promise<YahooHistoricalRow[]>;
 }
 
 type YahooFinanceConstructor = new (options?: {
@@ -40,13 +30,7 @@ export interface QuoteResult {
   currency: string;
 }
 
-export interface HistoricalPrice {
-  date: string; // YYYY-MM-DD
-  close: number;
-}
-
-// Fetch current quote for a single ticker
-export async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
+async function fetchQuote(yfTicker: string): Promise<QuoteResult> {
   try {
     const q = await yahooFinance.quote(yfTicker, {}, { validateResult: false });
     const price: number | null = q?.regularMarketPrice ?? null;
@@ -99,27 +83,3 @@ export async function fetchAllQuotes(yfTickers: string[]): Promise<QuoteResult[]
   return results;
 }
 
-// Fetch daily historical closes for a ticker between two dates
-export async function fetchHistorical(
-  yfTicker: string,
-  from: Date,
-  to: Date
-): Promise<HistoricalPrice[]> {
-  try {
-    const rows = await yahooFinance.historical(yfTicker, {
-      period1: from,
-      period2: to,
-      interval: "1d",
-    }, { validateResult: false });
-    return rows
-      .filter((r): r is YahooHistoricalRow & { close: number } => (
-        typeof r.close === "number" && Number.isFinite(r.close)
-      ))
-      .map((r) => ({
-        date: new Date(r.date).toISOString().slice(0, 10),
-        close: r.close,
-      }));
-  } catch {
-    return [];
-  }
-}
