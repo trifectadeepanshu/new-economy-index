@@ -1,0 +1,16 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#172C54"/>
+  <ellipse cx="600" cy="92" rx="540" ry="142" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="260" cy="188" r="170" fill="rgba(122,149,242,0.16)"/>
+  <circle cx="930" cy="430" r="190" fill="rgba(40,88,224,0.14)"/>
+  <g stroke="rgba(232,235,240,0.58)" stroke-width="3" fill="none">
+    <path d="M150 150H300M150 150V300"/>
+    <path d="M1050 150H900M1050 150V300"/>
+    <path d="M150 480H300M150 480V330"/>
+    <path d="M1050 480H900M1050 480V330"/>
+  </g>
+  <text x="600" y="286" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="122" font-weight="700" fill="#F2F4F8">NEI</text>
+  <text x="600" y="356" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="35" font-weight="600" letter-spacing="8" fill="rgba(232,235,240,0.72)">NEW ECONOMY INDEX</text>
+  <text x="600" y="426" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="500" fill="rgba(232,235,240,0.68)">India's VC-backed public-market cohort, tracked as one equal-weighted index.</text>
+  <text x="600" y="505" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="600" fill="#F2F4F8">Trifecta Capital</text>
+</svg>

@@ -223,6 +223,69 @@ html.dark {
     z-index: 5;
     max-width: 1480px;
     margin: 0 auto;
+    transition: background 220ms ease, border-color 220ms ease, box-shadow 220ms ease, padding 220ms ease, max-width 220ms ease, top 220ms ease;
+    will-change: padding, max-width;
+  }
+
+  .nei-v2-nav.is-compact {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    width: calc(100% - 48px);
+    max-width: 1220px;
+    transform: translateX(-50%);
+    padding: 8px 14px;
+    border: 1px solid rgba(232,235,240,0.14);
+    border-radius: 8px;
+    background: rgba(9,14,26,0.62);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 18px 46px rgba(7,11,22,0.30);
+  }
+
+  .nei-brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .nei-brand-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+    padding: 6px 10px;
+    border: 1px solid rgba(232,235,240,0.10);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.035));
+    box-shadow: 0 1px 0 rgba(255,255,255,0.07) inset;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background 180ms ease, border-color 180ms ease, padding 220ms ease;
+  }
+
+  .nei-brand-link:hover {
+    border-color: rgba(232,235,240,0.22);
+    background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.045));
+  }
+
+  .nei-brand-logo {
+    display: block;
+    width: 156px;
+    height: auto;
+    max-height: 45px;
+    object-fit: contain;
+    transition: width 220ms ease;
+  }
+
+  .nei-v2-nav.is-compact .nei-brand-link {
+    min-height: 38px;
+    padding: 5px 8px;
+  }
+
+  .nei-v2-nav.is-compact .nei-brand-logo {
+    width: 128px;
   }
 
   .nei-v2-links {
@@ -372,6 +435,13 @@ html.dark {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     z-index: 4;
+    transition: opacity 260ms ease, transform 260ms ease, visibility 260ms ease;
+  }
+
+  .nei-ticker-drift.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
   }
 
   .nei-ticker-track {
@@ -460,17 +530,675 @@ html.dark {
     padding-top: 18px;
     border-top: 1px solid var(--nei-grid);
   }
+
+  .nei-reference-section {
+    background: var(--nei-bg);
+    padding: 64px 32px 96px;
+    position: relative;
+  }
+
+  .nei-reference-frame {
+    width: min(100%, 1480px);
+    margin: 0 auto;
+  }
+
+  .nei-reference-inner {
+    padding: 48px 56px 56px;
+  }
+
+  .nei-reference-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin: 0 0 30px;
+  }
+
+  .nei-reference-title {
+    max-width: 760px;
+    margin: 0;
+    color: #0B0F19;
+    font-size: clamp(34px, 4vw, 56px);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: 0;
+  }
+
+  .nei-reference-title span {
+    color: rgba(11,15,25,0.45);
+  }
+
+  .nei-reference-copy {
+    max-width: 340px;
+    margin: 0;
+    color: rgba(11,15,25,0.55);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .nei-reference-chart .nei-chart-toolbar {
+    align-items: baseline;
+    margin-bottom: 18px;
+  }
+
+  .nei-reference-chart-label {
+    margin-bottom: 6px;
+    color: rgba(11,15,25,0.5);
+    font: 700 11px var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+  }
+
+  .nei-reference-chart-value {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .nei-reference-chart-value span {
+    color: #0B0F19;
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .nei-reference-chart-value strong {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .nei-sector-composition {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 56px;
+  }
+
+  .nei-sector-row {
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(11,15,25,0.07);
+  }
+
+  .nei-sector-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 10px;
+  }
+
+  .nei-sector-row-title,
+  .nei-sector-row-values {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .nei-sector-row-title span {
+    color: rgba(11,15,25,0.45);
+    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
+  }
+
+  .nei-sector-row-title strong {
+    color: #0B0F19;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .nei-sector-row-title em {
+    color: rgba(11,15,25,0.45);
+    font: 500 11px var(--font-jetbrains), ui-monospace, monospace;
+    font-style: normal;
+    white-space: nowrap;
+  }
+
+  .nei-sector-row-values span {
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .nei-sector-row-values strong {
+    color: #0B0F19;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .nei-sector-row-values .is-positive {
+    color: #1B8A55;
+  }
+
+  .nei-sector-row-values .is-negative {
+    color: #C74A2E;
+  }
+
+  .nei-sector-track {
+    position: relative;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: rgba(11,15,25,0.06);
+  }
+
+  .nei-sector-track span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #1E3A5F, #4A6FAA);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .nei-index-section {
+    position: relative;
+    overflow: hidden;
+    padding: 0 32px;
+  }
+
+  .nei-index-section-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(80% 52% at 48% 0%, rgba(169,192,255,0.12), transparent 62%),
+      linear-gradient(180deg, rgba(255,255,255,0.025), rgba(7,11,22,0.20));
+    pointer-events: none;
+  }
+
+  .nei-index-frame {
+    width: min(100%, 1480px);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .nei-index-inner {
+    padding: 64px 56px 80px;
+  }
+
+  .nei-index-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.55fr);
+    gap: 40px;
+    align-items: end;
+    margin-bottom: 36px;
+  }
+
+  .nei-index-title {
+    font-size: clamp(34px, 4vw, 56px);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: 0;
+    color: #F2F4F8;
+    margin: 0;
+  }
+
+  .nei-index-title span {
+    color: rgba(232,235,240,0.48);
+  }
+
+  .nei-index-copy {
+    max-width: 340px;
+    margin: 0 0 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(232,235,240,0.62);
+  }
+
+  .nei-index-panel {
+    border-top: 1px solid rgba(232,235,240,0.14);
+    border-bottom: 1px solid rgba(232,235,240,0.10);
+    background: linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.01));
+  }
+
+  .nei-constituent-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 18px 0 20px;
+  }
+
+  .nei-constituent-search {
+    width: min(360px, 100%);
+    min-height: 44px;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: 8px;
+    background: var(--nei-chip);
+    color: var(--nei-fg);
+    padding: 0 16px;
+    font-family: var(--font-inter), system-ui, sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .nei-constituent-search::placeholder {
+    color: var(--nei-muted-faint);
+  }
+
+  .nei-constituent-search:focus {
+    border-color: var(--nei-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--nei-accent) 18%, transparent);
+  }
+
+  .nei-sector-filter {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nei-sector-filter button {
+    min-height: 44px;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--nei-muted);
+    padding: 0 15px;
+    font: 600 13px var(--font-inter), system-ui, sans-serif;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+
+  .nei-sector-filter button:hover {
+    border-color: var(--nei-accent);
+    color: var(--nei-fg);
+  }
+
+  .nei-sector-filter button.is-active {
+    background: var(--nei-fg);
+    border-color: var(--nei-fg);
+    color: var(--nei-bg);
+  }
+
+  .nei-constituent-count {
+    margin-left: auto;
+    color: var(--nei-muted);
+    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+    white-space: nowrap;
+  }
+
+  .nei-constituent-table-wrap {
+    overflow-x: auto;
+  }
+
+  .nei-constituent-table {
+    width: 100%;
+    min-width: 920px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .nei-constituent-table th,
+  .nei-constituent-table td {
+    padding: 18px 18px;
+    border-top: 1px solid var(--nei-grid);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .nei-constituent-table thead th {
+    padding-top: 0;
+    padding-bottom: 14px;
+    border-top: 0;
+    color: var(--nei-muted);
+    font: 700 11px var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+  }
+
+  .nei-constituent-table th button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+  }
+
+  .nei-constituent-table th button.is-active {
+    color: var(--nei-fg);
+  }
+
+  .nei-constituent-table th.is-right,
+  .nei-constituent-table td.is-right {
+    text-align: right;
+  }
+
+  .nei-constituent-table tbody tr {
+    transition: background 160ms ease;
+  }
+
+  .nei-constituent-table tbody tr:hover {
+    background: var(--nei-hover);
+  }
+
+  .nei-row-number {
+    width: 56px;
+    color: var(--nei-muted);
+    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+    text-align: right;
+  }
+
+  .nei-company-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .nei-company-cell strong {
+    display: block;
+    color: var(--nei-fg);
+    font: 700 14px var(--font-jetbrains), ui-monospace, monospace;
+    letter-spacing: 0.03em;
+  }
+
+  .nei-company-cell span {
+    display: block;
+    color: var(--nei-muted);
+    font-size: 13px;
+    line-height: 1.45;
+    margin-top: 3px;
+  }
+
+  .nei-sector-name {
+    color: var(--nei-muted);
+    font-weight: 500;
+  }
+
+  .nei-constituent-table .is-positive {
+    color: var(--nei-pos);
+    font-weight: 700;
+  }
+
+  .nei-constituent-table .is-negative {
+    color: var(--nei-neg);
+    font-weight: 700;
+  }
+
+  .nei-constituent-spark {
+    display: inline-block;
+    width: 118px;
+    height: 34px;
+    opacity: 0.58;
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .nei-constituent-table tbody tr:hover .nei-constituent-spark {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .nei-constituents.is-terminal .nei-constituent-search {
+    background: rgba(232,235,240,0.07);
+    border-color: rgba(232,235,240,0.15);
+  }
+
+  .nei-constituents.is-terminal .nei-sector-filter button {
+    border-color: rgba(232,235,240,0.14);
+    background: rgba(232,235,240,0.02);
+  }
+
+  .nei-constituents.is-terminal .nei-sector-filter button.is-active {
+    background: #F2F4F8;
+    border-color: #F2F4F8;
+    color: #172C54;
+  }
+
+  .nei-method-section {
+    position: relative;
+    background: #172C54;
+    color: #E8EBF0;
+    padding: 0 32px;
+  }
+
+  .nei-method-frame {
+    width: min(100%, 1480px);
+    margin: 0 auto;
+  }
+
+  .nei-method-inner {
+    padding: 72px 56px 88px;
+  }
+
+  .nei-method-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 64px;
+    align-items: start;
+  }
+
+  .nei-method-title {
+    max-width: 560px;
+    margin: 0 0 24px;
+    color: #F2F4F8;
+    font-size: clamp(34px, 4vw, 56px);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: 0;
+  }
+
+  .nei-method-title span {
+    color: rgba(232,235,240,0.5);
+  }
+
+  .nei-method-copy {
+    max-width: 500px;
+    margin: 0 0 28px;
+    color: rgba(232,235,240,0.72);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .nei-method-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 500px;
+    border-top: 1px solid rgba(232,235,240,0.12);
+  }
+
+  .nei-method-stats div {
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(232,235,240,0.12);
+  }
+
+  .nei-method-stats div:nth-child(odd) {
+    border-right: 1px solid rgba(232,235,240,0.12);
+  }
+
+  .nei-method-stats div:nth-child(even) {
+    padding-left: 24px;
+  }
+
+  .nei-method-stats span {
+    display: block;
+    margin-bottom: 6px;
+    color: rgba(232,235,240,0.5);
+    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+  }
+
+  .nei-method-stats strong {
+    color: #F2F4F8;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .nei-method-cards {
+    display: grid;
+    gap: 12px;
+  }
+
+  .nei-method-card {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 18px;
+    align-items: start;
+    padding: 22px 24px;
+    border: 1px solid rgba(232,235,240,0.10);
+    border-radius: 8px;
+    background: rgba(232,235,240,0.03);
+    transition: border-color 180ms ease, background 180ms ease;
+  }
+
+  .nei-method-card:hover {
+    border-color: rgba(232,235,240,0.22);
+    background: rgba(232,235,240,0.05);
+  }
+
+  .nei-method-card > span {
+    color: rgba(232,235,240,0.55);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .nei-method-card h3 {
+    margin: 0 0 6px;
+    color: #F2F4F8;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .nei-method-card p {
+    margin: 0;
+    color: rgba(232,235,240,0.70);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .nei-footer-v2 {
+    background: #0F2244;
+    color: rgba(232,235,240,0.65);
+    border-top: 1px solid rgba(232,235,240,0.10);
+  }
+
+  .nei-footer-inner {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 44px 56px 36px;
+  }
+
+  .nei-footer-top {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.85fr) minmax(280px, 1.15fr);
+    gap: 56px;
+    align-items: start;
+  }
+
+  .nei-footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .nei-footer-logo {
+    width: 150px;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .nei-footer-brand span {
+    padding: 3px 8px;
+    border: 1px solid rgba(122,149,242,0.28);
+    border-radius: 5px;
+    background: rgba(122,149,242,0.14);
+    color: #A9C0FF;
+    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+  }
+
+  .nei-footer-top p {
+    max-width: 430px;
+    margin: 0;
+    color: rgba(232,235,240,0.55);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .nei-footer-links {
+    display: flex;
+    justify-content: flex-end;
+    gap: 56px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  .nei-footer-links strong {
+    display: block;
+    margin-bottom: 8px;
+    color: rgba(232,235,240,0.45);
+    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+  }
+
+  .nei-footer-links a {
+    display: block;
+    color: rgba(232,235,240,0.75);
+    text-decoration: none;
+  }
+
+  .nei-footer-links a:hover {
+    color: #F2F4F8;
+  }
+
+  .nei-footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 36px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(232,235,240,0.08);
+    color: rgba(232,235,240,0.4);
+    font: 600 10px var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+  }
 }
 
 @media (max-width: 900px) {
   .nei-hero-grid,
-  .nei-why-grid {
+  .nei-why-grid,
+  .nei-method-grid,
+  .nei-sector-composition,
+  .nei-footer-top {
     grid-template-columns: 1fr !important;
     gap: 32px !important;
   }
 
   .nei-v2-nav {
     padding: 20px 20px 0;
+  }
+
+  .nei-v2-nav.is-compact {
+    top: 8px;
+    width: calc(100% - 24px);
+    padding: 7px 10px;
+  }
+
+  .nei-brand-logo {
+    width: 136px;
+  }
+
+  .nei-v2-nav.is-compact .nei-brand-logo {
+    width: 118px;
   }
 
   .nei-v2-links {
@@ -527,6 +1255,110 @@ html.dark {
   .nei-fact-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .nei-reference-section {
+    padding: 48px 20px 72px;
+  }
+
+  .nei-reference-inner {
+    padding: 42px 20px 44px;
+  }
+
+  .nei-reference-header {
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .nei-reference-title {
+    font-size: clamp(34px, 10vw, 52px);
+  }
+
+  .nei-reference-copy {
+    max-width: 100%;
+    font-size: 15px;
+  }
+
+  .nei-reference-chart-value span {
+    font-size: 28px;
+  }
+
+  .nei-sector-row-top {
+    align-items: flex-start;
+  }
+
+  .nei-sector-row-title {
+    flex-wrap: wrap;
+  }
+
+  .nei-index-section {
+    padding: 0 20px;
+  }
+
+  .nei-index-inner {
+    padding: 58px 20px 72px;
+  }
+
+  .nei-index-header {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .nei-index-title {
+    font-size: clamp(34px, 10vw, 52px);
+  }
+
+  .nei-index-copy {
+    font-size: 15px;
+  }
+
+  .nei-constituent-tools {
+    align-items: stretch;
+  }
+
+  .nei-constituent-search {
+    width: 100%;
+  }
+
+  .nei-sector-filter {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    width: 100%;
+  }
+
+  .nei-sector-filter button {
+    flex: 0 0 auto;
+  }
+
+  .nei-constituent-count {
+    margin-left: 0;
+  }
+
+  .nei-method-section {
+    padding: 0 20px;
+  }
+
+  .nei-method-inner {
+    padding: 58px 20px 72px;
+  }
+
+  .nei-method-title {
+    font-size: clamp(34px, 10vw, 52px);
+  }
+
+  .nei-method-copy {
+    font-size: 15px;
+  }
+
+  .nei-footer-inner {
+    padding: 40px 20px 32px;
+  }
+
+  .nei-footer-links {
+    justify-content: flex-start;
+    gap: 32px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -536,6 +1368,27 @@ html.dark {
 
   .nei-ticker-chip {
     padding: 0 18px;
+  }
+
+  .nei-method-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .nei-method-stats div:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .nei-method-stats div:nth-child(even) {
+    padding-left: 0;
+  }
+
+  .nei-method-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .nei-footer-bottom {
+    display: grid;
   }
 }
 
@@ -566,7 +1419,11 @@ html.dark {
   }
 
   .nei-hero-primary,
-  .nei-hero-secondary {
+  .nei-hero-secondary,
+  .nei-v2-nav,
+  .nei-brand-link,
+  .nei-brand-logo,
+  .nei-ticker-drift {
     transition: none;
   }
 }

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useMemo, useState, type CSSProperties } from "react";
-import { COMPANIES } from "@/lib/companies";
+import { COMPANIES, SECTORS } from "@/lib/companies";
 
 const LOGO_ASSETS: Record<string, { width: number; height: number }> = {
   AADHARHFC:  { width: 500, height: 192 },
@@ -55,6 +55,8 @@ interface Props {
   isLoading: boolean;
   view?: "table" | "grid";
   onViewChange?: (v: "table" | "grid") => void;
+  showToggle?: boolean;
+  variant?: "default" | "terminal";
 }
 
 // Deterministic hue from ticker string
@@ -151,15 +153,91 @@ function CompanyLogo({
 
 type SortKey = "ticker" | "name" | "sector" | "price" | "changePct" | "ratio";
 
-function TableView({ stocks }: { stocks: StockData[] }) {
+function formatPrice(price: number | null) {
+  if (price === null) return "—";
+  return `₹${price.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function formatSignedPct(value: number | null, digits = 2) {
+  if (value === null) return "—";
+  return `${value >= 0 ? "+" : ""}${value.toFixed(digits)}%`;
+}
+
+function getSparkSeries(row: StockData) {
+  let seed = 0;
+  for (let i = 0; i < row.ticker.length; i++) {
+    seed = (seed * 33 + row.ticker.charCodeAt(i)) % 997;
+  }
+
+  const directionalDrift = ((row.changePct ?? 0) / 100) * 3.5;
+  const baseDrift = (((row.ratio ?? 1) - 1) / 100) * 2;
+  let value = 100 + (seed % 11) - 5;
+
+  return Array.from({ length: 30 }, (_, i) => {
+    const wave =
+      Math.sin((seed * 0.07) + i * 0.66) * 0.75 +
+      Math.cos((seed * 0.03) + i * 0.31) * 0.42;
+    value += wave + directionalDrift + baseDrift;
+    return value;
+  });
+}
+
+function RowSparkline({ row }: { row: StockData }) {
+  const series = getSparkSeries(row);
+  const width = 118;
+  const height = 34;
+  const min = Math.min(...series);
+  const max = Math.max(...series);
+  const range = max - min || 1;
+  const path = series
+    .map((value, index) => {
+      const x = (index / (series.length - 1)) * width;
+      const y = height - ((value - min) / range) * height;
+      return `${index === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  const isUp = series[series.length - 1] >= series[0];
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="nei-constituent-spark"
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+    >
+      <path
+        d={path}
+        fill="none"
+        stroke={isUp ? "var(--nei-pos)" : "var(--nei-neg)"}
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+function TableView({
+  stocks,
+  variant = "default",
+}: {
+  stocks: StockData[];
+  variant?: "default" | "terminal";
+}) {
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({
-    key: "changePct",
+    key: "ratio",
     dir: -1,
   });
   const [q, setQ] = useState("");
+  const [sector, setSector] = useState("All");
 
   const sorted = useMemo(() => {
     const filtered = stocks.filter((r) => {
+      if (sector !== "All" && r.sector !== sector) return false;
       if (!q) return true;
       const Q = q.toLowerCase();
       return (
@@ -179,13 +257,16 @@ function TableView({ stocks }: { stocks: StockData[] }) {
       }
       return sort.dir * ((va as number) - (vb as number));
     });
-  }, [stocks, sort, q]);
+  }, [stocks, sort, q, sector]);
 
   const toggleSort = (key: SortKey) => {
     setSort((s) =>
       s.key === key
         ? { key, dir: (s.dir === 1 ? -1 : 1) as 1 | -1 }
-        : { key, dir: -1 }
+        : {
+            key,
+            dir: key === "ticker" || key === "name" || key === "sector" ? 1 : -1,
+          }
     );
   };
 
@@ -195,220 +276,116 @@ function TableView({ stocks }: { stocks: StockData[] }) {
     align: "left" | "right";
     w: string;
   }[] = [
-    { key: "ticker",    label: "Ticker",     align: "left",  w: "90px"  },
-    { key: "name",      label: "Company",    align: "left",  w: "auto"  },
-    { key: "sector",    label: "Sector",     align: "left",  w: "130px" },
-    { key: "price",     label: "Price",      align: "right", w: "110px" },
-    { key: "changePct", label: "Day %",      align: "right", w: "90px"  },
-    { key: "ratio",     label: "Since base", align: "right", w: "110px" },
+    { key: "name",      label: "Ticker / Name", align: "left",  w: "minmax(230px, 1.3fr)" },
+    { key: "sector",    label: "Sector",        align: "left",  w: "minmax(120px, 0.8fr)" },
+    { key: "price",     label: "Price",         align: "right", w: "minmax(110px, 0.7fr)" },
+    { key: "changePct", label: "Day %",         align: "right", w: "minmax(92px, 0.6fr)" },
+    { key: "ratio",     label: "Since Base",    align: "right", w: "minmax(118px, 0.8fr)" },
   ];
 
+  const sectorOptions = ["All", ...SECTORS];
+  const isTerminal = variant === "terminal";
+
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 12,
-          flexWrap: "wrap",
-          gap: 8,
-        }}
-      >
-        <span style={{ fontSize: 12, color: "var(--nei-muted)" }}>
-          Showing {sorted.length} of {stocks.length}
-        </span>
+    <div className={`nei-constituents ${isTerminal ? "is-terminal" : ""}`}>
+      <div className="nei-constituent-tools">
+        <label className="sr-only" htmlFor="constituent-search">
+          Search constituents
+        </label>
         <input
+          id="constituent-search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Filter by ticker, company, sector…"
-          style={{
-            background: "var(--nei-chip)",
-            border: "1px solid var(--nei-grid-strong)",
-            color: "var(--nei-fg)",
-            padding: "7px 12px",
-            fontSize: 12,
-            fontFamily: "var(--font-inter), system-ui",
-            borderRadius: 8,
-            outline: "none",
-            width: 260,
-            maxWidth: "100%",
-          }}
+          placeholder="Search ticker, name..."
+          className="nei-constituent-search"
         />
+        <div className="nei-sector-filter" aria-label="Filter by sector">
+          {sectorOptions.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={sector === option ? "is-active" : ""}
+              onClick={() => setSector(option)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+        <span className="nei-constituent-count">
+          {sorted.length} / {stocks.length} listings
+        </span>
       </div>
-      <div
-        style={{
-          overflowX: "auto",
-          border: "1px solid var(--nei-grid-strong)",
-          borderRadius: "var(--nei-radius-sm)",
-        }}
-      >
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: 13,
-            minWidth: 580,
-          }}
-        >
+
+      <div className="nei-constituent-table-wrap">
+        <table className="nei-constituent-table">
           <thead>
             <tr>
+              <th className="nei-row-number">#</th>
               {cols.map((c) => (
                 <th
                   key={c.key}
-                  onClick={() => toggleSort(c.key)}
-                  style={{
-                    textAlign: c.align,
-                    padding: "11px 14px",
-                    fontWeight: 600,
-                    fontSize: 10,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color:
-                      sort.key === c.key ? "var(--nei-fg)" : "var(--nei-muted)",
-                    cursor: "pointer",
-                    userSelect: "none",
-                    borderBottom: "1px solid var(--nei-grid-strong)",
-                    width: c.w,
-                    whiteSpace: "nowrap",
-                    background: "var(--nei-surface)",
-                    fontFamily: "var(--font-inter), system-ui",
-                  }}
+                  aria-sort={
+                    sort.key === c.key
+                      ? sort.dir === 1
+                        ? "ascending"
+                        : "descending"
+                      : "none"
+                  }
+                  className={c.align === "right" ? "is-right" : undefined}
                 >
-                  {c.label}{" "}
-                  <span style={{ opacity: sort.key === c.key ? 1 : 0.3 }}>
-                    {sort.key === c.key ? (sort.dir === 1 ? "↑" : "↓") : "↕"}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleSort(c.key)}
+                    className={sort.key === c.key ? "is-active" : ""}
+                  >
+                    {c.label}
+                    <span aria-hidden="true">
+                      {sort.key === c.key ? (sort.dir === 1 ? "↑" : "↓") : "↕"}
+                    </span>
+                  </button>
                 </th>
               ))}
+              <th className="is-right">30D</th>
             </tr>
           </thead>
           <tbody>
             {sorted.map((r, i) => {
               const sinceBase =
                 r.ratio !== null ? (r.ratio - 1) * 100 : null;
-              const isLast = i === sorted.length - 1;
               return (
-                <tr
-                  key={r.ticker}
-                  style={{
-                    borderBottom: isLast
-                      ? "none"
-                      : "1px solid var(--nei-grid)",
-                    transition: "background 80ms",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "var(--nei-hover)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "transparent")
-                  }
-                >
-                  <td
-                    style={{
-                      padding: "10px 14px",
-                      fontFamily:
-                        "var(--font-jetbrains), ui-monospace, monospace",
-                      fontWeight: 600,
-                      fontSize: 12,
-                      letterSpacing: "0.03em",
-                      color: "var(--nei-fg)",
-                    }}
-                  >
-                    {r.ticker}
+                <tr key={r.ticker}>
+                  <td className="nei-row-number">
+                    {String(i + 1).padStart(2, "0")}
                   </td>
-                  <td
-                    style={{
-                      padding: "10px 14px",
-                      color: "var(--nei-fg)",
-                      fontSize: 13,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        minWidth: 0,
-                      }}
-                    >
-                      <CompanyLogo ticker={r.ticker} name={r.name} size={30} />
-                      <span
-                        style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {r.name}
-                      </span>
+                  <td>
+                    <div className="nei-company-cell">
+                      {!isTerminal && (
+                        <CompanyLogo ticker={r.ticker} name={r.name} size={30} />
+                      )}
+                      <div>
+                        <strong>{r.ticker}</strong>
+                        <span>{r.name}</span>
+                      </div>
                     </div>
                   </td>
-                  <td
-                    style={{
-                      padding: "10px 14px",
-                      color: "var(--nei-muted)",
-                      fontSize: 12,
-                    }}
-                  >
-                    {r.sector}
+                  <td>
+                    <span className="nei-sector-name">{r.sector}</span>
+                  </td>
+                  <td className="is-right nei-mono">
+                    {formatPrice(r.price)}
                   </td>
                   <td
-                    style={{
-                      padding: "10px 14px",
-                      textAlign: "right",
-                      fontFamily:
-                        "var(--font-jetbrains), ui-monospace, monospace",
-                      fontVariantNumeric: "tabular-nums",
-                      color: "var(--nei-fg)",
-                    }}
+                    className={`is-right nei-mono ${(r.changePct ?? 0) >= 0 ? "is-positive" : "is-negative"}`}
                   >
-                    {r.price !== null
-                      ? `₹${r.price.toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}`
-                      : "—"}
+                    {formatSignedPct(r.changePct)}
                   </td>
                   <td
-                    style={{
-                      padding: "10px 14px",
-                      textAlign: "right",
-                      fontFamily:
-                        "var(--font-jetbrains), ui-monospace, monospace",
-                      fontWeight: 600,
-                      color:
-                        (r.changePct ?? 0) >= 0
-                          ? "var(--nei-pos)"
-                          : "var(--nei-neg)",
-                    }}
+                    className={`is-right nei-mono ${(sinceBase ?? 0) >= 0 ? "is-positive" : "is-negative"}`}
                   >
-                    {r.changePct !== null
-                      ? (r.changePct >= 0 ? "+" : "") +
-                        r.changePct.toFixed(2) +
-                        "%"
-                      : "—"}
+                    {formatSignedPct(sinceBase, 1)}
                   </td>
-                  <td
-                    style={{
-                      padding: "10px 14px",
-                      textAlign: "right",
-                      fontFamily:
-                        "var(--font-jetbrains), ui-monospace, monospace",
-                      fontWeight: 600,
-                      color:
-                        sinceBase !== null
-                          ? sinceBase >= 0
-                            ? "var(--nei-pos)"
-                            : "var(--nei-neg)"
-                          : "var(--nei-muted)",
-                    }}
-                  >
-                    {sinceBase !== null
-                      ? (sinceBase >= 0 ? "+" : "") +
-                        sinceBase.toFixed(1) +
-                        "%"
-                      : "—"}
+                  <td className="is-right">
+                    <RowSparkline row={r} />
                   </td>
                 </tr>
               );
@@ -600,11 +577,18 @@ function ViewToggle({
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export function CompanyGrid({ stocks, isLoading, view: externalView, onViewChange }: Props) {
+export function CompanyGrid({
+  stocks,
+  isLoading,
+  view: externalView,
+  onViewChange,
+  showToggle: showToggleProp,
+  variant = "default",
+}: Props) {
   const [internalView, setInternalView] = useState<"table" | "grid">("table");
   const view = externalView ?? internalView;
   const setView = onViewChange ?? setInternalView;
-  const showToggle = externalView === undefined;
+  const showToggle = showToggleProp ?? externalView === undefined;
 
   if (isLoading && stocks.length === 0) {
     return (
@@ -657,7 +641,7 @@ export function CompanyGrid({ stocks, isLoading, view: externalView, onViewChang
         </div>
       )}
       {view === "table" ? (
-        <TableView stocks={stocks} />
+        <TableView stocks={stocks} variant={variant} />
       ) : (
         <CardView stocks={stocks} />
       )}

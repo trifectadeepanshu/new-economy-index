@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="8" fill="#172C54"/>
+  <path d="M12 20V12H28" stroke="rgba(232,235,240,0.62)" stroke-width="2"/>
+  <path d="M52 20V12H36" stroke="rgba(232,235,240,0.62)" stroke-width="2"/>
+  <path d="M12 44V52H28" stroke="rgba(232,235,240,0.62)" stroke-width="2"/>
+  <path d="M52 44V52H36" stroke="rgba(232,235,240,0.62)" stroke-width="2"/>
+  <text x="32" y="38" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#F2F4F8">NEI</text>
+</svg>

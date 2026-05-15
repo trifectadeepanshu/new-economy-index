@@ -135,7 +135,7 @@ function CustomTooltip({
         background: "var(--nei-surface)",
         border: "1px solid var(--nei-grid-strong)",
         padding: "10px 12px",
-        borderRadius: 9,
+        borderRadius: 8,
         fontSize: 12,
         boxShadow: "var(--nei-card-shadow)",
         minWidth: rows.length > 1 ? 190 : 142,
@@ -230,11 +230,14 @@ function ControlButton({
   active,
   children,
   onClick,
+  tone = "default",
 }: {
   active: boolean;
   children: ReactNode;
   onClick: () => void;
+  tone?: "default" | "ink";
 }) {
+  const ink = tone === "ink";
   return (
     <button
       type="button"
@@ -246,8 +249,8 @@ function ControlButton({
         fontSize: 11,
         letterSpacing: "0.04em",
         fontWeight: 600,
-        background: active ? "var(--nei-surface)" : "transparent",
-        color: active ? "var(--nei-fg)" : "var(--nei-muted)",
+        background: active ? (ink ? "var(--nei-fg)" : "var(--nei-surface)") : "transparent",
+        color: active ? (ink ? "var(--nei-bg)" : "var(--nei-fg)") : "var(--nei-muted)",
         border: "none",
         borderRadius: 7,
         cursor: "pointer",
@@ -319,9 +322,11 @@ function LegendButton({
 export function IndexChart({
   liveValue,
   stocks,
+  variant = "default",
 }: {
   liveValue: number | null;
   stocks: StockData[];
+  variant?: "default" | "reference";
 }) {
   const [range, setRange] = useState<Range>("1Y");
   const [mode, setMode] = useState<ChartMode>("index");
@@ -401,63 +406,97 @@ export function IndexChart({
     return [...points, { date: "now", label: "Now", value: liveSectorValue }];
   }, [liveSectorValues, range, sectorData, selectedSector]);
 
+  const isReference = variant === "reference";
+  const activeMode = isReference ? "index" : mode;
   const currentData =
-    mode === "index" ? indexData : mode === "detail" ? detailData : compareData;
-  const singleSeriesData = mode === "detail" ? detailData : indexData;
+    activeMode === "index" ? indexData : activeMode === "detail" ? detailData : compareData;
+  const singleSeriesData = activeMode === "detail" ? detailData : indexData;
   const latestPoint = singleSeriesData[singleSeriesData.length - 1];
+  const firstPoint = singleSeriesData[0];
+  const rangeChangePct =
+    latestPoint && firstPoint ? ((latestPoint.value - firstPoint.value) / firstPoint.value) * 100 : null;
   const latestColor =
-    mode === "detail"
+    activeMode === "detail"
       ? SECTOR_CHART_COLORS[selectedSector]
       : latestPoint && latestPoint.value < INDEX_BASE_VALUE
         ? "var(--nei-neg)"
         : "var(--nei-accent)";
   const chartTitle =
-    mode === "index"
+    activeMode === "index"
       ? "NEI performance"
-      : mode === "compare"
+      : activeMode === "compare"
         ? "Sector compare"
         : `${selectedSector} performance`;
 
   const selectedOrFocusedSector = focusedSector ?? selectedSector;
 
   return (
-    <div style={{ marginTop: 20 }}>
+    <div className={isReference ? "nei-reference-chart" : undefined} style={{ marginTop: isReference ? 0 : 20 }}>
       <div className="nei-chart-toolbar">
-        <div>
-          <div className="nei-label" style={{ marginBottom: 4 }}>
-            Chart View
+        {isReference ? (
+          <div>
+            <div className="nei-reference-chart-label">
+              {range} Range · NEI
+            </div>
+            <div className="nei-reference-chart-value">
+              <span className="nei-mono">
+                {latestPoint ? formatValue(latestPoint.value) : "—"}
+              </span>
+              <strong
+                className="nei-mono"
+                style={{
+                  color:
+                    (rangeChangePct ?? 0) >= 0
+                      ? "var(--nei-pos)"
+                      : "var(--nei-neg)",
+                }}
+              >
+                {rangeChangePct !== null
+                  ? `${rangeChangePct >= 0 ? "+" : ""}${rangeChangePct.toFixed(2)}%`
+                  : "—"}
+              </strong>
+            </div>
           </div>
-          <div
-            className="nei-heading"
-            style={{
-              fontSize: 17,
-              fontWeight: 600,
-              letterSpacing: 0,
-              color: "var(--nei-fg)",
-            }}
-          >
-            {chartTitle}
+        ) : (
+          <div>
+            <div className="nei-label" style={{ marginBottom: 4 }}>
+              Chart View
+            </div>
+            <div
+              className="nei-heading"
+              style={{
+                fontSize: 17,
+                fontWeight: 600,
+                letterSpacing: 0,
+                color: "var(--nei-fg)",
+              }}
+            >
+              {chartTitle}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="nei-chart-controls">
-          <div className="nei-segmented-control" role="group" aria-label="Chart mode">
-            {CHART_MODES.map((chartMode) => (
-              <ControlButton
-                key={chartMode.value}
-                active={mode === chartMode.value}
-                onClick={() => setMode(chartMode.value)}
-              >
-                {chartMode.label}
-              </ControlButton>
-            ))}
-          </div>
+          {!isReference && (
+            <div className="nei-segmented-control" role="group" aria-label="Chart mode">
+              {CHART_MODES.map((chartMode) => (
+                <ControlButton
+                  key={chartMode.value}
+                  active={mode === chartMode.value}
+                  onClick={() => setMode(chartMode.value)}
+                >
+                  {chartMode.label}
+                </ControlButton>
+              ))}
+            </div>
+          )}
 
           <div className="nei-segmented-control" role="group" aria-label="Date range">
             {RANGES.map((r) => (
               <ControlButton
                 key={r}
                 active={range === r}
+                tone={isReference ? "ink" : "default"}
                 onClick={() => {
                   if (r !== range) {
                     setLoading(true);
@@ -472,7 +511,7 @@ export function IndexChart({
         </div>
       </div>
 
-      {mode === "detail" && (
+      {!isReference && activeMode === "detail" && (
         <div className="nei-sector-tabs" role="group" aria-label="Sector detail">
           {SECTORS.map((sector) => (
             <LegendButton
@@ -580,7 +619,7 @@ export function IndexChart({
                 }}
               />
 
-              {mode === "compare" ? (
+              {activeMode === "compare" ? (
                 SECTORS.map((sector) => {
                   const focused = focusedSector ?? null;
                   const isMuted = Boolean(focused && focused !== sector);
@@ -619,7 +658,7 @@ export function IndexChart({
                   <Line
                     type="monotone"
                     dataKey="value"
-                    name={mode === "detail" ? selectedSector : "NEI"}
+                    name={activeMode === "detail" ? selectedSector : "NEI"}
                     stroke={latestColor}
                     strokeWidth={2.2}
                     dot={false}
@@ -654,7 +693,7 @@ export function IndexChart({
             </ComposedChart>
           </ResponsiveContainer>
 
-          {mode === "compare" && (
+          {!isReference && activeMode === "compare" && (
             <div className="nei-sector-tabs" role="group" aria-label="Sector focus">
               {SECTORS.map((sector) => {
                 const isActive = selectedOrFocusedSector === sector;
