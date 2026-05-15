@@ -434,9 +434,9 @@ function ShoulderDivider({
   );
 }
 
-function HeroNav({ compact }: { compact: boolean }) {
+function HeroNav() {
   return (
-    <header className={`nei-v2-nav${compact ? " is-compact" : ""}`}>
+    <header className="nei-v2-nav">
       <div className="nei-brand-lockup">
         <Link href="/" className="nei-brand-link" aria-label="New Economy Index home">
           <Image
@@ -526,12 +526,11 @@ export function IndexDashboard() {
   const { data, isLoading } = useIndexData();
   const [sparkSeries, setSparkSeries] = useState<number[]>([]);
   const [now, setNow] = useState(() => Date.now());
-  const [compactChrome, setCompactChrome] = useState(() =>
-    typeof window === "undefined" ? false : window.scrollY > 36
-  );
+  const [chromeHidden, setChromeHidden] = useState(false);
   const [valueFlash, setValueFlash] = useState<"" | "pos" | "neg">("");
   const [dataLoaded, setDataLoaded] = useState(false);
   const prevIndexRef = useRef<number | null>(null);
+  const lastScrollYRef = useRef(0);
   const open = isMarketOpen();
 
   useEffect(() => {
@@ -552,9 +551,20 @@ export function IndexDashboard() {
   }, [open]);
 
   useEffect(() => {
-    const updateChrome = () => setCompactChrome(window.scrollY > 36);
-    window.addEventListener("scroll", updateChrome, { passive: true });
-    return () => window.removeEventListener("scroll", updateChrome);
+    const handleScroll = () => {
+      const y = window.scrollY;
+      const delta = y - lastScrollYRef.current;
+      if (y < 80) {
+        setChromeHidden(false);
+      } else if (delta > 4) {
+        setChromeHidden(true);
+      } else if (delta < -4) {
+        setChromeHidden(false);
+      }
+      lastScrollYRef.current = y;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const indexValue = data?.indexValue ?? null;
@@ -653,24 +663,25 @@ export function IndexDashboard() {
         minHeight: "100vh",
         color: "var(--nei-fg)",
         fontFamily: "var(--font-inter), system-ui, sans-serif",
-        paddingTop: 40,
       }}
     >
-      <TickerDrift stocks={stocks} />
+      <div className={`nei-top-chrome${chromeHidden ? " is-hidden" : ""}`}>
+        <TickerDrift stocks={stocks} />
+        <HeroNav />
+      </div>
       <section
         data-screen-label="01 Hero"
         style={{
           ...heroStyle,
           position: "relative",
-          minHeight: "94dvh",
+          minHeight: "100dvh",
           background: "#172C54",
           color: "#E8EBF0",
           overflow: "hidden",
         }}
       >
         <KineticBackdrop />
-        <div style={{ position: "relative", zIndex: 3, minHeight: "94dvh" }}>
-          <HeroNav compact={compactChrome} />
+        <div style={{ position: "relative", zIndex: 3, minHeight: "100dvh" }}>
 
           <div className="nei-hero-inner">
             <div className="nei-hero-meta">
