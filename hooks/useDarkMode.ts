@@ -2,16 +2,20 @@
 
 import { useEffect, useState } from "react";
 
+function getInitialDarkMode() {
+  if (typeof window === "undefined") return false;
+
+  const stored = window.localStorage.getItem("nei-theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return stored !== null ? stored === "dark" : prefersDark;
+}
+
 export function useDarkMode() {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(getInitialDarkMode);
 
   useEffect(() => {
-    const stored = localStorage.getItem("nei-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const dark = stored !== null ? stored === "dark" : prefersDark;
-    setIsDark(dark);
-    document.documentElement.classList.toggle("dark", dark);
-  }, []);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [isDark]);
 
   const toggle = () => {
     setIsDark((prev) => {

@@ -1,8 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { useIndexData, type StockData } from "@/hooks/useIndexData";
-import { useDarkMode } from "@/hooks/useDarkMode";
 import { IndexChart } from "@/components/IndexChart";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import {
@@ -99,39 +105,44 @@ function Skeleton({ w, h, r = 6 }: { w?: string | number; h: number; r?: number 
 
 function SectionEyebrow({ n, label, light = false }: { n: string; label: string; light?: boolean }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-      <span
-        style={{
-          fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-          fontSize: 12,
-          fontWeight: 600,
-          color: light ? "rgba(232,235,240,0.95)" : "var(--nei-accent)",
-          letterSpacing: "0.02em",
-        }}
-      >
-        § {n}
-      </span>
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
       <span
         style={{
           height: 1,
-          width: 28,
-          background: light
-            ? "rgba(232,235,240,0.25)"
-            : "color-mix(in oklab, var(--nei-accent) 30%, transparent)",
+          width: 22,
+          background: light ? "rgba(232,235,240,0.45)" : "rgba(11,15,25,0.35)",
         }}
       />
       <span
         style={{
-          fontFamily: "var(--font-sora), system-ui, sans-serif",
+          fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
           fontSize: 11,
           fontWeight: 600,
-          letterSpacing: "0.18em",
+          color: light ? "rgba(232,235,240,0.95)" : "var(--nei-accent)",
+          letterSpacing: "0.14em",
+        }}
+      >
+        §{n}
+      </span>
+      <span
+        style={{
+          fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: "0.14em",
           textTransform: "uppercase" as const,
-          color: light ? "rgba(232,235,240,0.55)" : "var(--nei-muted)",
+          color: light ? "rgba(232,235,240,0.72)" : "rgba(11,15,25,0.6)",
         }}
       >
         {label}
       </span>
+      <span
+        style={{
+          height: 1,
+          width: 36,
+          background: light ? "rgba(232,235,240,0.45)" : "rgba(11,15,25,0.35)",
+        }}
+      />
     </div>
   );
 }
@@ -303,7 +314,7 @@ function ViewToggle({
         display: "inline-flex",
         padding: 4,
         background: "var(--nei-chip)",
-        borderRadius: 10,
+        borderRadius: 8,
         gap: 2,
       }}
     >
@@ -332,14 +343,338 @@ function ViewToggle({
   );
 }
 
+// ─── Reference-frame helpers ──────────────────────────────────────────────────
+
+function useMouseGlow<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    let frame = 0;
+    let targetX = 50;
+    let targetY = 42;
+    let currentX = 50;
+    let currentY = 42;
+
+    const tick = () => {
+      currentX += (targetX - currentX) * 0.12;
+      currentY += (targetY - currentY) * 0.12;
+      el.style.setProperty("--mx", `${currentX.toFixed(2)}%`);
+      el.style.setProperty("--my", `${currentY.toFixed(2)}%`);
+
+      if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
+        frame = window.requestAnimationFrame(tick);
+      } else {
+        frame = 0;
+      }
+    };
+
+    const handleMove = (event: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      targetX = ((event.clientX - rect.left) / rect.width) * 100;
+      targetY = ((event.clientY - rect.top) / rect.height) * 100;
+      if (!frame) frame = window.requestAnimationFrame(tick);
+    };
+
+    const handleLeave = () => {
+      targetX = 50;
+      targetY = 42;
+      if (!frame) frame = window.requestAnimationFrame(tick);
+    };
+
+    el.style.setProperty("--mx", "50%");
+    el.style.setProperty("--my", "42%");
+    el.addEventListener("mousemove", handleMove);
+    el.addEventListener("mouseleave", handleLeave);
+
+    return () => {
+      el.removeEventListener("mousemove", handleMove);
+      el.removeEventListener("mouseleave", handleLeave);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return ref;
+}
+
+function KineticBackdrop() {
+  return (
+    <div aria-hidden="true" className="nei-kinetic-backdrop">
+      <div className="nei-kinetic-sheen" />
+      <div className="nei-kinetic-field" />
+      <div className="nei-kinetic-glow" />
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="nei-kinetic-grid"
+      >
+        <defs>
+          <pattern id="nei-dot-grid" x="0" y="0" width="3.4" height="3.4" patternUnits="userSpaceOnUse">
+            <circle cx="0.2" cy="0.2" r="0.18" fill="rgba(232,235,240,0.18)" />
+          </pattern>
+          <radialGradient id="nei-dot-mask" cx="50%" cy="40%" r="65%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+          <mask id="nei-dot-mask-ref">
+            <rect x="0" y="0" width="100" height="100" fill="url(#nei-dot-mask)" />
+          </mask>
+        </defs>
+        <rect x="0" y="0" width="100" height="100" fill="url(#nei-dot-grid)" mask="url(#nei-dot-mask-ref)" />
+      </svg>
+      <div className="nei-kinetic-vignette" />
+    </div>
+  );
+}
+
+function TickFrame({
+  children,
+  className,
+  inset = 24,
+  lineLen = 76,
+  corner = 18,
+  opacity = 0.55,
+  padded = true,
+  tone = "ink",
+  style,
+}: {
+  children: ReactNode;
+  className?: string;
+  inset?: number;
+  lineLen?: number;
+  corner?: number;
+  opacity?: number;
+  padded?: boolean;
+  tone?: "paper" | "ink";
+  style?: CSSProperties;
+}) {
+  const color =
+    tone === "paper"
+      ? `rgba(232,235,240,${opacity})`
+      : `rgba(11,15,25,${opacity * 0.85})`;
+  const corners: CSSProperties[] = [
+    { top: inset, left: inset, transform: "rotate(0deg)" },
+    { top: inset, right: inset, transform: "rotate(90deg)" },
+    { right: inset, bottom: inset, transform: "rotate(180deg)" },
+    { bottom: inset, left: inset, transform: "rotate(270deg)" },
+  ];
+
+  return (
+    <div className={className} style={{ position: "relative", ...style }}>
+      {corners.map((position, i) => (
+        <span
+          key={i}
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            width: lineLen,
+            height: lineLen,
+            pointerEvents: "none",
+            zIndex: 1,
+            ...position,
+          }}
+        >
+          <span
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              height: 1,
+              width: lineLen,
+              background: color,
+            }}
+          />
+          <span
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: 1,
+              height: lineLen,
+              background: color,
+            }}
+          />
+          <span
+            style={{
+              position: "absolute",
+              top: -corner / 2,
+              left: -corner / 2,
+              width: corner,
+              height: corner,
+              borderTop: `1px solid ${color}`,
+              borderLeft: `1px solid ${color}`,
+            }}
+          />
+        </span>
+      ))}
+      <div style={{ position: "relative", zIndex: 2, padding: padded ? inset + 22 : 0 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ShoulderDivider({
+  from,
+  to,
+  label,
+  labelColor = "rgba(232,235,240,0.45)",
+}: {
+  from: string;
+  to: string;
+  label?: string;
+  labelColor?: string;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "relative",
+        height: 56,
+        background: from,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          clipPath: "polygon(0 100%, 100% 12%, 100% 100%, 0 100%)",
+          background: to,
+        }}
+      />
+      {label && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 8,
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+            fontSize: 10,
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: labelColor,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {label}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HeroNav() {
+  return (
+    <header className="nei-v2-nav">
+      <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+        <span
+          style={{
+            fontFamily: "var(--font-sora), var(--font-inter), system-ui, sans-serif",
+            fontWeight: 600,
+            fontSize: 16,
+            letterSpacing: 0,
+            color: "#F2F4F8",
+          }}
+        >
+          Trifecta Capital
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+            fontSize: 10,
+            padding: "3px 8px",
+            borderRadius: 5,
+            background: "rgba(122,149,242,0.14)",
+            color: "#A9C0FF",
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            fontWeight: 600,
+            border: "1px solid rgba(122,149,242,0.28)",
+          }}
+        >
+          NEI
+        </span>
+      </div>
+      <nav className="nei-v2-links" aria-label="Primary navigation">
+        {[
+          ["Performance", "#performance"],
+          ["Constituents", "#constituents"],
+          ["Sectors", "#sectors"],
+          ["Methodology", "#methodology"],
+        ].map(([label, href]) => (
+          <a key={label} href={href}>
+            {label}
+          </a>
+        ))}
+        <a href="https://trifectacapital.in" target="_blank" rel="noopener noreferrer" className="nei-v2-nav-cta">
+          trifectacapital.in ↗
+        </a>
+      </nav>
+    </header>
+  );
+}
+
+function TickerDrift({ stocks }: { stocks: StockData[] }) {
+  const items = useMemo(() => {
+    const rows = stocks.length
+      ? stocks
+      : COMPANIES.map((company) => ({
+          ticker: company.ticker,
+          price: null,
+          changePct: null,
+        }));
+
+    return [...rows]
+      .sort((a, b) => Math.abs(b.changePct ?? 0) - Math.abs(a.changePct ?? 0))
+      .slice(0, 18)
+      .map((row) => ({
+        ticker: row.ticker,
+        price: row.price,
+        changePct: row.changePct,
+      }));
+  }, [stocks]);
+
+  if (!items.length) return null;
+
+  return (
+    <div className="nei-ticker-drift" aria-label="Constituent ticker tape">
+      <div className="nei-ticker-track">
+        {[...items, ...items].map((row, index) => (
+          <span key={`${row.ticker}-${index}`} className="nei-ticker-chip">
+            <span className="nei-ticker-symbol">{row.ticker}</span>
+            <span className="nei-ticker-price">
+              {row.price !== null ? row.price.toFixed(2) : "—"}
+            </span>
+            <span
+              className="nei-ticker-change"
+              style={{
+                color:
+                  (row.changePct ?? 0) >= 0
+                    ? "var(--nei-pos-bright)"
+                    : "var(--nei-neg-bright)",
+              }}
+            >
+              {row.changePct !== null ? fmtPct(row.changePct) : "—"}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main dashboard ───────────────────────────────────────────────────────────
 
 export function IndexDashboard() {
   const { data, isLoading } = useIndexData();
-  const { isDark, toggle: toggleDark } = useDarkMode();
   const [sparkSeries, setSparkSeries] = useState<number[]>([]);
   const [now, setNow] = useState(() => Date.now());
   const [constituentsView, setConstituentsView] = useState<"table" | "grid">("table");
+  const heroRef = useMouseGlow<HTMLElement>();
   const open = isMarketOpen();
 
   useEffect(() => {
@@ -360,24 +695,39 @@ export function IndexDashboard() {
 
   const indexValue = data?.indexValue ?? null;
   const changePct = data?.indexChangePct ?? null;
+  const dayChange = changePct ?? 0;
   const numCompanies = data?.numCompanies ?? COMPANIES.length;
   const stocks = data?.stocks ?? EMPTY_STOCKS;
+  const lastUpdated = data?.lastUpdated ?? null;
 
   const sinceInception =
     indexValue !== null
       ? ((indexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
       : null;
+  const sinceInceptionValue = sinceInception ?? 0;
 
   const advancers = stocks.filter((s) => (s.changePct ?? 0) > 0).length;
   const decliners = stocks.filter((s) => (s.changePct ?? 0) < 0).length;
+  const unchanged = Math.max(0, numCompanies - advancers - decliners);
+
+  const heroSeries = useMemo(() => {
+    if (sparkSeries.length === 0) {
+      return indexValue !== null ? [INDEX_BASE_VALUE, indexValue] : [];
+    }
+
+    if (indexValue === null) return sparkSeries;
+
+    const last = sparkSeries[sparkSeries.length - 1];
+    return Math.abs(last - indexValue) < 0.01 ? sparkSeries : [...sparkSeries, indexValue];
+  }, [indexValue, sparkSeries]);
 
   const high52w = useMemo(
-    () => (sparkSeries.length > 0 ? Math.max(...sparkSeries) : null),
-    [sparkSeries]
+    () => (heroSeries.length > 0 ? Math.max(...heroSeries) : null),
+    [heroSeries]
   );
   const low52w = useMemo(
-    () => (sparkSeries.length > 0 ? Math.min(...sparkSeries) : null),
-    [sparkSeries]
+    () => (heroSeries.length > 0 ? Math.min(...heroSeries) : null),
+    [heroSeries]
   );
 
   const topGainers = useMemo(
@@ -400,13 +750,39 @@ export function IndexDashboard() {
 
   const maxW: CSSProperties = { maxWidth: 1240, margin: "0 auto" };
 
-  // Current IST close time string for the card header
-  const nowIST = new Date().toLocaleString("en-IN", {
+  const nowIST = new Date(now).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
     timeZone: "Asia/Kolkata",
   });
+  const lastUpdatedLabel = lastUpdated
+    ? formatLastUpdated(lastUpdated, now)
+    : open
+      ? "live"
+      : "last close";
+  const heroStyle = {
+    "--nei-pos": "#7DD89B",
+    "--nei-neg": "#E89175",
+    "--nei-grid": "rgba(232,235,240,0.10)",
+    "--nei-grid-strong": "rgba(232,235,240,0.16)",
+    "--nei-muted": "rgba(232,235,240,0.66)",
+    "--nei-fg": "#F2F4F8",
+  } as CSSProperties;
+  const darkSectionVars = {
+    "--nei-surface": "rgba(255,255,255,0.065)",
+    "--nei-fg": "#F2F4F8",
+    "--nei-muted": "rgba(232,235,240,0.68)",
+    "--nei-muted-faint": "rgba(232,235,240,0.42)",
+    "--nei-grid": "rgba(232,235,240,0.10)",
+    "--nei-grid-strong": "rgba(232,235,240,0.16)",
+    "--nei-hover": "rgba(232,235,240,0.06)",
+    "--nei-chip": "rgba(232,235,240,0.08)",
+    "--nei-card-shadow": "0 24px 60px rgba(7,11,22,0.28)",
+    "--nei-pos": "#7DD89B",
+    "--nei-neg": "#E89175",
+    "--nei-accent": "#A9C0FF",
+  } as CSSProperties;
 
   return (
     <div
@@ -417,399 +793,265 @@ export function IndexDashboard() {
         fontFamily: "var(--font-inter), system-ui, sans-serif",
       }}
     >
-      {/* ─── NAV ─── */}
-      <header
+      <section
+        ref={heroRef}
+        data-screen-label="01 Hero"
         style={{
-          padding: "18px 32px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          background: "color-mix(in oklab, var(--nei-bg) 88%, transparent)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          borderBottom: "1px solid var(--nei-grid)",
+          ...heroStyle,
+          position: "relative",
+          minHeight: "94dvh",
+          background: "#172C54",
+          color: "#E8EBF0",
+          overflow: "hidden",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span
-            style={{
-              fontFamily: "var(--font-sora), system-ui, sans-serif",
-              fontWeight: 600,
-              fontSize: 15,
-              letterSpacing: "-0.025em",
-              color: "var(--nei-fg)",
-            }}
-          >
-            Trifecta Capital
-          </span>
-          <span
-            style={{
-              fontSize: 11,
-              padding: "3px 9px",
-              borderRadius: 6,
-              background: "color-mix(in oklab, var(--nei-accent) 14%, transparent)",
-              color: "var(--nei-accent)",
-              fontFamily: "var(--font-sora), system-ui, sans-serif",
-              letterSpacing: "0.10em",
-              textTransform: "uppercase" as const,
-              fontWeight: 700,
-            }}
-          >
-            NEI
-          </span>
-        </div>
-
-        <nav
-          className="nei-nav-links"
-          style={{ display: "flex", gap: 24, alignItems: "center", fontSize: 13 }}
+        <KineticBackdrop />
+        <TickFrame
+          className="nei-hero-frame"
+          inset={24}
+          tone="paper"
+          lineLen={90}
+          corner={22}
+          opacity={0.7}
+          padded={false}
+          style={{ position: "relative", zIndex: 3, minHeight: "94dvh" }}
         >
-          <a href="#performance" style={{ color: "var(--nei-muted)", textDecoration: "none" }}>
-            Performance
-          </a>
-          <a href="#constituents" style={{ color: "var(--nei-muted)", textDecoration: "none" }}>
-            Constituents
-          </a>
-          <a href="#methodology" style={{ color: "var(--nei-muted)", textDecoration: "none" }}>
-            Methodology
-          </a>
-          <button
-            onClick={toggleDark}
-            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              border: "1px solid var(--nei-grid-strong)",
-              background: "transparent",
-              cursor: "pointer",
-              color: "var(--nei-muted)",
-              fontSize: 15,
-              flexShrink: 0,
-              transition: "border-color 100ms",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--nei-accent)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--nei-grid-strong)";
-            }}
-          >
-            {isDark ? "☀" : "☽"}
-          </button>
-          <a
-            href="https://trifectacapital.in"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: "var(--nei-accent)",
-              color: "#fff",
-              padding: "8px 14px",
-              borderRadius: 8,
-              textDecoration: "none",
-              fontWeight: 600,
-              fontSize: 13,
-            }}
-          >
-            trifectacapital.in ↗
-          </a>
-        </nav>
-      </header>
+          <HeroNav />
 
-      {/* ─── §01 HERO ─── */}
-      <section style={{ padding: "64px 32px 72px", background: "var(--nei-bg)" }}>
-        <div style={maxW}>
-          {/* Eyebrow row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 36, flexWrap: "wrap" }}>
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 11,
-                padding: "6px 12px 6px 10px",
-                borderRadius: 999,
-                background: "color-mix(in oklab, var(--nei-accent) 12%, transparent)",
-                color: "var(--nei-accent)",
-                letterSpacing: "0.08em",
-                fontWeight: 600,
-                border: "1px solid color-mix(in oklab, var(--nei-accent) 24%, transparent)",
-              }}
-            >
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 999,
-                  background: "var(--nei-accent)",
-                }}
-              />
-              AN INDEX BY TRIFECTA CAPITAL
-            </span>
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 7,
-                fontSize: 11,
-                fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase" as const,
-                color: "var(--nei-muted)",
-              }}
-            >
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: open ? "var(--nei-pos)" : "var(--nei-muted)",
-                  animation: open ? "nei-live-pulse 2s ease-in-out infinite" : "none",
-                }}
-              />
-              Market {open ? "Open" : "Closed"}
-            </span>
-          </div>
-
-          {/* Two-column grid */}
-          <div className="nei-hero-grid">
-            {/* Left */}
-            <div>
-              <h1
-                className="nei-heading"
-                style={{
-                  fontWeight: 600,
-                  fontSize: "clamp(40px, 5vw, 64px)",
-                  lineHeight: 1.02,
-                  letterSpacing: "-0.035em",
-                  margin: "0 0 22px",
-                  color: "var(--nei-fg)",
-                }}
-              >
-                India&apos;s new economy,
-                <br />
-                in one ticker.
-              </h1>
-              <p
-                style={{
-                  fontSize: 17,
-                  lineHeight: 1.55,
-                  color: "var(--nei-muted)",
-                  maxWidth: 480,
-                  margin: "0 0 32px",
-                }}
-              >
-                {numCompanies} VC-backed Indian companies that have listed on
-                public markets, tracked as a single equal-weighted index. Built
-                by Trifecta Capital — backers of this asset class since 2015.
-              </p>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <a
-                  href="#methodology"
+          <div className="nei-hero-inner">
+            <div className="nei-hero-meta">
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <span
                   style={{
-                    padding: "13px 20px",
-                    background: "var(--nei-accent)",
-                    color: "#fff",
-                    borderRadius: 10,
-                    textDecoration: "none",
-                    fontWeight: 600,
-                    fontSize: 14,
-                    display: "inline-flex",
+                    width: 7,
+                    height: 7,
+                    borderRadius: 999,
+                    background: open ? "#5FBE7E" : "rgba(232,235,240,0.45)",
+                    boxShadow: open ? "0 0 0 0 rgba(95,190,126,0.6)" : "none",
+                    animation: open ? "nei-live-pulse 2.2s ease-out infinite" : "none",
+                  }}
+                />
+                Market {open ? "open" : "closed"} · {nowIST}
+              </span>
+              <span style={{ opacity: 0.5 }}>—</span>
+              <span>NEI · equal-weighted</span>
+              <span style={{ opacity: 0.5 }}>—</span>
+              <span>{numCompanies} listings · since {inceptionLabel}</span>
+            </div>
+
+            <div className="nei-hero-grid">
+              <div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    color: "rgba(232,235,240,0.55)",
+                    marginBottom: 20,
+                    display: "flex",
                     alignItems: "center",
-                    gap: 8,
-                    letterSpacing: "-0.005em",
+                    gap: 12,
                   }}
                 >
-                  See methodology
-                  <span style={{ opacity: 0.7 }}>→</span>
-                </a>
-                <a
-                  href="#constituents"
+                  <span style={{ display: "inline-block", width: 28, height: 1, background: "rgba(232,235,240,0.45)" }} />
+                  The New Economy Index
+                </div>
+                <h1
+                  className="nei-heading"
                   style={{
-                    padding: "13px 20px",
-                    background: "transparent",
-                    color: "var(--nei-fg)",
-                    border: "1px solid var(--nei-grid-strong)",
-                    borderRadius: 10,
-                    textDecoration: "none",
                     fontWeight: 500,
-                    fontSize: 14,
+                    fontSize: "clamp(40px, 5.6vw, 76px)",
+                    lineHeight: 0.98,
+                    letterSpacing: 0,
+                    margin: "0 0 28px",
+                    color: "#F2F4F8",
+                    maxWidth: 720,
                   }}
                 >
-                  All {numCompanies} companies
-                </a>
+                  India&apos;s new economy,
+                  <br />
+                  <span style={{ color: "rgba(232,235,240,0.55)" }}>
+                    tracked as a single ticker.
+                  </span>
+                </h1>
+                <p
+                  style={{
+                    fontSize: 17,
+                    lineHeight: 1.55,
+                    color: "rgba(232,235,240,0.72)",
+                    maxWidth: 540,
+                    margin: 0,
+                  }}
+                >
+                  {numCompanies} VC-backed Indian companies that have listed on
+                  public markets, weighted equally and rebalanced quarterly.
+                  Built by Trifecta Capital — backers of this asset class since 2015.
+                </p>
+
+                <div style={{ display: "flex", gap: 10, marginTop: 36, flexWrap: "wrap" }}>
+                  <a className="nei-hero-primary" href="#performance">
+                    See performance
+                    <span style={{ opacity: 0.55 }}>→</span>
+                  </a>
+                  <a className="nei-hero-secondary" href="#constituents">
+                    All {numCompanies} constituents
+                  </a>
+                </div>
+              </div>
+
+              <div style={{ position: "relative" }}>
+                <TickFrame inset={0} tone="paper" lineLen={48} corner={14} opacity={0.45} padded={false}>
+                  <div className="nei-hero-card">
+                    {data?.isStale && (
+                      <div
+                        style={{
+                          background: "rgba(232,145,117,0.10)",
+                          border: "1px solid rgba(232,145,117,0.28)",
+                          borderRadius: 8,
+                          padding: "7px 12px",
+                          fontSize: 12,
+                          color: "#E89175",
+                          marginBottom: 14,
+                        }}
+                      >
+                        Showing last market close · live prices unavailable
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 12,
+                        marginBottom: 12,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+                            fontSize: 11,
+                            letterSpacing: "0.18em",
+                            textTransform: "uppercase",
+                            color: "rgba(232,235,240,0.55)",
+                            fontWeight: 600,
+                            marginBottom: 6,
+                          }}
+                        >
+                          NEI · Index Level
+                        </div>
+                        <div style={{ fontSize: 12, color: "rgba(232,235,240,0.58)" }}>
+                          {open ? "Live" : "15:30 IST · close"} · updated {lastUpdatedLabel}
+                        </div>
+                      </div>
+                      {changePct !== null && (
+                        <span
+                          style={{
+                            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            padding: "4px 10px",
+                            borderRadius: 999,
+                            color: dayChange >= 0 ? "#7DD89B" : "#E89175",
+                            background:
+                              dayChange >= 0
+                                ? "rgba(95,190,126,0.10)"
+                                : "rgba(221,122,78,0.10)",
+                            border:
+                              dayChange >= 0
+                                ? "1px solid rgba(95,190,126,0.28)"
+                                : "1px solid rgba(221,122,78,0.28)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {fmtPct(dayChange)}
+                        </span>
+                      )}
+                    </div>
+
+                    {isLoading && indexValue === null ? (
+                      <div style={{ margin: "8px 0 10px" }}>
+                        <Skeleton h={82} r={8} />
+                      </div>
+                    ) : (
+                      <div
+                        className="nei-mono"
+                        style={{
+                          fontSize: "clamp(56px, 8vw, 96px)",
+                          fontWeight: 500,
+                          letterSpacing: 0,
+                          lineHeight: 0.95,
+                          color: "#F2F4F8",
+                          marginBottom: 6,
+                        }}
+                      >
+                        {fmtNum(indexValue)}
+                      </div>
+                    )}
+
+                    {sinceInception !== null && (
+                      <div style={{ fontSize: 13, color: "rgba(232,235,240,0.62)", marginBottom: 22 }}>
+                        <span
+                          className="nei-mono"
+                          style={{
+                            color: sinceInceptionValue >= 0 ? "#7DD89B" : "#E89175",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {fmtPct(sinceInceptionValue)}
+                        </span>{" "}
+                        since inception · base 1,000
+                      </div>
+                    )}
+
+                    <div style={{ height: 82, margin: "0 -8px 18px" }}>
+                      {heroSeries.length > 1 ? (
+                        <Sparkline series={heroSeries} height={82} />
+                      ) : (
+                        <Skeleton h={82} r={6} />
+                      )}
+                    </div>
+
+                    <div className="nei-hero-card-stats">
+                      {[
+                        { l: "52W High", v: high52w !== null ? fmtNum(high52w, 0) : "—" },
+                        { l: "52W Low", v: low52w !== null ? fmtNum(low52w, 0) : "—" },
+                        { l: "Adv", v: stocks.length > 0 ? advancers : "—", c: "#7DD89B" },
+                        { l: "Dec", v: stocks.length > 0 ? decliners : "—", c: "#E89175" },
+                      ].map((item) => (
+                        <div key={item.l}>
+                          <div className="nei-hero-stat-label">{item.l}</div>
+                          <div
+                            className="nei-mono"
+                            style={{
+                              fontSize: 18,
+                              fontWeight: 500,
+                              color: item.c ?? "#E8EBF0",
+                              letterSpacing: 0,
+                            }}
+                          >
+                            {item.v}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TickFrame>
               </div>
             </div>
 
-            {/* Right: index card */}
-            <div
-              className="nei-card"
-              style={{ padding: "32px 32px 28px", overflow: "hidden", position: "relative" }}
-            >
-              {/* Blue accent top stripe */}
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 3,
-                  background: "var(--nei-accent)",
-                }}
-              />
-
-              {data?.isStale && (
-                <div
-                  style={{
-                    background: "color-mix(in oklab, var(--nei-neg) 12%, transparent)",
-                    border: "1px solid color-mix(in oklab, var(--nei-neg) 28%, transparent)",
-                    borderRadius: 8,
-                    padding: "7px 12px",
-                    fontSize: 12,
-                    color: "var(--nei-neg)",
-                    marginBottom: 14,
-                  }}
-                >
-                  Showing last market close · Live prices unavailable
-                </div>
-              )}
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: 14,
-                  gap: 8,
-                }}
-              >
-                <div>
-                  <div className="nei-label" style={{ marginBottom: 4 }}>
-                    NEI · Index Level
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--nei-muted)" }}>
-                    {nowIST} · {open ? "Live" : "15:30 IST · close"}
-                  </div>
-                </div>
-                {changePct !== null && (
-                  <span
-                    style={{
-                      fontSize: 12,
-                      padding: "5px 11px",
-                      borderRadius: 999,
-                      fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-                      fontWeight: 600,
-                      background:
-                        changePct >= 0
-                          ? "color-mix(in oklab, var(--nei-pos) 18%, transparent)"
-                          : "color-mix(in oklab, var(--nei-neg) 18%, transparent)",
-                      color: changePct >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {fmtPct(changePct)}
-                  </span>
-                )}
-              </div>
-
-              {/* Big number */}
-              {isLoading && indexValue === null ? (
-                <div style={{ margin: "8px 0 6px" }}>
-                  <Skeleton h={80} r={8} />
-                </div>
-              ) : (
-                <div
-                  className="nei-mono"
-                  style={{
-                    fontSize: "clamp(56px, 8vw, 88px)",
-                    fontWeight: 500,
-                    letterSpacing: "-0.035em",
-                    lineHeight: 0.95,
-                    marginBottom: 6,
-                    color: "var(--nei-fg)",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {fmtNum(indexValue)}
-                </div>
-              )}
-
-              {sinceInception !== null && (
-                <div style={{ fontSize: 13, color: "var(--nei-muted)", marginBottom: 22 }}>
-                  <span
-                    className="nei-mono"
-                    style={{
-                      color: sinceInception >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {fmtPct(sinceInception)}
-                  </span>{" "}
-                  since inception · base 1,000
-                  {data?.lastUpdated && (
-                    <span style={{ marginLeft: 8, fontSize: 11, color: "var(--nei-muted-faint)" }}>
-                      · {formatLastUpdated(data.lastUpdated, now)}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Sparkline */}
-              <div style={{ height: 86, margin: "0 -8px" }}>
-                {sparkSeries.length > 1 ? (
-                  <Sparkline series={sparkSeries} height={86} />
-                ) : (
-                  <Skeleton h={86} r={6} />
-                )}
-              </div>
-
-              {/* Advancers / Decliners / Unchanged */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  marginTop: 18,
-                  paddingTop: 18,
-                  borderTop: "1px solid var(--nei-grid)",
-                }}
-              >
-                {[
-                  { l: "Advancers", v: advancers, c: "var(--nei-pos)" },
-                  { l: "Decliners", v: decliners, c: "var(--nei-neg)" },
-                  {
-                    l: "Unchanged",
-                    v: Math.max(0, numCompanies - advancers - decliners),
-                    c: "var(--nei-muted)",
-                  },
-                ].map((s, i) => (
-                  <div
-                    key={s.l}
-                    style={{
-                      borderRight: i < 2 ? "1px solid var(--nei-grid)" : "none",
-                      paddingLeft: i > 0 ? 14 : 0,
-                    }}
-                  >
-                    <div style={{ fontSize: 11, color: "var(--nei-muted)", marginBottom: 4, fontWeight: 500 }}>
-                      {s.l}
-                    </div>
-                    <div
-                      className="nei-mono"
-                      style={{ fontSize: 20, fontWeight: 600, color: s.c }}
-                    >
-                      {isLoading && stocks.length === 0 ? "—" : s.v}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="nei-scroll-cue">
+              <span />
+              Scroll to explore
             </div>
           </div>
-        </div>
+        </TickFrame>
+        <TickerDrift stocks={stocks} />
       </section>
+
+      <ShoulderDivider from="#172C54" to="var(--nei-bg)" label="performance" />
 
       {/* ─── §02 STAT BAND ─── */}
       <section style={{ background: "var(--nei-accent)", padding: "40px 32px" }}>
@@ -828,8 +1070,8 @@ export function IndexDashboard() {
               { l: "52-week high", v: high52w !== null ? fmtNum(high52w, 0) : "—", sub: "" },
               { l: "52-week low", v: low52w !== null ? fmtNum(low52w, 0) : "—", sub: "" },
               {
-                l: "Advancers",
-                v: stocks.length > 0 ? `${advancers} / ${numCompanies}` : "—",
+                l: "Advance/Decline",
+                v: stocks.length > 0 ? `${advancers}/${decliners}/${unchanged}` : "—",
                 sub: "today",
               },
             ].map((s, i, arr) => (
@@ -860,7 +1102,7 @@ export function IndexDashboard() {
                     fontFamily: "var(--font-sora), system-ui, sans-serif",
                     fontSize: 22,
                     fontWeight: 600,
-                    letterSpacing: "-0.025em",
+                    letterSpacing: 0,
                     color: "#fff",
                     lineHeight: 1.1,
                   }}
@@ -878,19 +1120,41 @@ export function IndexDashboard() {
         </div>
       </section>
 
+      <ShoulderDivider from="var(--nei-accent)" to="#172C54" label="sectors" />
+
       {/* ─── §03 TODAY'S MARKET ─── */}
-      <section style={{ padding: "72px 32px 56px", background: "var(--nei-surface)" }}>
-        <div style={maxW}>
-          <SectionEyebrow n="03" label="Today's Market" />
+      <section
+        id="sectors"
+        style={{
+          ...darkSectionVars,
+          padding: "76px 32px 72px",
+          background: "#172C54",
+          color: "#E8EBF0",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(70% 50% at 50% 0%, rgba(169,192,255,0.13), transparent 64%), linear-gradient(180deg, rgba(7,11,22,0.05), rgba(7,11,22,0.28))",
+            pointerEvents: "none",
+          }}
+        />
+        <div style={{ ...maxW, position: "relative", zIndex: 1 }}>
+          <SectionEyebrow n="03" label="Sectors & Movers" light />
           <h2
             className="nei-heading"
             style={{
               fontSize: "clamp(26px, 3vw, 36px)",
               fontWeight: 600,
-              letterSpacing: "-0.025em",
+              letterSpacing: 0,
               margin: "0 0 32px",
               lineHeight: 1.1,
-              color: "var(--nei-fg)",
+              color: "#fff",
             }}
           >
             Where the index moved today.
@@ -929,7 +1193,7 @@ export function IndexDashboard() {
                 style={{
                   fontSize: "clamp(26px, 3vw, 36px)",
                   fontWeight: 600,
-                  letterSpacing: "-0.025em",
+                  letterSpacing: 0,
                   margin: "0 0 8px",
                   lineHeight: 1.1,
                   color: "var(--nei-fg)",
@@ -989,7 +1253,7 @@ export function IndexDashboard() {
                 style={{
                   fontSize: "clamp(26px, 3vw, 36px)",
                   fontWeight: 600,
-                  letterSpacing: "-0.025em",
+                  letterSpacing: 0,
                   margin: "0 0 8px",
                   lineHeight: 1.1,
                   color: "var(--nei-fg)",
@@ -1036,7 +1300,7 @@ export function IndexDashboard() {
                 style={{
                   fontSize: "clamp(30px, 3.8vw, 48px)",
                   fontWeight: 600,
-                  letterSpacing: "-0.03em",
+                  letterSpacing: 0,
                   lineHeight: 1.08,
                   margin: "0 0 24px",
                   color: "#fff",
@@ -1089,7 +1353,7 @@ export function IndexDashboard() {
                   style={{
                     background: "rgba(255,255,255,0.06)",
                     border: "1px solid rgba(232,235,240,0.14)",
-                    borderRadius: 16,
+                    borderRadius: 8,
                     padding: "22px 24px",
                     display: "grid",
                     gridTemplateColumns: "52px 1fr",
@@ -1115,7 +1379,7 @@ export function IndexDashboard() {
                         fontSize: 17,
                         fontWeight: 600,
                         margin: "0 0 6px",
-                        letterSpacing: "-0.01em",
+                        letterSpacing: 0,
                         color: "#fff",
                       }}
                     >

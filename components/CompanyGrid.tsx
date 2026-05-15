@@ -137,7 +137,7 @@ function CompanyLogo({
           fontFamily: "var(--font-sora), var(--font-inter), system-ui",
           fontWeight: 600,
           fontSize: Math.max(10, Math.round(size * 0.31)),
-          letterSpacing: "-0.01em",
+          letterSpacing: 0,
           lineHeight: 1,
         }}
       >
@@ -468,7 +468,7 @@ function CardView({ stocks }: { stocks: StockData[] }) {
                   style={{
                     fontSize: 14,
                     fontWeight: 600,
-                    letterSpacing: "-0.01em",
+                    letterSpacing: 0,
                     lineHeight: 1.2,
                     color: "var(--nei-fg)",
                     overflow: "hidden",
@@ -518,7 +518,7 @@ function CardView({ stocks }: { stocks: StockData[] }) {
                 style={{
                   fontSize: 17,
                   color: "var(--nei-fg)",
-                  letterSpacing: "-0.01em",
+                  letterSpacing: 0,
                 }}
               >
                 {r.price !== null
@@ -569,7 +569,7 @@ function ViewToggle({
         display: "inline-flex",
         padding: 4,
         background: "var(--nei-chip)",
-        borderRadius: 10,
+        borderRadius: 8,
         gap: 2,
       }}
     >

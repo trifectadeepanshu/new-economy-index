@@ -432,7 +432,7 @@ export function IndexChart({
             style={{
               fontSize: 17,
               fontWeight: 600,
-              letterSpacing: "-0.015em",
+              letterSpacing: 0,
               color: "var(--nei-fg)",
             }}
           >
