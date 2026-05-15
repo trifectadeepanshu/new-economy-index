@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -40,6 +41,45 @@ const inceptionLabel = new Date(`${INDEX_BASE_DATE}T00:00:00+05:30`).toLocaleStr
 );
 const EMPTY_STOCKS: StockData[] = [];
 
+// ─── Count-up animation ───────────────────────────────────────────────────────
+
+function useCountUp(target: number | null): number | null {
+  const [displayed, setDisplayed] = useState<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const fromRef = useRef<number>(INDEX_BASE_VALUE);
+
+  useEffect(() => {
+    if (target === null) return;
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+
+    const from = fromRef.current;
+    const isFirst = from === INDEX_BASE_VALUE;
+    const duration = isFirst ? 1400 : 600;
+    const easeExp = isFirst ? 4 : 2;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const t = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, easeExp);
+      setDisplayed(from + (target - from) * eased);
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        setDisplayed(target);
+        fromRef.current = target;
+        rafRef.current = null;
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [target]);
+
+  return displayed;
+}
+
 // ─── Sparkline ────────────────────────────────────────────────────────────────
 
 function Sparkline({ series, height = 80 }: { series: number[]; height?: number }) {
@@ -72,7 +112,7 @@ function Sparkline({ series, height = 80 }: { series: number[]; height?: number 
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={area} fill="url(#sparkGrad)" />
+      <path d={area} fill="url(#sparkGrad)" className="nei-spark-area" />
       <path
         d={pts}
         fill="none"
@@ -81,6 +121,10 @@ function Sparkline({ series, height = 80 }: { series: number[]; height?: number 
         strokeLinejoin="round"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
+        pathLength="1"
+        strokeDasharray="1"
+        strokeDashoffset="1"
+        className="nei-spark-line"
       />
     </svg>
   );
@@ -485,6 +529,9 @@ export function IndexDashboard() {
   const [compactChrome, setCompactChrome] = useState(() =>
     typeof window === "undefined" ? false : window.scrollY > 36
   );
+  const [valueFlash, setValueFlash] = useState<"" | "pos" | "neg">("");
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const prevIndexRef = useRef<number | null>(null);
   const open = isMarketOpen();
 
   useEffect(() => {
@@ -499,9 +546,10 @@ export function IndexDashboard() {
   }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 60_000);
+    const interval = open ? 10_000 : 60_000;
+    const t = setInterval(() => setNow(Date.now()), interval);
     return () => clearInterval(t);
-  }, []);
+  }, [open]);
 
   useEffect(() => {
     const updateChrome = () => setCompactChrome(window.scrollY > 36);
@@ -510,10 +558,27 @@ export function IndexDashboard() {
   }, []);
 
   const indexValue = data?.indexValue ?? null;
+  const stocks = data?.stocks ?? EMPTY_STOCKS;
+
+  useEffect(() => {
+    if (indexValue === null) return;
+    if (prevIndexRef.current !== null && prevIndexRef.current !== indexValue) {
+      const dir = indexValue > prevIndexRef.current ? "pos" : "neg";
+      setValueFlash(dir);
+      const t = setTimeout(() => setValueFlash(""), 700);
+      prevIndexRef.current = indexValue;
+      return () => clearTimeout(t);
+    }
+    prevIndexRef.current = indexValue;
+  }, [indexValue]);
+
+  useEffect(() => {
+    if (!dataLoaded && stocks.length > 0) setDataLoaded(true);
+  }, [dataLoaded, stocks.length]);
+
   const changePct = data?.indexChangePct ?? null;
   const dayChange = changePct ?? 0;
   const numCompanies = data?.numCompanies ?? COMPANIES.length;
-  const stocks = data?.stocks ?? EMPTY_STOCKS;
   const lastUpdated = data?.lastUpdated ?? null;
 
   const sinceInception =
@@ -544,6 +609,8 @@ export function IndexDashboard() {
     () => (heroSeries.length > 0 ? Math.min(...heroSeries) : null),
     [heroSeries]
   );
+
+  const displayedValue = useCountUp(indexValue);
 
   const nowIST = new Date(now).toLocaleString("en-IN", {
     day: "2-digit",
@@ -726,7 +793,7 @@ export function IndexDashboard() {
                       </div>
                     ) : (
                       <div
-                        className="nei-mono"
+                        className={`nei-mono${valueFlash ? ` nei-value-flash-${valueFlash}` : ""}`}
                         style={{
                           fontSize: "clamp(56px, 8vw, 96px)",
                           fontWeight: 500,
@@ -734,9 +801,18 @@ export function IndexDashboard() {
                           lineHeight: 0.95,
                           color: "#F2F4F8",
                           marginBottom: 6,
+                          display: "flex",
+                          alignItems: "baseline",
+                          gap: 2,
                         }}
                       >
-                        {fmtNum(indexValue)}
+                        {fmtNum(displayedValue ?? indexValue)}
+                        {open && (
+                          <span
+                            aria-hidden="true"
+                            className="nei-live-cursor"
+                          />
+                        )}
                       </div>
                     )}
 
@@ -769,8 +845,13 @@ export function IndexDashboard() {
                         { l: "52W Low", v: low52w !== null ? fmtNum(low52w, 0) : "—" },
                         { l: "Adv", v: stocks.length > 0 ? advancers : "—", c: "#7DD89B" },
                         { l: "Dec", v: stocks.length > 0 ? decliners : "—", c: "#E89175" },
-                      ].map((item) => (
-                        <div key={item.l}>
+                      ].map((item, idx) => (
+                        <div
+                          key={item.l}
+                          style={dataLoaded ? {
+                            animation: `nei-stat-reveal 0.4s ease-out ${idx * 90}ms both`,
+                          } : { opacity: 0 }}
+                        >
                           <div className="nei-hero-stat-label">{item.l}</div>
                           <div
                             className="nei-mono"
