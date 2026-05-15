@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import Image from "next/image";
 import { useIndexData, type StockData } from "@/hooks/useIndexData";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { IndexChart } from "@/components/IndexChart";
@@ -81,36 +80,19 @@ function Sparkline({ series, height = 80 }: { series: number[]; height?: number 
   );
 }
 
-// ─── Market status ────────────────────────────────────────────────────────────
+// ─── Skeleton pulse ───────────────────────────────────────────────────────────
 
-function MarketStatus() {
-  const open = isMarketOpen();
+function Skeleton({ w, h, r = 6 }: { w?: string | number; h: number; r?: number }) {
   return (
-    <span
+    <div
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 7,
-        fontSize: 11,
-        fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-        letterSpacing: "0.06em",
-        textTransform: "uppercase",
-        color: "var(--nei-muted)",
+        width: w ?? "100%",
+        height: h,
+        borderRadius: r,
+        background: "var(--nei-grid-strong)",
+        animation: "nei-pulse 1.8s ease-in-out infinite",
       }}
-    >
-      <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: "50%",
-          background: open ? "var(--nei-pos)" : "var(--nei-muted)",
-          boxShadow: open ? "0 0 0 3px rgba(44, 110, 60, 0.22)" : "none",
-          flexShrink: 0,
-          animation: open ? "nei-live-pulse 2s ease-in-out infinite" : "none",
-        }}
-      />
-      Market {open ? "Open" : "Closed"}
-    </span>
+    />
   );
 }
 
@@ -122,13 +104,7 @@ interface MoverRow {
   changePct: number | null;
 }
 
-function MoversCard({
-  title,
-  rows,
-}: {
-  title: string;
-  rows: MoverRow[];
-}) {
+function MoversCard({ title, rows }: { title: string; rows: MoverRow[] }) {
   return (
     <div className="nei-card" style={{ padding: "18px 20px" }}>
       <div className="nei-label" style={{ marginBottom: 14 }}>
@@ -138,18 +114,12 @@ function MoversCard({
         {rows.map((r) => (
           <div
             key={r.ticker}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 8,
-            }}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}
           >
             <div style={{ minWidth: 0 }}>
               <div
                 style={{
-                  fontFamily:
-                    "var(--font-jetbrains), ui-monospace, monospace",
+                  fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
                   fontWeight: 600,
                   fontSize: 13,
                   letterSpacing: "0.02em",
@@ -179,8 +149,7 @@ function MoversCard({
                   fontSize: 13,
                   fontWeight: 600,
                   flexShrink: 0,
-                  color:
-                    r.changePct >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
+                  color: r.changePct >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
                 }}
               >
                 {fmtPct(r.changePct)}
@@ -189,16 +158,14 @@ function MoversCard({
           </div>
         ))}
         {rows.length === 0 && (
-          <div style={{ fontSize: 12, color: "var(--nei-muted)" }}>
-            No data yet
-          </div>
+          <div style={{ fontSize: 12, color: "var(--nei-muted)" }}>No data yet</div>
         )}
       </div>
     </div>
   );
 }
 
-// ─── Sector change card ───────────────────────────────────────────────────────
+// ─── Sector card ──────────────────────────────────────────────────────────────
 
 function SectorCard({
   stocks,
@@ -239,22 +206,12 @@ function SectorCard({
         {sectors.map((s) => (
           <div key={s.name}>
             <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 5,
-              }}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}
             >
-              <span
-                style={{ fontSize: 12, color: "var(--nei-fg)", fontWeight: 500 }}
-              >
-                {s.name}
-              </span>
+              <span style={{ fontSize: 12, color: "var(--nei-fg)", fontWeight: 500 }}>{s.name}</span>
               <span
                 style={{
-                  fontFamily:
-                    "var(--font-jetbrains), ui-monospace, monospace",
+                  fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
                   fontSize: 12,
                   fontWeight: 600,
                   color: s.avg! >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
@@ -263,20 +220,12 @@ function SectorCard({
                 {fmtPct(s.avg!)}
               </span>
             </div>
-            <div
-              style={{
-                height: 3,
-                background: "var(--nei-grid)",
-                borderRadius: 2,
-                overflow: "hidden",
-              }}
-            >
+            <div style={{ height: 3, background: "var(--nei-grid)", borderRadius: 2, overflow: "hidden" }}>
               <div
                 style={{
                   width: `${Math.min(100, Math.abs(s.avg!) * 15)}%`,
                   height: "100%",
-                  background:
-                    s.avg! >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
+                  background: s.avg! >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
                   borderRadius: 2,
                 }}
               />
@@ -284,59 +233,10 @@ function SectorCard({
           </div>
         ))}
         {sectors.length === 0 && (
-          <div style={{ fontSize: 12, color: "var(--nei-muted)" }}>
-            No data yet
-          </div>
+          <div style={{ fontSize: 12, color: "var(--nei-muted)" }}>No data yet</div>
         )}
       </div>
     </div>
-  );
-}
-
-function IndexFacts({ numCompanies }: { numCompanies: number }) {
-  const facts = [
-    { label: "Base value", value: "1,000" },
-    { label: "Weighting", value: "Equal" },
-    { label: "Coverage", value: `${numCompanies} companies` },
-    { label: "Refresh", value: "5 min" },
-  ];
-
-  return (
-    <div className="nei-fact-grid">
-      {facts.map((fact) => (
-        <div key={fact.label}>
-          <div className="nei-label" style={{ marginBottom: 5 }}>
-            {fact.label}
-          </div>
-          <div
-            className="nei-mono"
-            style={{
-              fontSize: 16,
-              fontWeight: 600,
-              color: "var(--nei-fg)",
-            }}
-          >
-            {fact.value}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ─── Skeleton pulse ───────────────────────────────────────────────────────────
-
-function Skeleton({ w, h, r = 6 }: { w?: string | number; h: number; r?: number }) {
-  return (
-    <div
-      style={{
-        width: w ?? "100%",
-        height: h,
-        borderRadius: r,
-        background: "var(--nei-grid-strong)",
-        animation: "nei-pulse 1.8s ease-in-out infinite",
-      }}
-    />
   );
 }
 
@@ -347,6 +247,7 @@ export function IndexDashboard() {
   const { isDark, toggle: toggleDark } = useDarkMode();
   const [sparkSeries, setSparkSeries] = useState<number[]>([]);
   const [now, setNow] = useState(() => Date.now());
+  const open = isMarketOpen();
 
   useEffect(() => {
     fetch("/api/index/history?range=1Y")
@@ -375,7 +276,15 @@ export function IndexDashboard() {
       : null;
 
   const advancers = stocks.filter((s) => (s.changePct ?? 0) > 0).length;
-  const decliners = stocks.filter((s) => (s.changePct ?? 0) < 0).length;
+
+  const high52w = useMemo(
+    () => (sparkSeries.length > 0 ? Math.max(...sparkSeries) : null),
+    [sparkSeries]
+  );
+  const low52w = useMemo(
+    () => (sparkSeries.length > 0 ? Math.min(...sparkSeries) : null),
+    [sparkSeries]
+  );
 
   const topGainers = useMemo(
     () =>
@@ -396,9 +305,7 @@ export function IndexDashboard() {
   );
 
   const maxW: CSSProperties = { maxWidth: 1240, margin: "0 auto" };
-  const section = (
-    extra: CSSProperties = {}
-  ): CSSProperties => ({
+  const section = (extra: CSSProperties = {}): CSSProperties => ({
     padding: "40px 32px",
     ...extra,
   });
@@ -415,7 +322,7 @@ export function IndexDashboard() {
       {/* ─── NAV ─── */}
       <header
         style={{
-          padding: "16px 32px",
+          padding: "18px 32px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -428,53 +335,49 @@ export function IndexDashboard() {
           borderBottom: "1px solid var(--nei-grid)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <Image
-            src="/trifecta-capital-logo.png"
-            alt="Trifecta Capital"
-            width={80}
-            height={24}
-            style={{ height: 20, width: "auto" }}
-            priority
-          />
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
           <span
-            style={{ width: 1, height: 14, background: "var(--nei-grid-strong)" }}
+            style={{
+              fontFamily: "var(--font-sora), system-ui, sans-serif",
+              fontWeight: 600,
+              fontSize: 15,
+              letterSpacing: "-0.025em",
+              lineHeight: 1,
+              color: "var(--nei-fg)",
+            }}
+          >
+            Trifecta Capital
+          </span>
+          <span
+            style={{
+              width: 1,
+              height: 14,
+              background: "var(--nei-grid-strong)",
+              alignSelf: "center",
+            }}
           />
           <span
             style={{
-              fontSize: 11,
-              padding: "3px 8px",
-              borderRadius: 6,
-              background: "var(--nei-chip)",
+              fontSize: 13,
               color: "var(--nei-muted)",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              fontWeight: 600,
+              letterSpacing: "0.005em",
             }}
           >
-            NEI
+            New Economy Index
           </span>
         </div>
+
         <nav
           className="nei-nav-links"
-          style={{ display: "flex", gap: 24, alignItems: "center", fontSize: 13 }}
+          style={{ display: "flex", gap: 28, alignItems: "center", fontSize: 13 }}
         >
-          <a
-            href="#performance"
-            style={{ color: "var(--nei-muted)", textDecoration: "none" }}
-          >
+          <a href="#performance" style={{ color: "var(--nei-muted)", textDecoration: "none" }}>
             Performance
           </a>
-          <a
-            href="#constituents"
-            style={{ color: "var(--nei-muted)", textDecoration: "none" }}
-          >
-            Companies
+          <a href="#constituents" style={{ color: "var(--nei-muted)", textDecoration: "none" }}>
+            Constituents
           </a>
-          <a
-            href="#methodology"
-            style={{ color: "var(--nei-muted)", textDecoration: "none" }}
-          >
+          <a href="#methodology" style={{ color: "var(--nei-muted)", textDecoration: "none" }}>
             Methodology
           </a>
           <button
@@ -510,135 +413,115 @@ export function IndexDashboard() {
             href="https://trifectacapital.in"
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              background: "var(--nei-accent)",
-              color: "#FFFFFF",
-              padding: "7px 14px",
-              borderRadius: 8,
-              textDecoration: "none",
-              fontWeight: 500,
-              fontSize: 13,
-            }}
+            style={{ color: "var(--nei-fg)", textDecoration: "none", fontSize: 13 }}
           >
-            trifectacapital.in ↗
+            trifectacapital.in{" "}
+            <span style={{ color: "var(--nei-muted)" }}>↗</span>
           </a>
         </nav>
       </header>
 
       {/* ─── HERO ─── */}
-      <section style={section({ padding: "56px 32px 32px" })}>
+      <section style={section({ padding: "72px 32px 64px" })}>
         <div style={maxW}>
-          {/* Label row */}
+          {/* Eyebrow: two-block layout */}
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: 32,
-              flexWrap: "wrap",
+              alignItems: "flex-start",
+              gap: 16,
+              marginBottom: 40,
             }}
           >
-            <span
+            <div
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
                 fontSize: 11,
-                padding: "5px 10px 5px 8px",
-                borderRadius: 999,
-                background: "var(--nei-chip)",
-                color: "var(--nei-muted)",
-                letterSpacing: "0.04em",
+                fontFamily: "var(--font-sora), system-ui, sans-serif",
+                letterSpacing: "0.14em",
                 textTransform: "uppercase" as const,
-                fontWeight: 600,
+                color: "var(--nei-muted)",
+                fontWeight: 500,
+                lineHeight: 1.6,
               }}
             >
-              <span
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  background: "var(--nei-accent)",
-                }}
-              />
-              New Economy Index · NEI
-            </span>
-            <MarketStatus />
+              New Economy
+              <br />
+              Index
+            </div>
+            <span
+              style={{
+                width: 1,
+                height: 32,
+                background: "var(--nei-grid-strong)",
+                flexShrink: 0,
+                marginTop: 2,
+              }}
+            />
+            <div
+              style={{
+                fontSize: 11,
+                fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase" as const,
+                color: "var(--nei-muted)",
+                lineHeight: 1.6,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: open ? "var(--nei-pos)" : "var(--nei-muted)",
+                    animation: open ? "nei-live-pulse 2s ease-in-out infinite" : "none",
+                    flexShrink: 0,
+                  }}
+                />
+                Market
+              </div>
+              <div>{open ? "Open" : "Closed"}</div>
+            </div>
           </div>
 
+          {/* Two-column hero */}
           <div className="nei-hero-grid">
-            {/* Left: heading + sub */}
+            {/* Left: headline + description */}
             <div>
               <h1
                 className="nei-heading"
                 style={{
                   fontWeight: 600,
-                  fontSize: "clamp(34px, 4.4vw, 58px)",
-                  lineHeight: 1.05,
+                  fontSize: "clamp(36px, 4.8vw, 64px)",
+                  lineHeight: 1.02,
                   letterSpacing: "-0.035em",
-                  margin: "0 0 18px",
+                  margin: "0 0 24px",
                   color: "var(--nei-fg)",
                 }}
               >
                 India&apos;s new economy,
                 <br />
-                in one number.
+                tracked as one
+                <br />
+                number.
               </h1>
               <p
                 style={{
                   fontSize: 16,
-                  lineHeight: 1.6,
+                  lineHeight: 1.65,
                   color: "var(--nei-muted)",
-                  maxWidth: 460,
-                  margin: "0 0 28px",
+                  maxWidth: 480,
+                  margin: 0,
                 }}
               >
-                {numCompanies} VC-backed Indian companies now in public
-                markets, tracked as a single equal-weighted index. Built by
-                Trifecta Capital — backers of this asset class since 2015.
+                An equal-weighted index of {numCompanies} venture-backed Indian
+                companies now in public markets. Built by Trifecta Capital —
+                underwriters of this asset class since 2015.
               </p>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <a
-                  href="#methodology"
-                  style={{
-                    padding: "11px 18px",
-                    background: "var(--nei-fg)",
-                    color: "#FFFFFF",
-                    borderRadius: 10,
-                    textDecoration: "none",
-                    fontWeight: 500,
-                    fontSize: 14,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  Methodology{" "}
-                  <span style={{ opacity: 0.55, fontSize: 12 }}>→</span>
-                </a>
-                <a
-                  href="#constituents"
-                  style={{
-                    padding: "11px 18px",
-                    background: "transparent",
-                    color: "var(--nei-fg)",
-                    border: "1px solid var(--nei-grid-strong)",
-                    borderRadius: 10,
-                    textDecoration: "none",
-                    fontWeight: 500,
-                    fontSize: 14,
-                  }}
-                >
-                  All {numCompanies} companies
-                </a>
-              </div>
             </div>
 
-            {/* Right: index card */}
-            <div
-              className="nei-card"
-              style={{ padding: "28px 28px 24px", overflow: "hidden" }}
-            >
+            {/* Right: index level — open right-aligned layout */}
+            <div style={{ textAlign: "right" }}>
               {data?.isStale && (
                 <div
                   style={{
@@ -648,7 +531,8 @@ export function IndexDashboard() {
                     padding: "7px 12px",
                     fontSize: 12,
                     color: "var(--nei-neg)",
-                    marginBottom: 16,
+                    marginBottom: 12,
+                    display: "inline-block",
                   }}
                 >
                   Showing last market close · Live prices unavailable
@@ -657,157 +541,176 @@ export function IndexDashboard() {
 
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: 12,
-                  gap: 8,
-                  flexWrap: "wrap",
+                  fontSize: 11,
+                  fontFamily: "var(--font-sora), system-ui, sans-serif",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase" as const,
+                  color: "var(--nei-muted)",
+                  fontWeight: 600,
+                  marginBottom: 14,
                 }}
               >
-                <div>
-                  <div className="nei-label" style={{ marginBottom: 5 }}>
-                    Index Level
-                  </div>
-                  <div
-                    style={{ fontSize: 12, color: "var(--nei-muted)" }}
-                  >
-                    Base 1,000 · {inceptionLabel}
-                  </div>
-                </div>
-                {changePct !== null && (
-                  <span
-                    style={{
-                      fontSize: 12,
-                      padding: "4px 10px",
-                      borderRadius: 999,
-                      fontFamily:
-                        "var(--font-jetbrains), ui-monospace, monospace",
-                      fontWeight: 600,
-                      background:
-                        changePct >= 0
-                          ? "color-mix(in oklab, var(--nei-pos) 18%, transparent)"
-                          : "color-mix(in oklab, var(--nei-neg) 18%, transparent)",
-                      color:
-                        changePct >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
-                    }}
-                  >
-                    {fmtPct(changePct)} today
-                  </span>
-                )}
+                Index Level
               </div>
 
               {/* Big number */}
               {isLoading && indexValue === null ? (
-                <div style={{ margin: "8px 0 6px" }}>
-                  <Skeleton h={72} r={8} />
+                <div style={{ marginBottom: 14 }}>
+                  <Skeleton h={88} r={8} />
                 </div>
               ) : (
                 <div
                   className="nei-mono"
                   style={{
-                    fontSize: "clamp(48px, 6.5vw, 80px)",
-                    fontWeight: 500,
+                    fontSize: "clamp(56px, 8vw, 104px)",
+                    fontWeight: 400,
                     letterSpacing: "-0.04em",
                     lineHeight: 0.95,
-                    marginBottom: 6,
+                    marginBottom: 14,
                     color: "var(--nei-fg)",
+                    fontVariantNumeric: "tabular-nums",
                   }}
                 >
                   {fmtNum(indexValue)}
                 </div>
               )}
 
-              {sinceInception !== null && (
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: "var(--nei-muted)",
-                    marginBottom: 18,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <span
-                    className="nei-mono"
-                    style={{
-                      color:
-                        sinceInception >= 0
-                          ? "var(--nei-pos)"
-                          : "var(--nei-neg)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {fmtPct(sinceInception)}
+              {/* Change stats */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 20,
+                  marginBottom: 24,
+                  fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+                  fontSize: 13,
+                  flexWrap: "wrap",
+                }}
+              >
+                {changePct !== null && (
+                  <span style={{ whiteSpace: "nowrap" }}>
+                    <span
+                      style={{
+                        color: changePct >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {fmtPct(changePct)}
+                    </span>{" "}
+                    <span style={{ color: "var(--nei-muted)" }}>today</span>
                   </span>
-                  <span>since inception</span>
-                  {data?.lastUpdated && (
-                    <span style={{ fontSize: 11, color: "var(--nei-muted-faint)" }}>
-                      · updated {formatLastUpdated(data.lastUpdated, now)}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Sparkline */}
-              <div style={{ height: 72, margin: "0 -4px" }}>
-                {sparkSeries.length > 1 ? (
-                  <Sparkline series={sparkSeries} height={72} />
-                ) : (
-                  <Skeleton h={72} r={6} />
+                )}
+                {sinceInception !== null && (
+                  <span style={{ whiteSpace: "nowrap" }}>
+                    <span
+                      style={{
+                        color: sinceInception >= 0 ? "var(--nei-pos)" : "var(--nei-neg)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {fmtPct(sinceInception)}
+                    </span>{" "}
+                    <span style={{ color: "var(--nei-muted)" }}>since inception</span>
+                  </span>
                 )}
               </div>
 
-              {/* Advancers / Decliners */}
+              {/* Sparkline */}
+              <div style={{ height: 80, marginBottom: 10 }}>
+                {sparkSeries.length > 1 ? (
+                  <Sparkline series={sparkSeries} height={80} />
+                ) : (
+                  <Skeleton h={80} r={6} />
+                )}
+              </div>
+
+              {/* Base info */}
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  marginTop: 16,
-                  paddingTop: 16,
-                  borderTop: "1px solid var(--nei-grid)",
+                  fontSize: 11,
+                  color: "var(--nei-muted)",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                  flexWrap: "wrap",
                 }}
               >
-                {[
-                  { l: "Advancers", v: advancers, c: "var(--nei-pos)" },
-                  { l: "Decliners", v: decliners, c: "var(--nei-neg)" },
-                  {
-                    l: "Unchanged",
-                    v: Math.max(0, numCompanies - advancers - decliners),
-                    c: "var(--nei-muted)",
-                  },
-                ].map((s, i) => (
-                  <div
-                    key={s.l}
-                    style={{
-                      borderRight:
-                        i < 2 ? "1px solid var(--nei-grid)" : "none",
-                      paddingLeft: i > 0 ? 14 : 0,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "var(--nei-muted)",
-                        marginBottom: 4,
-                      }}
-                    >
-                      {s.l}
-                    </div>
-                    <div
-                      className="nei-mono"
-                      style={{ fontSize: 18, fontWeight: 600, color: s.c }}
-                    >
-                      {isLoading && stocks.length === 0 ? "—" : s.v}
-                    </div>
-                  </div>
-                ))}
+                <span>Base 1,000 · {inceptionLabel}</span>
+                {data?.lastUpdated && (
+                  <span style={{ color: "var(--nei-muted-faint)" }}>
+                    · updated {formatLastUpdated(data.lastUpdated, now)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
+      {/* ─── STAT BAND ─── */}
+      <section style={{ background: "var(--nei-accent)", padding: "40px 32px" }}>
+        <div style={maxW}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+              gap: 0,
+            }}
+          >
+            {[
+              { l: "Constituents", v: `${numCompanies}`, sub: "public listings" },
+              { l: "Inception", v: inceptionLabel, sub: "base 1,000" },
+              { l: "Methodology", v: "Equal-weight", sub: "rebalanced quarterly" },
+              { l: "52-week high", v: high52w !== null ? fmtNum(high52w, 0) : "—", sub: "" },
+              { l: "52-week low", v: low52w !== null ? fmtNum(low52w, 0) : "—", sub: "" },
+              {
+                l: "Advancers",
+                v: stocks.length > 0 ? `${advancers} / ${numCompanies}` : "—",
+                sub: "today",
+              },
+            ].map((s, i, arr) => (
+              <div
+                key={i}
+                style={{
+                  padding: "8px 24px 8px 0",
+                  paddingLeft: i === 0 ? 0 : 24,
+                  borderRight:
+                    i < arr.length - 1 ? "1px solid rgba(232,235,240,0.18)" : "none",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: "rgba(232,235,240,0.7)",
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase" as const,
+                    marginBottom: 8,
+                    fontWeight: 600,
+                    fontFamily: "var(--font-sora), system-ui, sans-serif",
+                  }}
+                >
+                  {s.l}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-sora), system-ui, sans-serif",
+                    fontSize: 22,
+                    fontWeight: 600,
+                    letterSpacing: "-0.025em",
+                    color: "#fff",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {s.v}
+                </div>
+                {s.sub && (
+                  <div style={{ fontSize: 11, color: "rgba(232,235,240,0.6)", marginTop: 4 }}>
+                    {s.sub}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -815,11 +718,7 @@ export function IndexDashboard() {
       <section id="performance" style={section()}>
         <div style={maxW}>
           <div className="nei-card" style={{ padding: "28px 28px" }}>
-            <div
-              style={{
-                marginBottom: 4,
-              }}
-            >
+            <div style={{ marginBottom: 4 }}>
               <h2
                 className="nei-heading"
                 style={{
@@ -832,20 +731,13 @@ export function IndexDashboard() {
               >
                 Performance
               </h2>
-              <p
-                style={{
-                  fontSize: 13,
-                  color: "var(--nei-muted)",
-                  margin: 0,
-                }}
-              >
-                Equal-weighted · base 1,000 on {inceptionLabel} · daily
-                EOD snapshots, live during market hours.
+              <p style={{ fontSize: 13, color: "var(--nei-muted)", margin: 0 }}>
+                Equal-weighted · base 1,000 on {inceptionLabel} · daily EOD snapshots,
+                live during market hours.
               </p>
             </div>
             <IndexChart liveValue={indexValue} stocks={stocks} />
             <SectorCard stocks={stocks} embedded />
-            <IndexFacts numCompanies={numCompanies} />
           </div>
 
           <div
@@ -880,9 +772,7 @@ export function IndexDashboard() {
               >
                 All {numCompanies} companies
               </h2>
-              <p
-                style={{ fontSize: 13, color: "var(--nei-muted)", margin: 0 }}
-              >
+              <p style={{ fontSize: 13, color: "var(--nei-muted)", margin: 0 }}>
                 Sort by any column, search, or switch to cards view.
               </p>
             </div>
@@ -992,12 +882,7 @@ export function IndexDashboard() {
                       {card.t}
                     </h3>
                     <p
-                      style={{
-                        fontSize: 13.5,
-                        lineHeight: 1.6,
-                        color: "var(--nei-muted)",
-                        margin: 0,
-                      }}
+                      style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--nei-muted)", margin: 0 }}
                     >
                       {card.b}
                     </p>
@@ -1012,8 +897,9 @@ export function IndexDashboard() {
       {/* ─── FOOTER ─── */}
       <footer
         style={{
-          padding: "36px 32px 28px",
-          borderTop: "1px solid var(--nei-grid)",
+          padding: "40px 32px 32px",
+          background: "#0F2036",
+          color: "rgba(232,235,240,0.85)",
         }}
       >
         <div
@@ -1027,30 +913,34 @@ export function IndexDashboard() {
           }}
         >
           <div>
-            <Image
-              src="/trifecta-capital-logo.png"
-              alt="Trifecta Capital"
-              width={80}
-              height={24}
-              style={{ height: 18, width: "auto", opacity: 0.65 }}
-            />
+            <span
+              style={{
+                fontFamily: "var(--font-sora), system-ui, sans-serif",
+                fontWeight: 600,
+                fontSize: 15,
+                letterSpacing: "-0.025em",
+                color: "#fff",
+              }}
+            >
+              Trifecta Capital
+            </span>
             <div
               style={{
                 marginTop: 10,
                 fontSize: 12,
-                color: "var(--nei-muted)",
+                color: "rgba(232,235,240,0.55)",
                 lineHeight: 1.7,
               }}
             >
               Data via NSE · Live during market hours · Refreshed every 5 min
-              <br />© 2026 Trifecta Capital. Index is for informational
-              purposes only. Not investment advice.
+              <br />© 2026 Trifecta Capital. Index is for informational purposes
+              only. Not investment advice.
             </div>
           </div>
           <div
             style={{
               fontSize: 12,
-              color: "var(--nei-muted)",
+              color: "rgba(232,235,240,0.55)",
               textAlign: "right",
               lineHeight: 1.8,
             }}
@@ -1061,7 +951,7 @@ export function IndexDashboard() {
                 href="https://trifectacapital.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: "var(--nei-accent)", textDecoration: "none" }}
+                style={{ color: "rgba(232,235,240,0.85)", textDecoration: "none" }}
               >
                 trifectacapital.in ↗
               </a>
