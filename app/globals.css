@@ -224,10 +224,6 @@ html.dark {
     justify-content: space-between;
     align-items: center;
     padding: 12px 56px;
-    background: rgba(23,44,84,0.82);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-bottom: 1px solid rgba(232,235,240,0.08);
   }
 
   .nei-brand-lockup {
@@ -242,19 +238,13 @@ html.dark {
     align-items: center;
     min-height: 44px;
     text-decoration: none;
-    padding: 6px 10px;
-    border: 1px solid rgba(232,235,240,0.10);
-    border-radius: 8px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.035));
-    box-shadow: 0 1px 0 rgba(255,255,255,0.07) inset;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: background 180ms ease, border-color 180ms ease, padding 220ms ease;
+    padding: 6px 4px;
+    border-radius: 6px;
+    transition: opacity 160ms ease;
   }
 
   .nei-brand-link:hover {
-    border-color: rgba(232,235,240,0.22);
-    background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.045));
+    opacity: 0.82;
   }
 
   .nei-brand-logo {
