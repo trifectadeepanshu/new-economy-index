@@ -154,11 +154,20 @@
   }
 
   .nei-sector-row-top {
+    gap: 12px;
     align-items: flex-start;
   }
 
   .nei-sector-row-title {
     flex-wrap: wrap;
+  }
+
+  .nei-sector-composition {
+    gap: 0 !important;
+  }
+
+  .nei-sector-row {
+    padding: 18px 0;
   }
 
   .nei-index-section {
@@ -233,11 +242,25 @@
     font-size: 15px;
   }
 
+  .nei-method-grid {
+    gap: 36px !important;
+  }
+
+  .nei-method-stats {
+    max-width: 100%;
+  }
+
   .nei-footer-inner {
     padding: 40px 18px 32px;
   }
 
+  .nei-footer-top {
+    gap: 28px !important;
+  }
+
   .nei-footer-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: flex-start;
     gap: 32px;
   }
@@ -464,6 +487,44 @@
     line-height: 1.6;
   }
 
+  .nei-sector-row {
+    padding: 16px 0;
+  }
+
+  .nei-sector-row-top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .nei-sector-row-title {
+    gap: 8px 10px;
+  }
+
+  .nei-sector-row-title strong {
+    font-size: 15px;
+  }
+
+  .nei-sector-row-title em {
+    width: 100%;
+    margin-left: 24px;
+    white-space: normal;
+  }
+
+  .nei-sector-row-values {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nei-sector-row-values strong {
+    font-size: 20px;
+  }
+
+  .nei-sector-track {
+    height: 4px;
+  }
+
   .nei-control-button,
   .nei-view-toggle button,
   .nei-sector-filter button {
@@ -549,6 +610,22 @@
     grid-template-columns: 1fr;
   }
 
+  .nei-method-grid {
+    gap: 28px !important;
+  }
+
+  .nei-method-copy {
+    margin-bottom: 22px;
+  }
+
+  .nei-method-stats div {
+    padding: 14px 0;
+  }
+
+  .nei-method-stats strong {
+    font-size: 22px;
+  }
+
   .nei-method-stats div:nth-child(odd) {
     border-right: 0;
   }
@@ -560,9 +637,60 @@
   .nei-method-card {
     grid-template-columns: 1fr;
     gap: 10px;
+    padding: 16px;
+  }
+
+  .nei-method-card > span {
+    font-size: 11px;
+  }
+
+  .nei-method-card h3 {
+    font-size: 16px;
+  }
+
+  .nei-method-card p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .nei-footer-v2 > div > span[aria-hidden="true"] {
+    display: none;
+  }
+
+  .nei-footer-inner {
+    padding: 34px 16px 28px;
+  }
+
+  .nei-footer-logo {
+    width: 128px;
+  }
+
+  .nei-footer-brand-col {
+    gap: 16px;
+  }
+
+  .nei-footer-top p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .nei-footer-links {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    line-height: 1.9;
+  }
+
+  .nei-footer-links a {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
   }
 
   .nei-footer-bottom {
     display: grid;
+    gap: 8px;
+    margin-top: 28px;
+    padding-top: 14px;
+    line-height: 1.6;
   }
 }
