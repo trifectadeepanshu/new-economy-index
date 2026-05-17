@@ -80,24 +80,4 @@
     text-transform: uppercase;
   }
 
-  .nei-shoulder-divider {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .nei-shoulder-divider > div {
-    position: absolute;
-    inset: 0;
-  }
-
-  .nei-shoulder-divider > span {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    font: 500 10px var(--font-jetbrains), ui-monospace, monospace;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
 }

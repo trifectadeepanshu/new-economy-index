@@ -175,24 +175,3 @@ export function TickFrame({
     </div>
   );
 }
-
-export function ShoulderDivider({
-  from,
-  to,
-  label,
-  labelColor = "rgba(232,235,240,0.45)",
-  height = 56,
-}: {
-  from: string;
-  to: string;
-  label?: string;
-  labelColor?: string;
-  height?: number;
-}) {
-  return (
-    <div aria-hidden="true" className="nei-shoulder-divider" style={{ height, background: from }}>
-      <div style={{ background: to }} />
-      {label && <span style={{ color: labelColor }}>{label}</span>}
-    </div>
-  );
-}
