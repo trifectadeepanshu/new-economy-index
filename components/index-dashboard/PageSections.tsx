@@ -145,9 +145,9 @@ export function SectorSection({
     <ReferenceShell
       id="sectors"
       eyebrow={{ number: "04", label: "Sector Composition" }}
-      title="What India's public new economy"
-      mutedTitle="is actually made of."
-      copy="Each sector shown as a share of listed constituents in the equal-weighted cohort. Movement shown is the cohort-average for today."
+      title="Fintech, SaaS, deep tech, gaming."
+      mutedTitle="What does India's new economy actually look like?"
+      copy="Deeper than fintech. Broader than consumer. See for yourself."
     >
       <SectorComposition stocks={stocks} totalListings={numCompanies} />
     </ReferenceShell>
