@@ -8,7 +8,6 @@ import {
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorComposition } from "@/components/index-dashboard/SectorComposition";
-import { INCEPTION_LABEL } from "@/components/index-dashboard/format";
 
 const METHOD_CARDS = [
   {
@@ -81,9 +80,9 @@ export function PerformanceSection({
     <ReferenceShell
       id="performance"
       eyebrow={{ number: "02", label: "Performance" }}
-      title="How the index has moved"
-      mutedTitle="since inception."
-      copy={`Equal-weighted, base 1,000 on ${INCEPTION_LABEL}. Hover the chart to inspect any day. Rebalanced quarterly to keep the cohort honest.`}
+      title="The NEI since day one."
+      mutedTitle="Every high, every correction, one line."
+      copy={`Equal-weighted across all 53 constituents, rebalanced quarterly. Base 1,000 set in March 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
     </ReferenceShell>
