@@ -88,7 +88,6 @@
   .nei-shoulder-divider > div {
     position: absolute;
     inset: 0;
-    clip-path: polygon(0 100%, 100% 12%, 100% 100%, 0 100%);
   }
 
   .nei-shoulder-divider > span {
