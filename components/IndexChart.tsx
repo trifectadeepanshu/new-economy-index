@@ -18,7 +18,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
   const { historyData, sectorData, loading, error } = useChartHistory(range);
 
   const isReference = variant === "reference";
-  const activeMode: ChartMode = isReference ? "index" : mode;
+  const activeMode = mode;
   const model = useIndexChartModel({
     activeMode,
     focusedSector,
@@ -30,20 +30,25 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
     stocks,
   });
 
+  function handleModeChange(nextMode: ChartMode) {
+    setMode(nextMode);
+    setFocusedSector(null);
+  }
+
   return (
     <div className={isReference ? "nei-reference-chart" : "nei-chart-root"}>
       <ChartToolbar
         isReference={isReference}
         latestPoint={model.latestPoint}
-        mode={mode}
-        onModeChange={setMode}
+        mode={activeMode}
+        onModeChange={handleModeChange}
         onRangeChange={setRange}
         range={range}
         rangeChangePct={model.rangeChangePct}
         title={model.title}
       />
 
-      {!isReference && activeMode === "detail" && (
+      {activeMode === "detail" && (
         <SectorTabs
           activeSector={selectedSector}
           label="Sector detail"
@@ -72,7 +77,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
             selectedSector={selectedSector}
           />
 
-          {!isReference && activeMode === "compare" && (
+          {activeMode === "compare" && (
             <SectorTabs
               activeSector={model.selectedOrFocusedSector}
               focusedSector={focusedSector}

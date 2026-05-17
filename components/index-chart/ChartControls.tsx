@@ -5,6 +5,11 @@ import { CHART_MODES, SECTOR_CHART_COLORS } from "@/components/index-chart/const
 import { formatSignedPct, formatValue } from "@/components/index-chart/format";
 import type { ChartMode, ChartPoint } from "@/components/index-chart/types";
 
+const REFERENCE_CHART_MODES: Array<{ value: ChartMode; label: string }> = [
+  { value: "index", label: "Index" },
+  { value: "compare", label: "Sectors" },
+];
+
 function ControlButton({
   active,
   children,
@@ -95,12 +100,16 @@ export function ChartToolbar({
   title: string;
 }) {
   const changeTone = (rangeChangePct ?? 0) >= 0 ? "is-positive" : "is-negative";
+  const modeOptions = isReference ? REFERENCE_CHART_MODES : CHART_MODES;
+  const referenceLabel = mode === "compare" ? "NEI / Sectors" : "NEI";
 
   return (
     <div className="nei-chart-toolbar">
       {isReference ? (
         <div>
-          <div className="nei-reference-chart-label">{range} Range / NEI</div>
+          <div className="nei-reference-chart-label">
+            {range} Range / {referenceLabel}
+          </div>
           <div className="nei-reference-chart-value">
             <span className="nei-mono">
               {latestPoint ? formatValue(latestPoint.value) : "-"}
@@ -118,19 +127,18 @@ export function ChartToolbar({
       )}
 
       <div className="nei-chart-controls">
-        {!isReference && (
-          <div className="nei-segmented-control" role="group" aria-label="Chart mode">
-            {CHART_MODES.map((chartMode) => (
-              <ControlButton
-                key={chartMode.value}
-                active={mode === chartMode.value}
-                onClick={() => onModeChange(chartMode.value)}
-              >
-                {chartMode.label}
-              </ControlButton>
-            ))}
-          </div>
-        )}
+        <div className="nei-segmented-control" role="group" aria-label="Chart mode">
+          {modeOptions.map((chartMode) => (
+            <ControlButton
+              key={chartMode.value}
+              active={mode === chartMode.value}
+              tone={isReference ? "ink" : "default"}
+              onClick={() => onModeChange(chartMode.value)}
+            >
+              {chartMode.label}
+            </ControlButton>
+          ))}
+        </div>
 
         <div className="nei-segmented-control" role="group" aria-label="Date range">
           {HISTORY_RANGES.map((option) => (
