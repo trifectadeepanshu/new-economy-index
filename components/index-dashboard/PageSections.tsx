@@ -114,12 +114,11 @@ export function ConstituentsSection({
           <SectionEyebrow number="03" label="Inside the Index" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
-              {numCompanies} listings.
-              <span> One asset class.</span>
+              The full cohort, laid out.
+              <span> Filter by sector, sort by performance, see where things stand.</span>
             </h2>
             <p className="nei-index-copy">
-              Search and filter the listed cohort by sector, then sort the table
-              by price, daily move, or performance since the index base.
+              {numCompanies} companies across 8 sectors. The complete public-market picture of India&apos;s new economy.
             </p>
           </div>
           <div className="nei-index-panel">
