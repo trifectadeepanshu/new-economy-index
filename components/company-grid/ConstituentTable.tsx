@@ -3,6 +3,7 @@ import { SECTORS } from "@/lib/companies";
 import type { StockData } from "@/lib/index-api";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import {
+  formatMarketCap,
   formatPrice,
   formatSignedPercent,
 } from "@/components/company-grid/format";
@@ -28,6 +29,7 @@ const COLUMNS: Array<{
   { key: "name", label: "Ticker / Name", align: "left" },
   { key: "sector", label: "Sector", align: "left" },
   { key: "price", label: "Price", align: "right" },
+  { key: "marketCap", label: "Market Cap", align: "right" },
   { key: "changePct", label: "Day %", align: "right" },
   { key: "ratio", label: "Since Base", align: "right" },
 ];
@@ -206,6 +208,7 @@ export function ConstituentTable({
                   <span className="nei-sector-name">{row.sector}</span>
                 </td>
                 <td className="is-right nei-mono">{formatPrice(row.price)}</td>
+                <td className="is-right nei-mono">{formatMarketCap(row.marketCap)}</td>
                 <td
                   className={`is-right nei-mono ${
                     (row.changePct ?? 0) >= 0 ? "is-positive" : "is-negative"

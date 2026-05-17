@@ -1,3 +1,5 @@
+export { formatMarketCap } from "@/lib/formatters";
+
 export function formatPrice(price: number | null) {
   if (price === null) return "—";
 

@@ -3,6 +3,7 @@ import type { StockData } from "@/lib/index-api";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import {
   displayCompanyName,
+  formatMarketCap,
   formatPrice,
   formatSignedPercent,
 } from "@/components/company-grid/format";
@@ -33,6 +34,11 @@ function CompanyCard({ row }: { row: StockData }) {
         <strong className={`nei-mono ${isUp ? "is-positive" : "is-negative"}`}>
           {formatSignedPercent(row.changePct)}
         </strong>
+      </div>
+
+      <div className="nei-company-card-meta">
+        <span>Market cap</span>
+        <strong className="nei-mono">{formatMarketCap(row.marketCap)}</strong>
       </div>
     </article>
   );

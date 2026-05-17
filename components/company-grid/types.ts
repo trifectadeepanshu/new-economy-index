@@ -3,7 +3,14 @@ import type { StockData } from "@/lib/index-api";
 export type CompanyGridView = "table" | "grid";
 export type CompanyGridVariant = "default" | "terminal";
 export type SortDirection = 1 | -1;
-export type SortKey = "ticker" | "name" | "sector" | "price" | "changePct" | "ratio";
+export type SortKey =
+  | "ticker"
+  | "name"
+  | "sector"
+  | "price"
+  | "marketCap"
+  | "changePct"
+  | "ratio";
 export type SectorFilter = "All" | string;
 
 export type CompanyGridProps = {

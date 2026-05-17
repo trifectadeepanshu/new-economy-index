@@ -10,6 +10,7 @@ export type LiveStockPayload = {
   sector: Sector;
   price: number | null;
   changePct: number | null;
+  marketCap: number | null;
   basePrice: number | null;
   ratio: number | null;
 };

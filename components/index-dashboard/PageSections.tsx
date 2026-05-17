@@ -127,8 +127,6 @@ export function ConstituentsSection({
             <CompanyGrid
               stocks={stocks}
               isLoading={isLoading}
-              view="table"
-              showToggle={false}
               variant="terminal"
             />
           </div>

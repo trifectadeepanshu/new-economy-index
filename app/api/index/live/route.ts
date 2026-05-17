@@ -20,6 +20,7 @@ const LIVE_CACHE_HEADERS = {
 type PricePoint = {
   price: number | null;
   changePct: number | null;
+  marketCap?: number | null;
 };
 
 function buildStocks(
@@ -38,6 +39,7 @@ function buildStocks(
       sector,
       price,
       changePct: current?.changePct ?? null,
+      marketCap: current?.marketCap ?? null,
       basePrice,
       ratio: priceRatio(price, basePrice),
     };
@@ -67,7 +69,11 @@ function quotePricesByTicker(quotes: QuoteResult[]): Record<string, PricePoint> 
       .filter((quote) => quote.ticker)
       .map((quote) => [
         quote.ticker,
-        { price: quote.price, changePct: quote.changePct } satisfies PricePoint,
+        {
+          price: quote.price,
+          changePct: quote.changePct,
+          marketCap: quote.marketCap,
+        } satisfies PricePoint,
       ])
   );
 }

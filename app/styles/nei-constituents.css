@@ -67,7 +67,12 @@
   .nei-company-grid-toolbar {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 16px;
+    padding: 18px 0 0;
+    margin-bottom: 12px;
+  }
+
+  .nei-company-grid-toolbar + .nei-constituents .nei-constituent-tools {
+    padding-top: 12px;
   }
 
   .nei-view-toggle {
@@ -182,7 +187,7 @@
 
   .nei-constituent-table {
     width: 100%;
-    min-width: 920px;
+    min-width: 1120px;
     border-collapse: collapse;
     font-size: 14px;
   }
@@ -418,5 +423,21 @@
 
   .nei-company-card-price .is-negative {
     color: var(--nei-neg);
+  }
+
+  .nei-company-card-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--nei-muted);
+    font-size: 12px;
+  }
+
+  .nei-company-card-meta strong {
+    color: var(--nei-fg);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
   }
 }
