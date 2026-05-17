@@ -38,7 +38,7 @@ function ReferenceShell({
   id: string;
   eyebrow: { number: string; label: string };
   title: string;
-  mutedTitle: string;
+  mutedTitle?: string;
   copy: string;
   children: ReactNode;
 }) {
@@ -58,7 +58,7 @@ function ReferenceShell({
           <div className="nei-reference-header">
             <h2 className="nei-heading nei-reference-title">
               {title}
-              <span> {mutedTitle}</span>
+              {mutedTitle ? <span> {mutedTitle}</span> : null}
             </h2>
             <p className="nei-reference-copy">{copy}</p>
           </div>
@@ -81,7 +81,7 @@ export function PerformanceSection({
       id="performance"
       eyebrow={{ number: "02", label: "Performance" }}
       title="The NEI since day one."
-      mutedTitle="Every high, every correction, one line."
+      mutedTitle="One line, no filter."
       copy={`Equal-weighted across all 53 constituents, rebalanced quarterly. Base 1,000 set in March 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
@@ -115,7 +115,7 @@ export function ConstituentsSection({
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
               The full cohort, laid out.
-              <span> Filter by sector, sort by performance, see where things stand.</span>
+              <span> Filter, sort, explore.</span>
             </h2>
             <p className="nei-index-copy">
               {numCompanies} companies across 8 sectors. The complete public-market picture of India&apos;s new economy.
@@ -145,8 +145,7 @@ export function SectorSection({
     <ReferenceShell
       id="sectors"
       eyebrow={{ number: "04", label: "Sector Composition" }}
-      title="Fintech, SaaS, deep tech, gaming."
-      mutedTitle="What does India's new economy actually look like?"
+      title="What is India's new economy actually made of?"
       copy="Deeper than fintech. Broader than consumer. See for yourself."
     >
       <SectorComposition stocks={stocks} totalListings={numCompanies} />
