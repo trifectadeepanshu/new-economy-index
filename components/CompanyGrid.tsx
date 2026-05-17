@@ -20,6 +20,8 @@ import type {
 
 const INITIAL_SORT: SortState = { key: "ratio", dir: -1 };
 const MOBILE_CARD_VIEW = "(max-width: 640px)";
+const INITIAL_CARD_COUNT = 4;
+const EXPANDED_CARD_COUNT = 8;
 
 export function CompanyGrid({
   stocks,
@@ -34,6 +36,7 @@ export function CompanyGrid({
   const [sort, setSort] = useState<SortState>(INITIAL_SORT);
   const [query, setQuery] = useState("");
   const [sector, setSector] = useState<SectorFilter>("All");
+  const [visibleCardCount, setVisibleCardCount] = useState(INITIAL_CARD_COUNT);
 
   const view = externalView ?? internalView;
   const showToggle = showToggleProp ?? externalView === undefined;
@@ -52,6 +55,8 @@ export function CompanyGrid({
 
   function handleViewChange(nextView: CompanyGridView) {
     setHasChosenView(true);
+    setVisibleCardCount(INITIAL_CARD_COUNT);
+
     if (onViewChange) {
       onViewChange(nextView);
       return;
@@ -61,7 +66,24 @@ export function CompanyGrid({
   }
 
   function handleSort(key: SortKey) {
+    setVisibleCardCount(INITIAL_CARD_COUNT);
     setSort((current) => nextSort(current, key));
+  }
+
+  function handleQueryChange(nextQuery: string) {
+    setVisibleCardCount(INITIAL_CARD_COUNT);
+    setQuery(nextQuery);
+  }
+
+  function handleSectorChange(nextSector: SectorFilter) {
+    setVisibleCardCount(INITIAL_CARD_COUNT);
+    setSector(nextSector);
+  }
+
+  function handleLoadMoreCards() {
+    setVisibleCardCount((current) =>
+      current < EXPANDED_CARD_COUNT ? EXPANDED_CARD_COUNT : rows.length
+    );
   }
 
   if (isLoading && stocks.length === 0) {
@@ -86,8 +108,8 @@ export function CompanyGrid({
         sector={sector}
         count={rows.length}
         total={stocks.length}
-        onQueryChange={setQuery}
-        onSectorChange={setSector}
+        onQueryChange={handleQueryChange}
+        onSectorChange={handleSectorChange}
       />
       {view === "table" ? (
         <ConstituentTable
@@ -97,7 +119,26 @@ export function CompanyGrid({
           variant={variant}
         />
       ) : (
-        <CompanyCards stocks={rows} />
+        <>
+          <CompanyCards stocks={rows.slice(0, visibleCardCount)} />
+          {visibleCardCount < rows.length && (
+            <div className="nei-company-card-more">
+              <button
+                type="button"
+                onClick={handleLoadMoreCards}
+                aria-label={`Load more companies. Showing ${Math.min(
+                  visibleCardCount,
+                  rows.length
+                )} of ${rows.length}.`}
+              >
+                Load more
+              </button>
+              <span className="nei-mono">
+                {Math.min(visibleCardCount, rows.length)} / {rows.length} shown
+              </span>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

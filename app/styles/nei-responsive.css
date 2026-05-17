@@ -602,6 +602,16 @@
     align-items: flex-start;
   }
 
+  .nei-company-card-more {
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 16px;
+  }
+
+  .nei-company-card-more button {
+    width: 100%;
+  }
+
   .nei-hero-card-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

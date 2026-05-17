@@ -104,7 +104,7 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
   return (
     <div>
       <h1 className="nei-heading nei-hero-title">
-        India&apos;s new economy,
+        India&apos;s new economy,{" "}
         <br />
         <span>tracked as a single ticker.</span>
       </h1>
