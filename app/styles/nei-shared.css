@@ -32,6 +32,7 @@
 
   /* Dashboard shell */
   .nei-dashboard {
+    position: relative;
     min-height: 100vh;
     padding-top: 40px;
     background: var(--nei-bg);
