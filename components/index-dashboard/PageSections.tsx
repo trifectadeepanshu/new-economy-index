@@ -262,7 +262,7 @@ export function DashboardFooter() {
                 <a href="https://trifectacapital.in" target="_blank" rel="noopener noreferrer">
                   trifectacapital.in ↗
                 </a>
-                <a href="mailto:info@trifectacapital.com">info@trifectacapital.com</a>
+                <a href="mailto:info@trifectacapital.in">info@trifectacapital.in</a>
               </div>
             </div>
           </div>
