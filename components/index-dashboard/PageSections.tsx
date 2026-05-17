@@ -19,7 +19,7 @@ const METHOD_CARDS = [
   {
     number: "03",
     title: "Built from our seat",
-    body: "200+ portfolio companies. $600M+ AUM. Trifecta has been at the center of this asset class for a decade.",
+    body: "₹8,000 Cr deployed across 220+ companies in five funds. Trifecta has been at the center of this asset class for a decade.",
   },
   {
     number: "04",
@@ -158,10 +158,10 @@ export function SectorSection({
 
 export function MethodologySection({ numCompanies }: { numCompanies: number }) {
   const methodStats = [
-    { label: "Portfolio companies", value: "200+" },
-    { label: "AUM", value: "$600M+" },
+    { label: "Deployed", value: "₹8,000 Cr" },
+    { label: "Companies invested", value: "220+" },
+    { label: "Funds", value: "5" },
     { label: "Years", value: "10+" },
-    { label: "Listings tracked", value: numCompanies },
   ];
   const cards = [
     METHOD_CARDS[0],
