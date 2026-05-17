@@ -13,17 +13,17 @@ const METHOD_CARDS = [
   {
     number: "01",
     title: "Equal-weighted, by design",
-    body: "No single constituent dominates the read. Each company contributes 1/n of the index value, then the cohort is rebalanced quarterly.",
+    body: "No single name skews the read. Every company carries the same weight, so the index moves with the cohort, not the headlines.",
   },
   {
     number: "03",
-    title: "Built from our seat",
-    body: "₹8,000 Cr deployed across 220+ companies in five funds. Trifecta Capital has been at the center of this asset class for a decade.",
+    title: "Built by insiders",
+    body: "Trifecta Capital has backed this asset class since before it had a name. The NEI is not an external observer's take. It is the scorecard of the firm that helped build the cohort.",
   },
   {
     number: "04",
     title: "Free, public, shareable",
-    body: "No paywall, no login. Use it for screenshots, decks, internal MIS, or just to check the level. Data is informational only.",
+    body: "No paywall, no login. Use it for decks, MIS, research, or just to check the level. Built to be shared.",
   },
 ] as const;
 
@@ -165,8 +165,8 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
     METHOD_CARDS[0],
     {
       number: "02",
-      title: `${numCompanies} listings, one number`,
-      body: "Platforms, consumer brands, fintech, B2B, SaaS, edtech, gaming, and deep tech — public-market expressions of India's new economy.",
+      title: "The full picture, not the highlights",
+      body: `${numCompanies} companies across 8 sectors. Not just the names everyone knows, but the complete public-market expression of India's new economy.`,
     },
     METHOD_CARDS[1],
     METHOD_CARDS[2],
