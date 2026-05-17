@@ -188,14 +188,13 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
           <div className="nei-method-grid">
             <div>
               <h2 className="nei-heading nei-method-title">
-                A benchmark for the cohort
-                <span> we underwrote.</span>
+                A decade in.
+                <span> Here is what we learned.</span>
               </h2>
               <p className="nei-method-copy">
-                Trifecta Capital launched India&apos;s first venture debt fund in 2015.
-                A decade later many of those companies are publicly listed. The
-                NEI tracks them as a single asset class from the seat that watched
-                it form.
+                A decade of backing India&apos;s next generation of businesses
+                leaves you with a question: how is the cohort doing, all
+                together? The NEI is our answer.
               </p>
               <div className="nei-method-stats">
                 {methodStats.map((stat) => (
