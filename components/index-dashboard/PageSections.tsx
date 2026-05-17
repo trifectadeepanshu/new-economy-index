@@ -262,13 +262,13 @@ export function DashboardFooter() {
                 <a href="https://trifectacapital.in" target="_blank" rel="noopener noreferrer">
                   trifectacapital.in ↗
                 </a>
-                <a href="mailto:nei@trifectacapital.in">nei@trifectacapital.in</a>
+                <a href="mailto:info@trifectacapital.com">info@trifectacapital.com</a>
               </div>
             </div>
           </div>
           <div className="nei-footer-bottom">
-            <span>NEI · v2.4 · 2015 → 2026</span>
-            <span>Gurgaon · Mumbai · Bengaluru</span>
+            <span>2015 → 2026 →</span>
+            <span>Gurugram · Mumbai · Bengaluru</span>
           </div>
         </div>
       </TickFrame>
