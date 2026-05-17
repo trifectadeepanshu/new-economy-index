@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COMPANIES } from "@/lib/companies";
-import { fetchAllQuotes } from "@/lib/yahoo-finance";
+import { COMPANIES, INDEX_BASE_VALUE, type Company } from "@/lib/companies";
+import { fetchAllQuotes, type QuoteResult } from "@/lib/yahoo-finance";
 import {
   ensureSchema,
   getEarliestPricesPerTicker,
+  type StockSnapshotInput,
   upsertIndexSnapshot,
   upsertStockSnapshotsBatch,
 } from "@/lib/db";
+import { average, finiteNumbers, round } from "@/lib/index-math";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
@@ -16,16 +18,59 @@ function isAuthorized(req: NextRequest) {
   return Boolean(secret && req.headers.get("authorization") === `Bearer ${secret}`);
 }
 
+function unauthorized() {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+
+function quotesByTicker(quotes: QuoteResult[]): Record<string, QuoteResult> {
+  return Object.fromEntries(
+    quotes
+      .filter((quote) => quote.ticker)
+      .map((quote) => [quote.ticker, quote])
+  );
+}
+
+function toStockRow(
+  date: string,
+  company: Company,
+  quotes: Record<string, QuoteResult | undefined>
+): StockSnapshotInput | null {
+  const quote = quotes[company.ticker];
+  if (quote?.price == null) return null;
+
+  return {
+    date,
+    ticker: company.ticker,
+    closePrice: quote.price,
+    changePct: quote.changePct,
+  };
+}
+
+function getIndexRatios(
+  companies: Company[],
+  currentPrices: Record<string, number>,
+  basePrices: Record<string, number>
+) {
+  return companies.flatMap((company) => {
+    const currentPrice = currentPrices[company.ticker];
+    const basePrice = basePrices[company.ticker];
+
+    return currentPrice !== undefined && basePrice !== undefined && basePrice !== 0
+      ? [currentPrice / basePrice]
+      : [];
+  });
+}
+
 export async function GET(req: NextRequest) {
   if (!isAuthorized(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
   return runSnapshot();
 }
 
 export async function POST(req: NextRequest) {
   if (!isAuthorized(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
   return runSnapshot();
 }
@@ -36,7 +81,7 @@ async function runSnapshot() {
   const today = getISTDate();
   const active = COMPANIES.filter((c) => c.listedDate <= today);
 
-  let quotes;
+  let quotes: QuoteResult[];
   try {
     quotes = await fetchAllQuotes(active.map((c) => c.yfTicker));
   } catch (err) {
@@ -47,43 +92,31 @@ async function runSnapshot() {
     );
   }
 
-  const quoteMap = Object.fromEntries(quotes.map((q) => [q.ticker, q]));
-
+  const quoteMap = quotesByTicker(quotes);
   const stockRows = active
-    .map((c) => {
-      const q = quoteMap[c.ticker];
-      if (q?.price == null) return null;
-      return { date: today, ticker: c.ticker, closePrice: q.price, changePct: q.changePct };
-    })
-    .filter(Boolean) as { date: string; ticker: string; closePrice: number; changePct: number | null }[];
+    .map((company) => toStockRow(today, company, quoteMap))
+    .filter((row): row is StockSnapshotInput => row !== null);
 
   await upsertStockSnapshotsBatch(stockRows);
 
   const basePrices = await getEarliestPricesPerTicker();
   const currentPrices = Object.fromEntries(stockRows.map((r) => [r.ticker, r.closePrice]));
+  const ratios = getIndexRatios(active, currentPrices, basePrices);
+  const avgRatio = average(ratios);
 
-  const eligible = active.filter(
-    (c) => basePrices[c.ticker] !== undefined && currentPrices[c.ticker] !== undefined
-  );
-
-  if (eligible.length === 0) {
+  if (avgRatio === null) {
     return NextResponse.json({ message: "No eligible companies", date: today });
   }
 
-  const avgRatio =
-    eligible.reduce((s, c) => s + currentPrices[c.ticker] / basePrices[c.ticker], 0) /
-    eligible.length;
-  const indexValue = 1000 * avgRatio;
+  const indexValue = INDEX_BASE_VALUE * avgRatio;
+  const changePct = average(finiteNumbers(stockRows.map((row) => row.changePct)));
 
-  const changes = stockRows.filter((r) => r.changePct !== null).map((r) => r.changePct!);
-  const changePct = changes.length > 0 ? changes.reduce((a, b) => a + b, 0) / changes.length : null;
-
-  await upsertIndexSnapshot(today, indexValue, changePct, eligible.length);
+  await upsertIndexSnapshot(today, indexValue, changePct, ratios.length);
 
   return NextResponse.json({
     message: "Snapshot saved",
     date: today,
-    indexValue: Math.round(indexValue * 100) / 100,
-    numCompanies: eligible.length,
+    indexValue: round(indexValue),
+    numCompanies: ratios.length,
   });
 }

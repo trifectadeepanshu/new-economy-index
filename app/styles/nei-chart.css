@@ -1,0 +1,197 @@
+@layer components {
+  /* Chart */
+  .nei-chart-root {
+    margin-top: 20px;
+  }
+
+  .nei-chart-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .nei-chart-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nei-chart-title-label {
+    margin-bottom: 4px;
+  }
+
+  .nei-chart-title {
+    color: var(--nei-fg);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .nei-segmented-control {
+    display: inline-flex;
+    padding: 4px;
+    background: var(--nei-chip);
+    border-radius: 8px;
+    gap: 2px;
+  }
+
+  .nei-sector-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 4px;
+  }
+
+  .nei-control-button {
+    min-height: 38px;
+    padding: 7px 12px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--nei-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 120ms, background 120ms, box-shadow 120ms;
+  }
+
+  .nei-control-button.is-active {
+    background: var(--nei-surface);
+    color: var(--nei-fg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  .nei-control-button.is-ink.is-active {
+    background: var(--nei-fg);
+    color: var(--nei-bg);
+  }
+
+  .nei-legend-button {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 10px;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: 999px;
+    background: var(--nei-surface);
+    color: var(--nei-muted);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 120ms, color 120ms, background 120ms;
+  }
+
+  .nei-legend-button.is-active {
+    background: color-mix(in oklab, var(--nei-accent) 12%, transparent);
+    color: var(--nei-fg);
+  }
+
+  .nei-legend-button.is-muted {
+    opacity: 0.4;
+  }
+
+  .nei-legend-dot,
+  .nei-chart-tooltip-dot {
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: 50%;
+  }
+
+  .nei-chart-state {
+    height: 330px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .nei-chart-state.is-loading {
+    border-radius: 8px;
+    background: var(--nei-chip);
+    animation: nei-pulse 1.8s ease-in-out infinite;
+  }
+
+  .nei-chart-state.is-error {
+    color: var(--nei-neg);
+  }
+
+  .nei-chart-state.is-empty {
+    color: var(--nei-muted);
+  }
+
+  .nei-chart-tooltip {
+    padding: 10px 12px;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: 8px;
+    background: var(--nei-surface);
+    box-shadow: var(--nei-card-shadow);
+    font-size: 12px;
+  }
+
+  .nei-chart-tooltip-label {
+    margin-bottom: 7px;
+    color: var(--nei-muted);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .nei-chart-tooltip-list {
+    display: grid;
+    gap: 6px;
+  }
+
+  .nei-chart-tooltip-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .nei-chart-tooltip-name {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--nei-muted);
+  }
+
+  .nei-chart-tooltip-name span:last-child {
+    max-width: 112px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nei-chart-tooltip-value {
+    color: var(--nei-fg);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .nei-chart-tooltip-change {
+    margin-top: 6px;
+    font-size: 12px;
+  }
+
+  .nei-chart-tooltip-change.is-positive {
+    color: var(--nei-pos);
+  }
+
+  .nei-chart-tooltip-change.is-negative {
+    color: var(--nei-neg);
+  }
+
+  .nei-chart-tooltip-change span {
+    color: var(--nei-muted);
+  }
+}

@@ -1,0 +1,421 @@
+@layer components {
+  /* Constituents */
+  .nei-index-section {
+    position: relative;
+    overflow: hidden;
+    padding: 0 32px;
+    background: #172C54;
+    color: #E8EBF0;
+  }
+
+  .nei-index-section-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(80% 52% at 48% 0%, rgba(169,192,255,0.12), transparent 62%),
+      linear-gradient(180deg, rgba(255,255,255,0.025), rgba(7,11,22,0.20));
+    pointer-events: none;
+  }
+
+  .nei-index-frame {
+    width: min(100%, 1480px);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .nei-index-inner {
+    padding: 64px 56px 80px;
+  }
+
+  .nei-index-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.55fr);
+    gap: 40px;
+    align-items: end;
+    margin-bottom: 36px;
+  }
+
+  .nei-index-title {
+    font-size: clamp(34px, 4vw, 56px);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: 0;
+    color: #F2F4F8;
+    margin: 0;
+  }
+
+  .nei-index-title span {
+    color: rgba(232,235,240,0.48);
+  }
+
+  .nei-index-copy {
+    max-width: 340px;
+    margin: 0 0 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(232,235,240,0.62);
+  }
+
+  .nei-index-panel {
+    border-top: 1px solid rgba(232,235,240,0.14);
+    border-bottom: 1px solid rgba(232,235,240,0.10);
+    background: linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.01));
+  }
+
+  .nei-company-grid-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+
+  .nei-view-toggle {
+    display: inline-flex;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 8px;
+    background: var(--nei-chip);
+  }
+
+  .nei-view-toggle button {
+    padding: 6px 14px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--nei-muted);
+    font: 500 12px var(--font-inter), system-ui, sans-serif;
+    cursor: pointer;
+    transition: color 100ms, background 100ms, box-shadow 100ms;
+  }
+
+  .nei-view-toggle button.is-active {
+    background: var(--nei-surface);
+    color: var(--nei-fg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  .nei-company-skeleton-grid,
+  .nei-company-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+  }
+
+  .nei-company-skeleton-card {
+    height: 96px;
+    border-radius: var(--nei-radius-sm);
+    background: var(--nei-chip);
+    animation: nei-pulse 1.8s ease-in-out infinite;
+  }
+
+  .nei-constituent-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 18px 0 20px;
+  }
+
+  .nei-constituent-search {
+    width: min(360px, 100%);
+    min-height: 44px;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: 8px;
+    background: var(--nei-chip);
+    color: var(--nei-fg);
+    padding: 0 16px;
+    font-family: var(--font-inter), system-ui, sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .nei-constituent-search::placeholder {
+    color: var(--nei-muted-faint);
+  }
+
+  .nei-constituent-search:focus {
+    border-color: var(--nei-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--nei-accent) 18%, transparent);
+  }
+
+  .nei-sector-filter {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nei-sector-filter button {
+    min-height: 44px;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--nei-muted);
+    padding: 0 15px;
+    font: 600 13px var(--font-inter), system-ui, sans-serif;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+
+  .nei-sector-filter button:hover {
+    border-color: var(--nei-accent);
+    color: var(--nei-fg);
+  }
+
+  .nei-sector-filter button.is-active {
+    background: var(--nei-fg);
+    border-color: var(--nei-fg);
+    color: var(--nei-bg);
+  }
+
+  .nei-constituent-count {
+    margin-left: auto;
+    color: var(--nei-muted);
+    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+    white-space: nowrap;
+  }
+
+  .nei-constituent-table-wrap {
+    overflow-x: auto;
+  }
+
+  .nei-constituent-table {
+    width: 100%;
+    min-width: 920px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .nei-constituent-table th,
+  .nei-constituent-table td {
+    padding: 18px 18px;
+    border-top: 1px solid var(--nei-grid);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .nei-constituent-table thead th {
+    padding-top: 0;
+    padding-bottom: 14px;
+    border-top: 0;
+    color: var(--nei-muted);
+    font: 700 11px var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+  }
+
+  .nei-constituent-table th button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+  }
+
+  .nei-constituent-table th button.is-active {
+    color: var(--nei-fg);
+  }
+
+  .nei-constituent-table th.is-right,
+  .nei-constituent-table td.is-right {
+    text-align: right;
+  }
+
+  .nei-constituent-table tbody tr {
+    transition: background 160ms ease;
+  }
+
+  .nei-constituent-table tbody tr:hover {
+    background: var(--nei-hover);
+  }
+
+  .nei-row-number {
+    width: 56px;
+    color: var(--nei-muted);
+    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+    text-align: right;
+  }
+
+  .nei-company-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .nei-company-logo-tile {
+    width: var(--logo-size);
+    height: var(--logo-size);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: var(--logo-radius);
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.72);
+  }
+
+  .nei-company-logo-image {
+    max-width: var(--logo-image-max);
+    max-height: calc(var(--logo-size) * 0.7);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .nei-company-logo-fallback {
+    width: var(--fallback-size);
+    height: var(--fallback-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--fallback-radius);
+    background: oklch(0.94 0.025 var(--fallback-hue));
+    color: oklch(0.28 0.07 var(--fallback-hue));
+    font: 600 var(--fallback-font-size) var(--font-sora), var(--font-inter), system-ui;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .nei-company-cell strong {
+    display: block;
+    color: var(--nei-fg);
+    font: 700 14px var(--font-jetbrains), ui-monospace, monospace;
+    letter-spacing: 0.03em;
+  }
+
+  .nei-company-cell span {
+    display: block;
+    color: var(--nei-muted);
+    font-size: 13px;
+    line-height: 1.45;
+    margin-top: 3px;
+  }
+
+  .nei-sector-name {
+    color: var(--nei-muted);
+    font-weight: 500;
+  }
+
+  .nei-constituent-table .is-positive {
+    color: var(--nei-pos);
+    font-weight: 700;
+  }
+
+  .nei-constituent-table .is-negative {
+    color: var(--nei-neg);
+    font-weight: 700;
+  }
+
+  .nei-constituent-spark {
+    display: inline-block;
+    width: 118px;
+    height: 34px;
+    opacity: 0.58;
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .nei-constituent-table tbody tr:hover .nei-constituent-spark {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .nei-constituents.is-terminal .nei-constituent-search {
+    background: rgba(232,235,240,0.07);
+    border-color: rgba(232,235,240,0.15);
+  }
+
+  .nei-constituents.is-terminal .nei-sector-filter button {
+    border-color: rgba(232,235,240,0.14);
+    background: rgba(232,235,240,0.02);
+  }
+
+  .nei-constituents.is-terminal .nei-sector-filter button.is-active {
+    background: #F2F4F8;
+    border-color: #F2F4F8;
+    color: #172C54;
+  }
+
+  .nei-company-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 18px 14px;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: var(--nei-radius-sm);
+    background: var(--nei-surface);
+    cursor: default;
+    transition: border-color 100ms;
+  }
+
+  .nei-company-card:hover {
+    border-color: var(--nei-accent);
+  }
+
+  .nei-company-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nei-company-card-title {
+    min-width: 0;
+  }
+
+  .nei-company-card-title h3 {
+    margin: 0;
+    overflow: hidden;
+    color: var(--nei-fg);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nei-company-card-title p {
+    margin: 2px 0 0;
+    color: var(--nei-muted);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+  }
+
+  .nei-company-card-title p span {
+    color: var(--nei-muted-faint);
+  }
+
+  .nei-company-card-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--nei-grid);
+  }
+
+  .nei-company-card-price > span {
+    color: var(--nei-fg);
+    font-size: 17px;
+    letter-spacing: 0;
+  }
+
+  .nei-company-card-price strong {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .nei-company-card-price .is-positive {
+    color: var(--nei-pos);
+  }
+
+  .nei-company-card-price .is-negative {
+    color: var(--nei-neg);
+  }
+}

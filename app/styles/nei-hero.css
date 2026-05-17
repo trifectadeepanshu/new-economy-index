@@ -1,0 +1,428 @@
+@layer components {
+  /* Hero */
+  .nei-hero-section {
+    --nei-pos: #7DD89B;
+    --nei-neg: #E89175;
+    --nei-grid: rgba(232,235,240,0.10);
+    --nei-grid-strong: rgba(232,235,240,0.16);
+    --nei-muted: rgba(232,235,240,0.66);
+    --nei-fg: #F2F4F8;
+    position: relative;
+    min-height: 100dvh;
+    overflow: hidden;
+    background: #172C54;
+    color: #E8EBF0;
+  }
+
+  .nei-hero-layer {
+    position: relative;
+    z-index: 3;
+    min-height: 100dvh;
+  }
+
+  .nei-kinetic-backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: #172C54;
+  }
+
+  .nei-kinetic-sheen {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 32%, transparent 60%),
+      linear-gradient(180deg, rgba(63,102,184,0.20) 0%, transparent 38%),
+      linear-gradient(180deg, transparent 65%, rgba(7,11,22,0.55) 100%);
+  }
+
+  .nei-kinetic-field {
+    position: absolute;
+    inset: -10%;
+    background:
+      radial-gradient(40% 30% at 28% 28%, rgba(122,149,242,0.20), transparent 60%),
+      radial-gradient(36% 28% at 72% 64%, rgba(40,88,224,0.18), transparent 60%);
+    filter: blur(40px);
+    opacity: 0.85;
+    animation: nei-aurora 18s ease-in-out infinite alternate;
+  }
+
+  .nei-kinetic-grid {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.55;
+  }
+
+  .nei-kinetic-vignette {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 70%, rgba(7,11,22,0.45) 100%);
+  }
+
+  .nei-v2-nav {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 56px 0;
+    max-width: 1480px;
+    margin: 0 auto;
+  }
+
+  .nei-brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .nei-brand-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+    padding: 6px 4px;
+    border-radius: 6px;
+    transition: opacity 160ms ease;
+  }
+
+  .nei-brand-link:hover {
+    opacity: 0.82;
+  }
+
+  .nei-brand-logo {
+    display: block;
+    width: 120px;
+    height: auto;
+    max-height: 36px;
+    object-fit: contain;
+  }
+
+  .nei-v2-links {
+    display: flex;
+    gap: 28px;
+    font-size: 13px;
+    align-items: center;
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  .nei-v2-links a {
+    color: rgba(232,235,240,0.72);
+    text-decoration: none;
+    transition: color 200ms ease, background 200ms ease, border-color 200ms ease;
+  }
+
+  .nei-v2-links a:hover {
+    color: #F2F4F8;
+  }
+
+  .nei-v2-links .nei-v2-nav-cta {
+    color: #0A0E16;
+    background: #F2F4F8;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .nei-hero-inner {
+    padding: 64px 56px 96px;
+    position: relative;
+    z-index: 2;
+    max-width: 1480px;
+    margin: 0 auto;
+  }
+
+  .nei-hero-title {
+    max-width: 720px;
+    margin: 0 0 28px;
+    color: #F2F4F8;
+    font-size: clamp(40px, 5.6vw, 76px);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: 0;
+  }
+
+  .nei-hero-title span {
+    color: rgba(232,235,240,0.55);
+  }
+
+  .nei-hero-copy {
+    max-width: 540px;
+    margin: 0;
+    color: rgba(232,235,240,0.72);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .nei-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 36px;
+  }
+
+  .nei-hero-actions .nei-hero-primary span {
+    opacity: 0.55;
+  }
+
+  .nei-hero-frame-wrap {
+    position: relative;
+  }
+
+  .nei-hero-card {
+    padding: 32px 36px 30px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border: 1px solid rgba(232,235,240,0.14);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 8px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 24px 60px rgba(7,11,22,0.35);
+  }
+
+  .nei-stale-banner {
+    margin-bottom: 14px;
+    padding: 7px 12px;
+    border: 1px solid rgba(232,145,117,0.28);
+    border-radius: 8px;
+    background: rgba(232,145,117,0.10);
+    color: #E89175;
+    font-size: 12px;
+  }
+
+  .nei-hero-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .nei-market-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: rgba(232,235,240,0.55);
+    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .nei-market-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: rgba(232,235,240,0.38);
+  }
+
+  .nei-market-dot.is-open {
+    background: #5FBE7E;
+    box-shadow: 0 0 0 0 rgba(95,190,126,0.6);
+    animation: nei-live-pulse 2.2s ease-out infinite;
+  }
+
+  .nei-day-change-pill {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+  }
+
+  .nei-day-change-pill.is-positive {
+    border: 1px solid rgba(95,190,126,0.28);
+    background: rgba(95,190,126,0.10);
+    color: #7DD89B;
+  }
+
+  .nei-day-change-pill.is-negative {
+    border: 1px solid rgba(221,122,78,0.28);
+    background: rgba(221,122,78,0.10);
+    color: #E89175;
+  }
+
+  .nei-index-value-skeleton {
+    margin: 8px 0 10px;
+  }
+
+  .nei-index-value {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+    margin-bottom: 6px;
+    color: #F2F4F8;
+    font-size: clamp(56px, 8vw, 96px);
+    font-weight: 500;
+    line-height: 0.95;
+    letter-spacing: 0;
+  }
+
+  .nei-since-inception {
+    margin-bottom: 22px;
+    color: rgba(232,235,240,0.62);
+    font-size: 13px;
+  }
+
+  .nei-since-inception-value {
+    font-weight: 600;
+  }
+
+  .nei-since-inception-value.is-positive,
+  .nei-hero-stat-value.is-positive {
+    color: #7DD89B;
+  }
+
+  .nei-since-inception-value.is-negative,
+  .nei-hero-stat-value.is-negative {
+    color: #E89175;
+  }
+
+  .nei-hero-spark {
+    height: 82px;
+    margin: 0 -8px 18px;
+  }
+
+  .nei-mktcap-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 14px 0 14px;
+    border-top: 1px solid rgba(232,235,240,0.10);
+    border-bottom: 1px solid rgba(232,235,240,0.06);
+    margin-bottom: 16px;
+  }
+
+  .nei-mktcap-value {
+    font-size: 22px;
+    font-weight: 500;
+    color: #A9C0FF;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  .nei-hero-card-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .nei-hero-stat-label {
+    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(232,235,240,0.5);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .nei-hero-stat-value {
+    color: #E8EBF0;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .nei-hero-primary,
+  .nei-hero-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 13px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+  }
+
+  .nei-hero-primary {
+    padding-left: 20px;
+    background: #F2F4F8;
+    color: #0A0E16;
+    font-weight: 600;
+    border: 1px solid #F2F4F8;
+  }
+
+  .nei-hero-secondary {
+    background: transparent;
+    color: #E8EBF0;
+    border: 1px solid rgba(232,235,240,0.22);
+    font-weight: 500;
+  }
+
+  .nei-hero-primary:hover {
+    transform: translateY(-1px);
+  }
+
+  .nei-hero-secondary:hover {
+    border-color: rgba(232,235,240,0.5);
+    background: rgba(232,235,240,0.04);
+  }
+
+  .nei-ticker-drift {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    border-bottom: 1px solid rgba(232,235,240,0.10);
+    background: rgba(8,11,18,0.82);
+    overflow: hidden;
+    height: 40px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .nei-ticker-track {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: nei-ticker-drift 110s linear infinite;
+    height: 100%;
+    align-items: center;
+  }
+
+  .nei-ticker-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 26px;
+    border-right: 1px solid rgba(232,235,240,0.08);
+    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: rgba(232,235,240,0.78);
+  }
+
+  .nei-ticker-symbol {
+    font-weight: 600;
+    color: #E8EBF0;
+  }
+
+  .nei-ticker-price {
+    color: rgba(232,235,240,0.52);
+  }
+
+  .nei-ticker-change {
+    font-weight: 600;
+  }
+
+  .nei-ticker-change.is-positive {
+    color: var(--nei-pos-bright);
+  }
+
+  .nei-ticker-change.is-negative {
+    color: var(--nei-neg-bright);
+  }
+
+  .nei-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: center;
+  }
+}

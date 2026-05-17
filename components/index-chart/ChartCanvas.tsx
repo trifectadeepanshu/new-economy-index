@@ -1,0 +1,210 @@
+import {
+  Area,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ReferenceDot,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
+import { CHART_HEIGHT, SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
+import { formatValue } from "@/components/index-chart/format";
+import { ChartTooltip } from "@/components/index-chart/ChartTooltip";
+import type { ChartMode, ChartPoint, ChartRow } from "@/components/index-chart/types";
+
+type ChartCanvasProps = {
+  activeMode: ChartMode;
+  areaGradientId: string;
+  data: ChartRow[];
+  focusedSector: Sector | null;
+  latestColor: string;
+  latestPoint?: ChartPoint;
+  onSectorFocus: (sector: Sector | null) => void;
+  selectedSector: Sector;
+};
+
+export function ChartCanvas({
+  activeMode,
+  areaGradientId,
+  data,
+  focusedSector,
+  latestColor,
+  latestPoint,
+  onSectorFocus,
+  selectedSector,
+}: ChartCanvasProps) {
+  return (
+    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+      <ComposedChart<ChartRow>
+        data={data}
+        margin={{ top: 16, right: 78, bottom: 0, left: 0 }}
+      >
+        <defs>
+          <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="0%"
+              style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.12 }}
+            />
+            <stop
+              offset="100%"
+              style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.01 }}
+            />
+          </linearGradient>
+        </defs>
+
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--nei-grid)" vertical={false} />
+        <XAxis
+          dataKey="label"
+          tick={{
+            fill: "var(--nei-muted)",
+            fontSize: 11,
+            fontFamily: "var(--font-inter), system-ui",
+          }}
+          axisLine={false}
+          tickLine={false}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          domain={["auto", "auto"]}
+          tick={{
+            fill: "var(--nei-muted)",
+            fontSize: 11,
+            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+          }}
+          axisLine={false}
+          tickLine={false}
+          tickFormatter={(value: number) =>
+            value.toLocaleString("en-IN", { maximumFractionDigits: 0 })
+          }
+          width={54}
+        />
+        <Tooltip content={<ChartTooltip />} />
+        <ReferenceLine
+          y={INDEX_BASE_VALUE}
+          stroke="var(--nei-grid-strong)"
+          strokeDasharray="4 4"
+          label={{
+            value: "Base 1,000",
+            position: "insideTopLeft",
+            fill: "var(--nei-muted)",
+            fontSize: 10,
+            fontFamily: "var(--font-inter), system-ui",
+          }}
+        />
+
+        {activeMode === "compare" ? (
+          <SectorLines
+            focusedSector={focusedSector}
+            onSectorFocus={onSectorFocus}
+          />
+        ) : (
+          <IndexLine
+            activeMode={activeMode}
+            areaGradientId={areaGradientId}
+            latestColor={latestColor}
+            latestPoint={latestPoint}
+            selectedSector={selectedSector}
+          />
+        )}
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
+function SectorLines({
+  focusedSector,
+  onSectorFocus,
+}: {
+  focusedSector: Sector | null;
+  onSectorFocus: (sector: Sector | null) => void;
+}) {
+  return SECTORS.map((sector) => {
+    const isMuted = Boolean(focusedSector && focusedSector !== sector);
+
+    return (
+      <Line
+        key={sector}
+        type="monotone"
+        dataKey={sector}
+        name={sector}
+        stroke={SECTOR_CHART_COLORS[sector]}
+        strokeWidth={focusedSector === sector ? 2.7 : 1.7}
+        strokeOpacity={isMuted ? 0.18 : 1}
+        dot={false}
+        connectNulls
+        isAnimationActive={false}
+        activeDot={{
+          r: 4,
+          fill: SECTOR_CHART_COLORS[sector],
+          stroke: "#FFFFFF",
+          strokeWidth: 2,
+        }}
+        onMouseEnter={() => onSectorFocus(sector)}
+        onMouseLeave={() => onSectorFocus(null)}
+      />
+    );
+  });
+}
+
+function IndexLine({
+  activeMode,
+  areaGradientId,
+  latestColor,
+  latestPoint,
+  selectedSector,
+}: {
+  activeMode: ChartMode;
+  areaGradientId: string;
+  latestColor: string;
+  latestPoint?: ChartPoint;
+  selectedSector: Sector;
+}) {
+  return (
+    <>
+      <Area
+        type="monotone"
+        dataKey="value"
+        stroke="none"
+        fill={`url(#${areaGradientId})`}
+        isAnimationActive={false}
+      />
+      <Line
+        type="monotone"
+        dataKey="value"
+        name={activeMode === "detail" ? selectedSector : "NEI"}
+        stroke={latestColor}
+        strokeWidth={2.2}
+        dot={false}
+        isAnimationActive={false}
+        activeDot={{
+          r: 4,
+          fill: latestColor,
+          stroke: "#FFFFFF",
+          strokeWidth: 2,
+        }}
+      />
+      {latestPoint && (
+        <ReferenceDot
+          x={latestPoint.label}
+          y={latestPoint.value}
+          r={5}
+          fill={latestColor}
+          stroke="#FFFFFF"
+          strokeWidth={2}
+          label={{
+            value: formatValue(latestPoint.value),
+            position: "right",
+            fill: "var(--nei-fg)",
+            fontSize: 11,
+            fontWeight: 600,
+            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+          }}
+        />
+      )}
+    </>
+  );
+}

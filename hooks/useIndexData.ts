@@ -1,92 +1,118 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { LiveIndexPayload } from "@/lib/index-api";
 import { isMarketOpen } from "@/lib/market-hours";
 
-const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes during market hours
+const LIVE_ENDPOINT = "/api/index/live";
+const POLL_INTERVAL_MS = 5 * 60 * 1000;
 const MARKET_CHECK_INTERVAL_MS = 60 * 1000;
 
-export interface StockData {
-  ticker: string;
-  name: string;
-  sector: string;
-  price: number | null;
-  changePct: number | null;
-  basePrice: number | null;
-  ratio: number | null;
+export type LiveIndexData = Omit<LiveIndexPayload, "lastUpdated"> & {
+  lastUpdated: Date;
+};
+
+type LiveIndexState = {
+  data: LiveIndexData | null;
+  isLoading: boolean;
+  error: string | null;
+};
+
+const INITIAL_STATE: LiveIndexState = {
+  data: null,
+  isLoading: true,
+  error: null,
+};
+
+function parseTimestamp(value: string | null | undefined) {
+  if (typeof value !== "string") return new Date();
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 }
 
-export interface LiveIndexData {
-  indexValue: number;
-  indexChangePct: number | null;
-  numCompanies: number;
-  lastUpdated: Date;
-  isStale: boolean;
-  totalMarketCap: number | null;
-  stocks: StockData[];
+function normalizeLiveData(json: LiveIndexPayload): LiveIndexData {
+  return {
+    indexValue: json.indexValue ?? null,
+    indexChangePct: json.indexChangePct ?? null,
+    numCompanies: json.numCompanies,
+    lastUpdated: parseTimestamp(json.lastUpdated),
+    isStale: Boolean(json.isStale),
+    totalMarketCap: json.totalMarketCap ?? null,
+    stocks: json.stocks ?? [],
+  };
+}
+
+async function fetchLiveIndex(signal?: AbortSignal) {
+  const response = await fetch(LIVE_ENDPOINT, { signal });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+  return normalizeLiveData((await response.json()) as LiveIndexPayload);
+}
+
+function isAbortError(error: unknown) {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
 }
 
 export function useIndexData() {
-  const [data, setData] = useState<LiveIndexData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<LiveIndexState>(INITIAL_STATE);
   const lastFetchRef = useRef(0);
   const inFlightRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
     if (inFlightRef.current) return;
+    if (!force && Date.now() - lastFetchRef.current < POLL_INTERVAL_MS) return;
 
     inFlightRef.current = true;
     lastFetchRef.current = Date.now();
+    abortRef.current?.abort();
+
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     try {
-      const res = await fetch("/api/index/live");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      const serverTimestamp =
-        typeof json.lastUpdated === "string" ? new Date(json.lastUpdated) : null;
-      const lastUpdated =
-        serverTimestamp && !Number.isNaN(serverTimestamp.getTime())
-          ? serverTimestamp
-          : new Date();
-
-      setData({ ...json, lastUpdated });
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Unknown error");
+      const data = await fetchLiveIndex(controller.signal);
+      setState({ data, isLoading: false, error: null });
+    } catch (error) {
+      if (!isAbortError(error)) {
+        setState((current) => ({
+          ...current,
+          isLoading: false,
+          error: getErrorMessage(error),
+        }));
+      }
     } finally {
+      if (abortRef.current === controller) abortRef.current = null;
       inFlightRef.current = false;
-      setIsLoading(false);
     }
   }, []);
 
   const refreshIfDue = useCallback(() => {
     if (!isMarketOpen()) return;
-    if (Date.now() - lastFetchRef.current >= POLL_INTERVAL_MS) {
-      void fetchData();
-    }
+    void fetchData();
   }, [fetchData]);
 
   useEffect(() => {
-    const initialFetch = window.setTimeout(() => {
-      void fetchData();
-    }, 0);
+    void fetchData({ force: true });
 
-    // Check market state every minute, but only fetch on the 15-minute cadence.
     const marketCheck = window.setInterval(refreshIfDue, MARKET_CHECK_INTERVAL_MS);
-
-    // Refetch immediately when tab becomes visible
     const handleVisibility = () => {
-      if (document.visibilityState === "visible") void fetchData();
+      if (document.visibilityState === "visible") void fetchData({ force: true });
     };
+
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      window.clearTimeout(initialFetch);
       window.clearInterval(marketCheck);
       document.removeEventListener("visibilitychange", handleVisibility);
+      abortRef.current?.abort();
     };
   }, [fetchData, refreshIfDue]);
 
-  return { data, isLoading, error };
+  return state;
 }

@@ -1,0 +1,185 @@
+@media (max-width: 900px) {
+  .nei-hero-grid,
+  .nei-method-grid,
+  .nei-sector-composition,
+  .nei-footer-top {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  .nei-v2-nav {
+    padding: 10px 20px 0;
+  }
+
+  .nei-brand-logo {
+    width: 136px;
+  }
+
+  .nei-v2-links {
+    display: none;
+  }
+
+  .nei-hero-inner {
+    padding: 24px 20px 104px;
+  }
+
+  .nei-hero-card {
+    padding: 26px 22px 24px;
+  }
+
+  .nei-chart-toolbar {
+    flex-direction: column;
+    margin-bottom: 14px;
+  }
+
+  .nei-chart-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .nei-segmented-control {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .nei-sector-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .nei-reference-section {
+    padding: 48px 20px 72px;
+  }
+
+  .nei-reference-inner {
+    padding: 42px 20px 44px;
+  }
+
+  .nei-reference-header {
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .nei-reference-title {
+    font-size: clamp(34px, 10vw, 52px);
+  }
+
+  .nei-reference-copy {
+    max-width: 100%;
+    font-size: 15px;
+  }
+
+  .nei-reference-chart-value span {
+    font-size: 28px;
+  }
+
+  .nei-sector-row-top {
+    align-items: flex-start;
+  }
+
+  .nei-sector-row-title {
+    flex-wrap: wrap;
+  }
+
+  .nei-index-section {
+    padding: 0 20px;
+  }
+
+  .nei-index-inner {
+    padding: 58px 20px 72px;
+  }
+
+  .nei-index-header {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .nei-index-title {
+    font-size: clamp(34px, 10vw, 52px);
+  }
+
+  .nei-index-copy {
+    font-size: 15px;
+  }
+
+  .nei-constituent-tools {
+    align-items: stretch;
+  }
+
+  .nei-constituent-search {
+    width: 100%;
+  }
+
+  .nei-sector-filter {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    width: 100%;
+  }
+
+  .nei-sector-filter button {
+    flex: 0 0 auto;
+  }
+
+  .nei-constituent-count {
+    margin-left: 0;
+  }
+
+  .nei-method-section {
+    padding: 0 20px;
+  }
+
+  .nei-method-inner {
+    padding: 58px 20px 72px;
+  }
+
+  .nei-method-title {
+    font-size: clamp(34px, 10vw, 52px);
+  }
+
+  .nei-method-copy {
+    font-size: 15px;
+  }
+
+  .nei-footer-inner {
+    padding: 40px 20px 32px;
+  }
+
+  .nei-footer-links {
+    justify-content: flex-start;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .nei-hero-card-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nei-ticker-chip {
+    padding: 0 18px;
+  }
+
+  .nei-method-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .nei-method-stats div:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .nei-method-stats div:nth-child(even) {
+    padding-left: 0;
+  }
+
+  .nei-method-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .nei-footer-bottom {
+    display: grid;
+  }
+}

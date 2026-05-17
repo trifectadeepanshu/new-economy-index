@@ -1,0 +1,25 @@
+import type { StockData } from "@/lib/index-api";
+
+export type CompanyGridView = "table" | "grid";
+export type CompanyGridVariant = "default" | "terminal";
+export type SortDirection = 1 | -1;
+export type SortKey = "ticker" | "name" | "sector" | "price" | "changePct" | "ratio";
+export type SectorFilter = "All" | string;
+
+export type CompanyGridProps = {
+  stocks: StockData[];
+  isLoading: boolean;
+  view?: CompanyGridView;
+  onViewChange?: (view: CompanyGridView) => void;
+  showToggle?: boolean;
+  variant?: CompanyGridVariant;
+};
+
+export type SortState = {
+  key: SortKey;
+  dir: SortDirection;
+};
+
+export type ConstituentRow = StockData & {
+  sinceBase: number | null;
+};
