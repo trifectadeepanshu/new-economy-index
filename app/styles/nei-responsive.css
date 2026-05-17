@@ -1,3 +1,27 @@
+@media (max-width: 1200px) {
+  .nei-v2-nav,
+  .nei-hero-inner,
+  .nei-reference-inner,
+  .nei-index-inner,
+  .nei-method-inner,
+  .nei-footer-inner {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  .nei-reference-section,
+  .nei-index-section,
+  .nei-method-section {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .nei-hero-grid,
+  .nei-method-grid {
+    gap: 40px;
+  }
+}
+
 @media (max-width: 900px) {
   .nei-hero-grid,
   .nei-method-grid,
@@ -8,7 +32,7 @@
   }
 
   .nei-v2-nav {
-    padding: 10px 20px 0;
+    padding: 10px max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
   }
 
   .nei-brand-logo {
@@ -20,7 +44,7 @@
   }
 
   .nei-hero-inner {
-    padding: 24px 20px 104px;
+    padding: 24px 20px 96px;
   }
 
   .nei-hero-card {
@@ -49,11 +73,11 @@
   }
 
   .nei-reference-section {
-    padding: 48px 20px 72px;
+    padding: 48px 18px 72px;
   }
 
   .nei-reference-inner {
-    padding: 42px 20px 44px;
+    padding: 42px 18px 44px;
   }
 
   .nei-reference-header {
@@ -62,7 +86,8 @@
   }
 
   .nei-reference-title {
-    font-size: clamp(34px, 10vw, 52px);
+    font-size: 44px;
+    line-height: 1.05;
   }
 
   .nei-reference-copy {
@@ -83,11 +108,11 @@
   }
 
   .nei-index-section {
-    padding: 0 20px;
+    padding: 0 18px;
   }
 
   .nei-index-inner {
-    padding: 58px 20px 72px;
+    padding: 58px 18px 72px;
   }
 
   .nei-index-header {
@@ -97,7 +122,8 @@
   }
 
   .nei-index-title {
-    font-size: clamp(34px, 10vw, 52px);
+    font-size: 44px;
+    line-height: 1.05;
   }
 
   .nei-index-copy {
@@ -128,15 +154,16 @@
   }
 
   .nei-method-section {
-    padding: 0 20px;
+    padding: 0 18px;
   }
 
   .nei-method-inner {
-    padding: 58px 20px 72px;
+    padding: 58px 18px 72px;
   }
 
   .nei-method-title {
-    font-size: clamp(34px, 10vw, 52px);
+    font-size: 44px;
+    line-height: 1.05;
   }
 
   .nei-method-copy {
@@ -144,7 +171,7 @@
   }
 
   .nei-footer-inner {
-    padding: 40px 20px 32px;
+    padding: 40px 18px 32px;
   }
 
   .nei-footer-links {
@@ -154,6 +181,57 @@
 }
 
 @media (max-width: 640px) {
+  .nei-reference-section {
+    padding: 44px 16px 64px;
+  }
+
+  .nei-index-section,
+  .nei-method-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .nei-reference-inner,
+  .nei-index-inner,
+  .nei-method-inner {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .nei-reference-frame > span[aria-hidden="true"],
+  .nei-index-frame > span[aria-hidden="true"],
+  .nei-method-frame > span[aria-hidden="true"] {
+    display: none;
+  }
+
+  .nei-section-eyebrow {
+    margin-bottom: 16px;
+  }
+
+  .nei-reference-title,
+  .nei-index-title,
+  .nei-method-title {
+    font-size: 34px;
+    line-height: 1.07;
+  }
+
+  .nei-reference-copy,
+  .nei-index-copy,
+  .nei-method-copy {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .nei-control-button,
+  .nei-view-toggle button,
+  .nei-sector-filter button {
+    min-height: 44px;
+  }
+
+  .nei-constituent-search {
+    font-size: 16px;
+  }
+
   .nei-hero-card-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
