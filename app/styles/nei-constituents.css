@@ -71,7 +71,7 @@
     margin-bottom: 12px;
   }
 
-  .nei-company-grid-toolbar + .nei-constituents .nei-constituent-tools {
+  .nei-company-grid-toolbar + .nei-constituent-tools {
     padding-top: 12px;
   }
 
@@ -182,7 +182,10 @@
   }
 
   .nei-constituent-table-wrap {
+    position: relative;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .nei-constituent-table {
@@ -333,16 +336,19 @@
     transform: translateY(-1px);
   }
 
+  .nei-company-grid.is-terminal .nei-constituent-search,
   .nei-constituents.is-terminal .nei-constituent-search {
     background: rgba(232,235,240,0.07);
     border-color: rgba(232,235,240,0.15);
   }
 
+  .nei-company-grid.is-terminal .nei-sector-filter button,
   .nei-constituents.is-terminal .nei-sector-filter button {
     border-color: rgba(232,235,240,0.14);
     background: rgba(232,235,240,0.02);
   }
 
+  .nei-company-grid.is-terminal .nei-sector-filter button.is-active,
   .nei-constituents.is-terminal .nei-sector-filter button.is-active {
     background: #F2F4F8;
     border-color: #F2F4F8;

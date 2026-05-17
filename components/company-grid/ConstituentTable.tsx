@@ -1,6 +1,3 @@
-import { useState } from "react";
-import { SECTORS } from "@/lib/companies";
-import type { StockData } from "@/lib/index-api";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import {
   formatMarketCap,
@@ -8,18 +5,12 @@ import {
   formatSignedPercent,
 } from "@/components/company-grid/format";
 import { RowSparkline } from "@/components/company-grid/RowSparkline";
-import {
-  nextSort,
-  useConstituentRows,
-} from "@/components/company-grid/useConstituentRows";
 import type {
   CompanyGridVariant,
-  SectorFilter,
+  ConstituentRow,
   SortKey,
   SortState,
 } from "@/components/company-grid/types";
-
-const INITIAL_SORT: SortState = { key: "ratio", dir: -1 };
 
 const COLUMNS: Array<{
   key: SortKey;
@@ -33,8 +24,6 @@ const COLUMNS: Array<{
   { key: "changePct", label: "Day %", align: "right" },
   { key: "ratio", label: "Since Base", align: "right" },
 ];
-
-const SECTOR_OPTIONS = ["All", ...SECTORS];
 
 function SortButton({
   column,
@@ -92,69 +81,11 @@ function TableHeader({
   );
 }
 
-function SectorFilter({
-  value,
-  onChange,
-}: {
-  value: SectorFilter;
-  onChange: (value: SectorFilter) => void;
-}) {
-  return (
-    <div className="nei-sector-filter" aria-label="Filter by sector">
-      {SECTOR_OPTIONS.map((option) => (
-        <button
-          key={option}
-          type="button"
-          className={value === option ? "is-active" : ""}
-          onClick={() => onChange(option)}
-        >
-          {option}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function TableTools({
-  query,
-  sector,
-  count,
-  total,
-  onQueryChange,
-  onSectorChange,
-}: {
-  query: string;
-  sector: SectorFilter;
-  count: number;
-  total: number;
-  onQueryChange: (value: string) => void;
-  onSectorChange: (value: SectorFilter) => void;
-}) {
-  return (
-    <div className="nei-constituent-tools">
-      <label className="sr-only" htmlFor="constituent-search">
-        Search constituents
-      </label>
-      <input
-        id="constituent-search"
-        value={query}
-        onChange={(event) => onQueryChange(event.target.value)}
-        placeholder="Search ticker, name..."
-        className="nei-constituent-search"
-      />
-      <SectorFilter value={sector} onChange={onSectorChange} />
-      <span className="nei-constituent-count">
-        {count} / {total} listings
-      </span>
-    </div>
-  );
-}
-
 function CompanyCell({
   row,
   showLogo,
 }: {
-  row: StockData;
+  row: ConstituentRow;
   showLogo: boolean;
 }) {
   return (
@@ -169,32 +100,23 @@ function CompanyCell({
 }
 
 export function ConstituentTable({
-  stocks,
+  rows,
+  sort,
+  onSort,
   variant = "default",
 }: {
-  stocks: StockData[];
+  rows: ConstituentRow[];
+  sort: SortState;
+  onSort: (key: SortKey) => void;
   variant?: CompanyGridVariant;
 }) {
-  const [sort, setSort] = useState<SortState>(INITIAL_SORT);
-  const [query, setQuery] = useState("");
-  const [sector, setSector] = useState<SectorFilter>("All");
-  const rows = useConstituentRows(stocks, sort, sector, query);
   const isTerminal = variant === "terminal";
 
   return (
     <div className={`nei-constituents ${isTerminal ? "is-terminal" : ""}`}>
-      <TableTools
-        query={query}
-        sector={sector}
-        count={rows.length}
-        total={stocks.length}
-        onQueryChange={setQuery}
-        onSectorChange={setSector}
-      />
-
       <div className="nei-constituent-table-wrap">
         <table className="nei-constituent-table">
-          <TableHeader sort={sort} onSort={(key) => setSort(nextSort(sort, key))} />
+          <TableHeader sort={sort} onSort={onSort} />
           <tbody>
             {rows.map((row, index) => (
               <tr key={row.ticker}>

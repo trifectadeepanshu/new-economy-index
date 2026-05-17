@@ -197,6 +197,11 @@
     overflow-x: auto;
     padding-bottom: 4px;
     width: 100%;
+    scrollbar-width: none;
+  }
+
+  .nei-sector-filter::-webkit-scrollbar {
+    display: none;
   }
 
   .nei-sector-filter button {
@@ -205,6 +210,10 @@
 
   .nei-constituent-count {
     margin-left: 0;
+  }
+
+  .nei-company-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
 
   .nei-method-section {
@@ -463,6 +472,73 @@
 
   .nei-constituent-search {
     font-size: 16px;
+  }
+
+  .nei-index-panel {
+    padding: 0 12px 12px;
+  }
+
+  .nei-company-grid-toolbar {
+    justify-content: stretch;
+    padding-top: 14px;
+    margin-bottom: 8px;
+  }
+
+  .nei-view-toggle {
+    width: 100%;
+  }
+
+  .nei-view-toggle button {
+    flex: 1;
+    font-size: 13px;
+  }
+
+  .nei-company-grid-toolbar + .nei-constituent-tools {
+    padding-top: 8px;
+  }
+
+  .nei-constituent-tools {
+    gap: 8px;
+    padding: 12px 0 16px;
+  }
+
+  .nei-sector-filter {
+    margin-inline: -12px;
+    padding-inline: 12px;
+    scroll-padding-inline: 12px;
+  }
+
+  .nei-constituent-count {
+    width: 100%;
+    font-size: 11px;
+  }
+
+  .nei-constituent-table-wrap {
+    margin-inline: -12px;
+    padding: 0 12px 8px;
+    box-shadow: inset -22px 0 18px -18px rgba(242,244,248,0.32);
+  }
+
+  .nei-company-card-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .nei-company-card {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .nei-company-card-header {
+    gap: 10px;
+  }
+
+  .nei-company-card-price > span {
+    font-size: 16px;
+  }
+
+  .nei-company-card-meta {
+    align-items: flex-start;
   }
 
   .nei-hero-card-stats {
