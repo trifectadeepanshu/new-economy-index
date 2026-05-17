@@ -142,27 +142,21 @@
     align-items: start;
   }
 
+  .nei-footer-brand-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
   .nei-footer-brand {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
   }
 
   .nei-footer-logo {
     width: 150px;
     height: auto;
     object-fit: contain;
-  }
-
-  .nei-footer-brand span {
-    padding: 3px 8px;
-    border: 1px solid rgba(122,149,242,0.28);
-    border-radius: 5px;
-    background: rgba(122,149,242,0.14);
-    color: #A9C0FF;
-    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
-    text-transform: uppercase;
   }
 
   .nei-footer-top p {

@@ -233,21 +233,22 @@ export function DashboardFooter() {
       <TickFrame inset={32} tone="paper" lineLen={36} corner={12} opacity={0.3} padded={false}>
         <div className="nei-footer-inner">
           <div className="nei-footer-top">
-            <div className="nei-footer-brand">
-              <Image
-                src="/trifecta-capital-logo.png"
-                alt="Trifecta Capital"
-                width={166}
-                height={48}
-                className="nei-footer-logo"
-              />
-              <span>NEI</span>
+            <div className="nei-footer-brand-col">
+              <div className="nei-footer-brand">
+                <Image
+                  src="/trifecta-capital-logo.png"
+                  alt="Trifecta Capital"
+                  width={166}
+                  height={48}
+                  className="nei-footer-logo"
+                />
+              </div>
+              <p>
+                Data via NSE · refreshed every 5 min during market hours. © 2026
+                Trifecta Capital. The New Economy Index is for informational
+                purposes only, not investment advice.
+              </p>
             </div>
-            <p>
-              Data via NSE · refreshed every 5 min during market hours. © 2026
-              Trifecta Capital. The New Economy Index is for informational
-              purposes only, not investment advice.
-            </p>
             <div className="nei-footer-links">
               <div>
                 <strong>The Index</strong>
