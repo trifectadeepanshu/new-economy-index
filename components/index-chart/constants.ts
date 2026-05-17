@@ -13,7 +13,8 @@ export const SECTOR_CHART_COLORS: Record<Sector, string> = {
   "Consumer Brands": "#B45A2E",
   Fintech: "#2C6E3C",
   B2B: "#346C8C",
-  BFSI: "#8B5D77",
-  Software: "#5E5A8A",
-  Others: "#747B86",
+  SaaS: "#5E5A8A",
+  Edtech: "#8B5D77",
+  Gaming: "#3D7A6E",
+  "Deep Tech": "#747B86",
 };

@@ -168,7 +168,7 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
     {
       number: "02",
       title: `${numCompanies} listings, one number`,
-      body: "Platforms, consumer brands, fintech, B2B, BFSI, software, and other public-market expressions of India's new economy.",
+      body: "Platforms, consumer brands, fintech, B2B, SaaS, edtech, gaming, and deep tech — public-market expressions of India's new economy.",
     },
     METHOD_CARDS[1],
     METHOD_CARDS[2],

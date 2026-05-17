@@ -3,9 +3,10 @@ export const SECTORS = [
   "Consumer Brands",
   "Fintech",
   "B2B",
-  "BFSI",
-  "Software",
-  "Others",
+  "SaaS",
+  "Edtech",
+  "Gaming",
+  "Deep Tech",
 ] as const;
 
 export type Sector = (typeof SECTORS)[number];
@@ -45,48 +46,33 @@ export const COMPANIES: Company[] = [
     ["Meesho", "MEESHO", "2025-06-11"],
     ["Nykaa", "NYKAA", "2021-11-10"],
     ["Urban Company", "URBANCO", "2025-09-17"],
+    ["Info Edge (Naukri)", "NAUKRI", "2006-11-21"],
+    ["CarTrade.com", "CARTRADE", "2021-08-20"],
+    ["ixigo", "IXIGO", "2024-06-18"],
+    ["Yatra Online", "YATRA", "2023-09-21"],
   ]),
 
   ...withSector("Consumer Brands", [
     ["FirstCry", "FIRSTCRY", "2024-08-13"],
-    ["TBO.com", "TBOTEK", "2024-05-15"],
-    ["Physics Wallah", "PWL", "2025-11-13"],
     ["Indigo Paints", "INDIGOPNTS", "2021-01-22"],
     ["Go Colors", "GOCOLORS", "2021-11-30"],
     ["Sula Vineyards", "SULA", "2022-12-22"],
     ["Wakefit", "WAKEFIT", "2025-07-10"],
-    ["BlackBuck", "BLACKBUCK", "2024-11-22"],
     ["Ola Electric", "OLAELEC", "2024-08-09"],
     ["Bikaji Foods", "BIKAJI", "2022-11-07"],
-    ["Tracxn Technologies", "TRACXN", "2022-10-20"],
     ["Mamaearth (Honasa)", "HONASA", "2023-11-07"],
     ["BlueStone Jewellery", "BLUESTONE", "2025-06-25"],
-    ["ixigo", "IXIGO", "2024-06-18"],
-    ["Yatra Online", "YATRA", "2023-09-21"],
     ["Ather Energy", "ATHERENERG", "2025-05-06"],
+    ["Lenskart", "LENSKART", "2025-10-08"],
   ]),
 
   ...withSector("Fintech", [
-    ["Groww", "GROWW", "2025-06-12"],
     ["Paytm", "PAYTM", "2021-11-18"],
+    ["Groww", "GROWW", "2025-06-12"],
     ["Pine Labs", "PINELABS", "2025-07-24"],
     ["Zaggle", "ZAGGLE", "2023-09-22"],
     ["MobiKwik", "MOBIKWIK", "2024-12-18"],
     ["Kissht (OnEMI)", "KISSHT", "2026-05-08"],
-  ]),
-
-  ...withSector("B2B", [
-    ["Delhivery", "DELHIVERY", "2022-05-24"],
-    ["IndiaMart", "INDIAMART", "2019-07-04"],
-    ["Awfis", "AWFIS", "2024-05-30"],
-    ["Medi Assist", "MEDIASSIST", "2024-02-15"],
-    ["IdeaForge", "IDEAFORGE", "2023-06-26"],
-    ["IndiQube", "INDIQUBE", "2024-08-19"],
-    ["UniCommerce", "UNIECOM", "2024-08-13"],
-    ["Shadowfax", "SHADOWFAX", "2026-01-28"],
-  ]),
-
-  ...withSector("BFSI", [
     ["Go Digit Insurance", "GODIGIT", "2024-05-23"],
     ["Aadhar Housing Finance", "AADHARHFC", "2024-05-15"],
     ["Five Star Business Finance", "FIVESTAR", "2022-11-21"],
@@ -96,19 +82,37 @@ export const COMPANIES: Company[] = [
     ["AYE Finance", "AYE", "2026-02-26"],
   ]),
 
-  ...withSector("Software", [
+  ...withSector("B2B", [
+    ["Delhivery", "DELHIVERY", "2022-05-24"],
+    ["IndiaMart", "INDIAMART", "2019-07-04"],
+    ["TBO.com", "TBOTEK", "2024-05-15"],
+    ["BlackBuck", "BLACKBUCK", "2024-11-22"],
+    ["Awfis", "AWFIS", "2024-05-30"],
+    ["Medi Assist", "MEDIASSIST", "2024-02-15"],
+    ["IdeaForge", "IDEAFORGE", "2023-06-26"],
+    ["IndiQube", "INDIQUBE", "2024-08-19"],
+    ["UniCommerce", "UNIECOM", "2024-08-13"],
+    ["Shadowfax", "SHADOWFAX", "2026-01-28"],
+  ]),
+
+  ...withSector("SaaS", [
     ["MapMyIndia", "MAPMYINDIA", "2021-12-21"],
     ["Fractal Analytics", "FRACTAL", "2026-01-14"],
     ["Capillary Technologies", "CAPILLARY", "2025-02-18"],
     ["Amagi", "AMAGI", "2026-01-22"],
     ["RateGain", "RATEGAIN", "2021-12-17"],
-    ["Lenskart", "LENSKART", "2025-10-08"],
+    ["Tracxn Technologies", "TRACXN", "2022-10-20"],
   ]),
 
-  ...withSector("Others", [
-    ["Info Edge (Naukri)", "NAUKRI", "2006-11-21"],
+  ...withSector("Edtech", [
+    ["Physics Wallah", "PWL", "2025-11-13"],
+  ]),
+
+  ...withSector("Gaming", [
     ["Nazara Technologies", "NAZARA", "2021-03-30"],
-    ["CarTrade.com", "CARTRADE", "2021-08-20"],
+  ]),
+
+  ...withSector("Deep Tech", [
     ["SEDEMAC Mechatronics", "SEDEMAC", "2026-03-11"],
   ]),
 ];
