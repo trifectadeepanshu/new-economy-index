@@ -46,6 +46,11 @@
     margin: 14px 0 4px;
   }
 
+  .nei-chart-canvas {
+    width: 100%;
+    height: 330px;
+  }
+
   .nei-control-button {
     min-height: 38px;
     padding: 7px 12px;
@@ -128,6 +133,7 @@
   }
 
   .nei-chart-tooltip {
+    max-width: min(260px, calc(100vw - 32px));
     padding: 10px 12px;
     border: 1px solid var(--nei-grid-strong);
     border-radius: 8px;

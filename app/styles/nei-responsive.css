@@ -102,17 +102,28 @@
   .nei-chart-controls {
     width: 100%;
     justify-content: flex-start;
+    gap: 8px;
   }
 
   .nei-segmented-control {
     overflow-x: auto;
     max-width: 100%;
+    scrollbar-width: none;
+  }
+
+  .nei-segmented-control::-webkit-scrollbar,
+  .nei-sector-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .nei-sector-tabs {
     flex-wrap: nowrap;
     overflow-x: auto;
     padding-bottom: 4px;
+  }
+
+  .nei-chart-canvas {
+    height: 300px;
   }
 
   .nei-reference-section {
@@ -354,6 +365,57 @@
 
   .nei-reference-section {
     padding: 44px 16px 64px;
+  }
+
+  .nei-reference-chart .nei-chart-toolbar {
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .nei-reference-chart .nei-chart-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .nei-reference-chart .nei-segmented-control {
+    width: 100%;
+  }
+
+  .nei-reference-chart .nei-control-button {
+    flex: 1 0 auto;
+  }
+
+  .nei-reference-chart-value {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+
+  .nei-reference-chart-value span {
+    font-size: 24px;
+  }
+
+  .nei-chart-canvas {
+    height: 250px;
+    margin-left: -8px;
+  }
+
+  .nei-sector-tabs {
+    margin: 12px -16px 0 0;
+    padding-right: 16px;
+  }
+
+  .nei-legend-button {
+    flex: 0 0 auto;
+    min-height: 40px;
+  }
+
+  .nei-chart-tooltip {
+    max-width: calc(100vw - 40px);
+    font-size: 11px;
+  }
+
+  .nei-chart-tooltip-name span:last-child {
+    max-width: 96px;
   }
 
   .nei-index-section,

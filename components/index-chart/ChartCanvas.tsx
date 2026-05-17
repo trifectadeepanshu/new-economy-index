@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
-import { CHART_HEIGHT, SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
+import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
 import { formatValue } from "@/components/index-chart/format";
 import { ChartTooltip } from "@/components/index-chart/ChartTooltip";
 import type { ChartMode, ChartPoint, ChartRow } from "@/components/index-chart/types";
@@ -38,80 +38,82 @@ export function ChartCanvas({
   selectedSector,
 }: ChartCanvasProps) {
   return (
-    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-      <ComposedChart<ChartRow>
-        data={data}
-        margin={{ top: 16, right: 78, bottom: 0, left: 0 }}
-      >
-        <defs>
-          <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop
-              offset="0%"
-              style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.12 }}
-            />
-            <stop
-              offset="100%"
-              style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.01 }}
-            />
-          </linearGradient>
-        </defs>
+    <div className="nei-chart-canvas">
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart<ChartRow>
+          data={data}
+          margin={{ top: 16, right: 38, bottom: 0, left: 0 }}
+        >
+          <defs>
+            <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop
+                offset="0%"
+                style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.12 }}
+              />
+              <stop
+                offset="100%"
+                style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.01 }}
+              />
+            </linearGradient>
+          </defs>
 
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--nei-grid)" vertical={false} />
-        <XAxis
-          dataKey="label"
-          tick={{
-            fill: "var(--nei-muted)",
-            fontSize: 11,
-            fontFamily: "var(--font-inter), system-ui",
-          }}
-          axisLine={false}
-          tickLine={false}
-          interval="preserveStartEnd"
-        />
-        <YAxis
-          domain={["auto", "auto"]}
-          tick={{
-            fill: "var(--nei-muted)",
-            fontSize: 11,
-            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
-          }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(value: number) =>
-            value.toLocaleString("en-IN", { maximumFractionDigits: 0 })
-          }
-          width={54}
-        />
-        <Tooltip content={<ChartTooltip />} />
-        <ReferenceLine
-          y={INDEX_BASE_VALUE}
-          stroke="var(--nei-grid-strong)"
-          strokeDasharray="4 4"
-          label={{
-            value: "Base 1,000",
-            position: "insideTopLeft",
-            fill: "var(--nei-muted)",
-            fontSize: 10,
-            fontFamily: "var(--font-inter), system-ui",
-          }}
-        />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--nei-grid)" vertical={false} />
+          <XAxis
+            dataKey="label"
+            tick={{
+              fill: "var(--nei-muted)",
+              fontSize: 11,
+              fontFamily: "var(--font-inter), system-ui",
+            }}
+            axisLine={false}
+            tickLine={false}
+            interval="preserveStartEnd"
+          />
+          <YAxis
+            domain={["auto", "auto"]}
+            tick={{
+              fill: "var(--nei-muted)",
+              fontSize: 11,
+              fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+            }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={(value: number) =>
+              value.toLocaleString("en-IN", { maximumFractionDigits: 0 })
+            }
+            width={54}
+          />
+          <Tooltip content={<ChartTooltip />} />
+          <ReferenceLine
+            y={INDEX_BASE_VALUE}
+            stroke="var(--nei-grid-strong)"
+            strokeDasharray="4 4"
+            label={{
+              value: "Base 1,000",
+              position: "insideTopLeft",
+              fill: "var(--nei-muted)",
+              fontSize: 10,
+              fontFamily: "var(--font-inter), system-ui",
+            }}
+          />
 
-        {activeMode === "compare" ? (
-          <SectorLines
-            focusedSector={focusedSector}
-            onSectorFocus={onSectorFocus}
-          />
-        ) : (
-          <IndexLine
-            activeMode={activeMode}
-            areaGradientId={areaGradientId}
-            latestColor={latestColor}
-            latestPoint={latestPoint}
-            selectedSector={selectedSector}
-          />
-        )}
-      </ComposedChart>
-    </ResponsiveContainer>
+          {activeMode === "compare" ? (
+            <SectorLines
+              focusedSector={focusedSector}
+              onSectorFocus={onSectorFocus}
+            />
+          ) : (
+            <IndexLine
+              activeMode={activeMode}
+              areaGradientId={areaGradientId}
+              latestColor={latestColor}
+              latestPoint={latestPoint}
+              selectedSector={selectedSector}
+            />
+          )}
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
