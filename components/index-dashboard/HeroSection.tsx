@@ -109,9 +109,9 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
         <span>tracked as a single ticker.</span>
       </h1>
       <p className="nei-hero-copy">
-        {numCompanies} VC-backed Indian companies that have listed on public
-        markets, weighted equally and rebalanced quarterly. Built by Trifecta
-        Capital — backers of this asset class since 2015.
+        Trifecta Capital backed India&apos;s next generation of businesses
+        before they had a track record. The New Economy Index tracks what it
+        looks like now. {numCompanies} listed companies, one number.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">
@@ -119,7 +119,7 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
           <span>→</span>
         </a>
         <a className="nei-hero-secondary" href="#constituents">
-          All {numCompanies} constituents
+          Meet the {numCompanies} companies
         </a>
       </div>
     </div>
