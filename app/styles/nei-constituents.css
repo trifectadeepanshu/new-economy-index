@@ -460,7 +460,7 @@
     border: 1px solid var(--nei-fg);
     border-radius: 8px;
     background: var(--nei-fg);
-    color: var(--nei-bg);
+    color: #172C54;
     padding: 0 22px;
     font: 600 13px var(--font-inter), system-ui, sans-serif;
     cursor: pointer;
