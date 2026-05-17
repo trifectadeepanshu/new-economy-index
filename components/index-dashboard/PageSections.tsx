@@ -19,7 +19,7 @@ const METHOD_CARDS = [
   {
     number: "03",
     title: "Built from our seat",
-    body: "₹8,000 Cr deployed across 220+ companies in five funds. Trifecta has been at the center of this asset class for a decade.",
+    body: "₹8,000 Cr deployed across 220+ companies in five funds. Trifecta Capital has been at the center of this asset class for a decade.",
   },
   {
     number: "04",
@@ -194,7 +194,7 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
                 <span> we underwrote.</span>
               </h2>
               <p className="nei-method-copy">
-                Trifecta launched India&apos;s first venture debt fund in 2015.
+                Trifecta Capital launched India&apos;s first venture debt fund in 2015.
                 A decade later many of those companies are publicly listed. The
                 NEI tracks them as a single asset class from the seat that watched
                 it form.
@@ -258,7 +258,7 @@ export function DashboardFooter() {
                 <a href="#methodology">Methodology</a>
               </div>
               <div>
-                <strong>Trifecta</strong>
+                <strong>Trifecta Capital</strong>
                 <a href="https://trifectacapital.in" target="_blank" rel="noopener noreferrer">
                   trifectacapital.in ↗
                 </a>
