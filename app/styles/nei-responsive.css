@@ -766,6 +766,30 @@
   }
 }
 
+@media (max-width: 768px) {
+  .nei-portfolio-section {
+    padding: 0 16px;
+  }
+
+  .nei-portfolio-inner {
+    padding: 48px 24px 56px;
+  }
+
+  .nei-portfolio-body {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .nei-pchart-row {
+    grid-template-columns: 110px 1fr 56px;
+    gap: 10px;
+  }
+
+  .nei-portfolio-stats-col {
+    order: -1;
+  }
+}
+
 @media (max-width: 374px) {
   .nei-v2-nav,
   .nei-hero-inner {

@@ -137,160 +137,183 @@
   }
 
   .nei-portfolio-inner {
-    padding: 72px 56px 88px;
+    padding: 72px 56px 80px;
   }
 
-  .nei-portfolio-header {
+  .nei-portfolio-body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 48px;
+    grid-template-columns: 1fr 320px;
+    gap: 64px;
     align-items: start;
-    margin-bottom: 48px;
+    margin-top: 36px;
   }
 
   .nei-portfolio-title {
-    margin: 0;
+    margin: 0 0 32px;
     color: #F2F4F8;
-    font-size: clamp(34px, 4vw, 52px);
+    font-size: clamp(28px, 3.2vw, 44px);
     font-weight: 500;
-    line-height: 1.04;
+    line-height: 1.06;
   }
 
   .nei-portfolio-title span {
-    color: rgba(232,235,240,0.5);
+    color: rgba(232,235,240,0.48);
   }
 
-  .nei-portfolio-copy {
-    margin: 0;
-    padding-top: 8px;
-    color: rgba(232,235,240,0.68);
-    font-size: 15px;
-    line-height: 1.7;
-  }
-
-  .nei-portfolio-compare {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 48px;
-  }
-
-  .nei-portfolio-compare-card {
-    flex: 1;
+  /* Bar chart */
+  .nei-pchart {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 28px 32px;
-    border: 1px solid rgba(232,235,240,0.12);
+    gap: 0;
+  }
+
+  .nei-pchart-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 64px;
+    gap: 14px;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(232,235,240,0.06);
+  }
+
+  .nei-pchart-row:last-of-type {
+    border-bottom: none;
+  }
+
+  .nei-pchart-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(232,235,240,0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nei-pchart-track {
+    position: relative;
+    height: 8px;
+    background: rgba(232,235,240,0.06);
+    border-radius: 4px;
+    overflow: visible;
+  }
+
+  .nei-pchart-center {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: rgba(232,235,240,0.18);
+  }
+
+  .nei-pchart-nei-line {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    border-radius: 1px;
+    background: rgba(169,192,255,0.55);
+    z-index: 2;
+  }
+
+  .nei-pchart-bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 2px;
+    min-width: 2px;
+  }
+
+  .nei-pchart-bar--pos { background: rgba(125,216,155,0.65); }
+  .nei-pchart-bar--neg { background: rgba(232,145,117,0.65); }
+
+  .nei-pchart-val {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .nei-pchart-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    color: rgba(232,235,240,0.35);
+    font: 600 10px var(--font-jetbrains), ui-monospace, monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .nei-pchart-legend-nei {
+    color: rgba(169,192,255,0.6);
+  }
+
+  /* Right stats column */
+  .nei-portfolio-copy {
+    margin: 0 0 28px;
+    color: rgba(232,235,240,0.62);
+    font-size: 14px;
+    line-height: 1.68;
+  }
+
+  .nei-portfolio-stat-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border: 1px solid rgba(232,235,240,0.1);
     border-radius: 8px;
-    background: rgba(232,235,240,0.04);
+    overflow: hidden;
+    margin-bottom: 20px;
   }
 
-  .nei-portfolio-compare-card--highlight {
-    border-color: rgba(232,235,240,0.22);
+  .nei-portfolio-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px 22px;
+    background: rgba(232,235,240,0.03);
+  }
+
+  .nei-portfolio-stat--highlight {
     background: rgba(232,235,240,0.07);
+    border-bottom: 1px solid rgba(232,235,240,0.08);
   }
 
-  .nei-portfolio-compare-label {
+  .nei-portfolio-stat-label {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(232,235,240,0.5);
+    color: rgba(232,235,240,0.45);
   }
 
-  .nei-portfolio-compare-value {
-    font-size: 44px;
+  .nei-portfolio-stat-value {
+    font-size: 34px;
     font-weight: 500;
     color: #F2F4F8;
     letter-spacing: -0.02em;
     line-height: 1;
   }
 
-  .nei-portfolio-compare-pct {
-    font-size: 13px;
+  .nei-portfolio-stat-value--muted {
+    font-size: 28px;
+    color: rgba(232,235,240,0.6);
+  }
+
+  .nei-portfolio-stat-pct {
+    font-size: 12px;
     font-weight: 600;
   }
 
-  .nei-portfolio-compare-vs {
-    flex: 0 0 auto;
-    color: rgba(232,235,240,0.3);
-    font: 700 11px var(--font-jetbrains), ui-monospace, monospace;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+  .nei-portfolio-delta {
+    margin: 0;
+    color: rgba(232,235,240,0.45);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
   }
 
   .nei-portfolio-pct--pos { color: #7DD89B; }
   .nei-portfolio-pct--neg { color: #E89175; }
-
-  .nei-portfolio-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1px;
-    background: rgba(232,235,240,0.08);
-    border: 1px solid rgba(232,235,240,0.08);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .nei-portfolio-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 24px;
-    background: rgba(15,32,64,1);
-    transition: background 160ms ease;
-  }
-
-  .nei-portfolio-row:hover {
-    background: rgba(232,235,240,0.04);
-  }
-
-  .nei-portfolio-row-left {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-  }
-
-  .nei-portfolio-row-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #F2F4F8;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .nei-portfolio-row-sector {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(232,235,240,0.4);
-  }
-
-  .nei-portfolio-row-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    flex-shrink: 0;
-  }
-
-  .nei-portfolio-row-pct {
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .nei-portfolio-row-sublabel {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(232,235,240,0.35);
-  }
 
   .nei-footer-v2 {
     background: #0F2244;

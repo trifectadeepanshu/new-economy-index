@@ -33,8 +33,8 @@ export function IndexDashboard() {
 
       <SectorSection stocks={model.stocks} numCompanies={model.numCompanies} />
 
-      <MethodologySection numCompanies={model.numCompanies} />
       <PortfolioSection stocks={model.stocks} indexValue={model.indexValue} />
+      <MethodologySection numCompanies={model.numCompanies} />
       <DashboardFooter />
     </div>
   );
