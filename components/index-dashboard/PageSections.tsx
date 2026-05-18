@@ -11,7 +11,6 @@ import {
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorComposition } from "@/components/index-dashboard/SectorComposition";
-import { formatNumber } from "@/components/index-dashboard/format";
 
 const METHOD_CARDS = [
   {
@@ -306,22 +305,16 @@ export function PortfolioSection({
               </p>
               <div className="nei-portfolio-stat-pair">
                 <div className="nei-portfolio-stat nei-portfolio-stat--highlight">
-                  <span className="nei-mono nei-portfolio-stat-label">Trifecta Portfolio</span>
-                  <strong className="nei-mono nei-portfolio-stat-value">
-                    {chartPortfolio !== null ? formatNumber(chartPortfolio, 1) : "—"}
+                  <span className="nei-mono nei-portfolio-stat-label">Trifecta Portfolio · {rangeLabel}</span>
+                  <strong className={`nei-mono nei-portfolio-stat-value ${portfolioReturn !== null && portfolioReturn >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
+                    {fmtPct(portfolioReturn)}
                   </strong>
-                  <span className={`nei-mono nei-portfolio-stat-pct ${portfolioReturn !== null && portfolioReturn >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                    {fmtPct(portfolioReturn)} {rangeLabel}
-                  </span>
                 </div>
                 <div className="nei-portfolio-stat">
-                  <span className="nei-mono nei-portfolio-stat-label">New Economy Index</span>
-                  <strong className="nei-mono nei-portfolio-stat-value nei-portfolio-stat-value--muted">
-                    {chartNei !== null ? formatNumber(chartNei, 1) : "—"}
+                  <span className="nei-mono nei-portfolio-stat-label">New Economy Index · {rangeLabel}</span>
+                  <strong className={`nei-mono nei-portfolio-stat-value nei-portfolio-stat-value--muted ${neiReturn !== null && neiReturn >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
+                    {fmtPct(neiReturn)}
                   </strong>
-                  <span className={`nei-mono nei-portfolio-stat-pct ${neiReturn !== null && neiReturn >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                    {fmtPct(neiReturn)} {rangeLabel}
-                  </span>
                 </div>
               </div>
               {delta !== null && (
