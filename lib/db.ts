@@ -274,59 +274,32 @@ export async function getPortfolioIndexHistory(
   const tickers = [...PORTFOLIO_TICKERS];
   const portfolioCompanies = COMPANIES.filter((c) => PORTFOLIO_TICKERS.has(c.ticker));
 
-  // Fetch ALL history (no date cap) so adjusted bases are computed from the
-  // very first trading day of each company, regardless of the requested range.
-  const rows = await sql`
-    SELECT date::text, ticker, close_price::float
-    FROM stock_snapshots
-    WHERE ticker = ANY(${tickers}::varchar[])
-    ORDER BY date ASC
-  `;
+  const [rows, basePrices] = await Promise.all([
+    sql`
+      SELECT date::text, ticker, close_price::float
+      FROM stock_snapshots
+      WHERE ticker = ANY(${tickers}::varchar[])
+        AND date >= ${fromDate} AND date <= ${toDate}
+      ORDER BY date ASC
+    `,
+    getEarliestPricesPerTicker(),
+  ]);
 
   const pricesByDate = stockPricesByDate(rows);
-  const sortedDates = [...pricesByDate.keys()].sort();
-  if (!sortedDates.length) return [];
-
-  // Adjusted-base splice: when a new company joins, set its base price to
-  // first_price / current_avg_ratio so the index level is unchanged on entry.
-  // Subsequent days use price / adjusted_base normally — no discontinuity.
-  const adjustedBase: Record<string, number> = {};
-  const active = new Set<string>();
-
-  for (const date of sortedDates) {
-    const prices = pricesByDate.get(date)!;
-    for (const co of portfolioCompanies) {
-      if (active.has(co.ticker) || co.listedDate > date) continue;
-      const p = prices.get(co.ticker);
-      if (!p) continue;
-
-      if (active.size === 0) {
-        adjustedBase[co.ticker] = p; // first company: ratio starts at 1.0
-      } else {
-        const ratios = [...active].flatMap((t) => {
-          const tp = prices.get(t), tb = adjustedBase[t];
-          return tp && tb && tb > 0 ? [tp / tb] : [];
-        });
-        const avg = ratios.length ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 1;
-        adjustedBase[co.ticker] = p / avg; // enter at current portfolio level
-      }
-      active.add(co.ticker);
-    }
-  }
-
-  // Build the output series, filtered to the requested date range.
   const points: IndexHistoryPoint[] = [];
-  for (const date of sortedDates) {
-    if (date < fromDate || date > toDate) continue;
-    const prices = pricesByDate.get(date)!;
-    const ratios = portfolioCompanies.flatMap((co) => {
-      if (co.listedDate > date) return [];
-      const p = prices.get(co.ticker), b = adjustedBase[co.ticker];
-      return p && b && b > 0 ? [p / b] : [];
+
+  for (const [date, prices] of pricesByDate) {
+    const ratios = portfolioCompanies.flatMap((company) => {
+      if (company.listedDate > date) return [];
+      const ratio = priceRatio(
+        prices.get(company.ticker) ?? null,
+        basePrices[company.ticker] ?? null
+      );
+      return ratio === null ? [] : [ratio];
     });
-    const avg = average(ratios);
-    if (avg === null) continue;
-    points.push({ date, value: round(INDEX_BASE_VALUE * avg, 4) });
+    const avgRatio = average(ratios);
+    if (avgRatio === null) continue;
+    points.push({ date, value: round(INDEX_BASE_VALUE * avgRatio, 4) });
   }
 
   return points;
