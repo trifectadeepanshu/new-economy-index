@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { COMPANIES, INDEX_BASE_VALUE, type Company } from "@/lib/companies";
 import { fetchAllQuotes as fetchUpstoxQuotes, type QuoteResult } from "@/lib/upstox";
+import { fetchAllQuotes as fetchYahooQuotes } from "@/lib/yahoo-finance";
 import {
   getEarliestPricesPerTicker,
   getLatestIndexSnapshot,
   getLatestStockPrices,
-  getLatestMarketCaps,
   ensureSchema,
 } from "@/lib/db";
 import type { LiveIndexPayload, StockData } from "@/lib/index-api";
@@ -17,6 +17,33 @@ export const dynamic = "force-dynamic";
 const LIVE_CACHE_HEADERS = {
   "Cache-Control": "no-store",
 };
+
+let schemaReady: Promise<void> | null = null;
+function ensureSchemaOnce() {
+  schemaReady ??= ensureSchema();
+  return schemaReady;
+}
+
+const MARKET_CAP_TTL_MS = 60 * 60 * 1000; // 1 hour
+let marketCapCache: { data: Record<string, number>; fetchedAt: number } | null = null;
+
+async function getMarketCaps(yfTickers: string[]): Promise<Record<string, number>> {
+  const now = Date.now();
+  if (marketCapCache && now - marketCapCache.fetchedAt < MARKET_CAP_TTL_MS) {
+    return marketCapCache.data;
+  }
+  try {
+    const quotes = await fetchYahooQuotes(yfTickers);
+    const data: Record<string, number> = {};
+    for (const q of quotes) {
+      if (q.marketCap != null && q.marketCap > 0) data[q.ticker] = q.marketCap;
+    }
+    marketCapCache = { data, fetchedAt: now };
+    return data;
+  } catch {
+    return marketCapCache?.data ?? {};
+  }
+}
 
 type PricePoint = {
   price: number | null;
@@ -56,7 +83,6 @@ function getIndexChangePct(stocks: StockData[]) {
   const avgChange = average(finiteNumbers(stocks.map((stock) => stock.changePct)));
   return avgChange === null ? null : round(avgChange);
 }
-
 
 function quotePricesByTicker(quotes: QuoteResult[]): Record<string, PricePoint> {
   return Object.fromEntries(
@@ -98,7 +124,7 @@ function toPayload({
 }
 
 export async function GET() {
-  await ensureSchema();
+  await ensureSchemaOnce();
 
   const today = getISTDate();
   const active = COMPANIES.filter((c) => c.listedDate <= today);
@@ -108,10 +134,9 @@ export async function GET() {
     const [quotes, basePrices, marketCaps] = await Promise.all([
       fetchUpstoxQuotes(active.map((c) => c.ticker)),
       getEarliestPricesPerTicker(),
-      getLatestMarketCaps(),
+      getMarketCaps(active.map((c) => c.yfTicker)),
     ]);
 
-    // Merge cached market caps into quotes
     const pricesWithCaps = quotePricesByTicker(
       quotes.map((q) => ({ ...q, marketCap: marketCaps[q.ticker] ?? null }))
     );
@@ -123,16 +148,11 @@ export async function GET() {
       throw new Error("Upstox returned no prices");
     }
 
-    const totalMarketCap = Object.values(marketCaps).reduce((sum, v) => sum + v, 0) || null;
+    const totalMarketCap =
+      active.map((c) => marketCaps[c.ticker] ?? 0).reduce((sum, v) => sum + v, 0) || null;
 
     return NextResponse.json(
-      toPayload({
-        stocks,
-        indexValue,
-        lastUpdated: new Date().toISOString(),
-        isStale: false,
-        totalMarketCap,
-      }),
+      toPayload({ stocks, indexValue, lastUpdated: new Date().toISOString(), isStale: false, totalMarketCap }),
       { headers: LIVE_CACHE_HEADERS }
     );
   } catch (err) {
@@ -149,7 +169,6 @@ export async function GET() {
 
     const stocks = buildStocks(active, latestPrices, basePrices);
 
-    // lastUpdated = end of trading on the snapshot date
     const lastUpdated = snapshot?.date
       ? new Date(`${snapshot.date}T15:30:00+05:30`).toISOString()
       : null;

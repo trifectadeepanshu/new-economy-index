@@ -18,9 +18,8 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
   const { historyData, sectorData, loading, error } = useChartHistory(range);
 
   const isReference = variant === "reference";
-  const activeMode = mode;
   const model = useIndexChartModel({
-    activeMode,
+    activeMode: mode,
     focusedSector,
     historyData,
     liveValue,
@@ -40,7 +39,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
       <ChartToolbar
         isReference={isReference}
         latestPoint={model.latestPoint}
-        mode={activeMode}
+        mode={mode}
         onModeChange={handleModeChange}
         onRangeChange={setRange}
         range={range}
@@ -48,7 +47,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
         title={model.title}
       />
 
-      {activeMode === "detail" && (
+      {mode === "detail" && (
         <SectorTabs
           activeSector={selectedSector}
           label="Sector detail"
@@ -62,12 +61,12 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
         <ChartState tone="error">Could not load historical data.</ChartState>
       ) : model.currentData.length === 0 ? (
         <ChartState tone="empty">
-          No historical data yet - run the backfill script to populate history.
+          No historical data available for this range.
         </ChartState>
       ) : (
         <>
           <ChartCanvas
-            activeMode={activeMode}
+            activeMode={mode}
             areaGradientId={areaGradientId}
             data={model.currentData}
             focusedSector={focusedSector}
@@ -77,7 +76,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
             selectedSector={selectedSector}
           />
 
-          {activeMode === "compare" && (
+          {mode === "compare" && (
             <SectorTabs
               activeSector={model.selectedOrFocusedSector}
               focusedSector={focusedSector}

@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://new-economy-index.vercel.app"),
   title: "New Economy Index | Trifecta Capital",
   description:
-    "Track the performance of India's VC-backed publicly listed companies in a single equal-weighted index.",
+    "53 listed companies. One number. Trifecta Capital's New Economy Index tracks India's next-generation businesses as a single equal-weighted benchmark.",
   icons: {
     icon: [
       { url: "/nei-mark.svg", type: "image/svg+xml" },
@@ -44,20 +44,11 @@ export const metadata: Metadata = {
     title: "New Economy Index | Trifecta Capital",
     description: "India's VC-backed new economy companies — tracked as a single index.",
     type: "website",
-    images: [
-      {
-        url: "/nei-og.svg",
-        width: 1200,
-        height: 630,
-        alt: "New Economy Index by Trifecta Capital",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "New Economy Index | Trifecta Capital",
     description: "India's VC-backed new economy companies — tracked as a single index.",
-    images: ["/nei-og.svg"],
   },
 };
 

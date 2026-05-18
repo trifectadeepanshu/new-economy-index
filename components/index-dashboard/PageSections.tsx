@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
 import type { StockData } from "@/lib/index-api";
+import { SECTORS } from "@/lib/companies";
 import {
   SectionEyebrow,
   TickFrame,
@@ -82,7 +83,7 @@ export function PerformanceSection({
       eyebrow={{ number: "02", label: "Performance" }}
       title="The NEI since day one."
       mutedTitle="One line, no filter."
-      copy={`Equal-weighted across all 53 constituents, rebalanced quarterly. Base 1,000 set in March 2021.`}
+      copy={`Equal-weighted across all ${stocks.length} constituents, rebalanced quarterly. Base 1,000 set in March 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
     </ReferenceShell>
@@ -118,7 +119,7 @@ export function ConstituentsSection({
               <span> Filter, sort, explore.</span>
             </h2>
             <p className="nei-index-copy">
-              {numCompanies} companies across 8 sectors. The complete public-market picture of India&apos;s new economy.
+              {numCompanies} companies across {SECTORS.length} sectors. The complete public-market picture of India&apos;s new economy.
             </p>
           </div>
           <div className="nei-index-panel">
@@ -165,7 +166,7 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
     {
       number: "02",
       title: "The full picture, not the highlights",
-      body: `${numCompanies} companies across 8 sectors. Not just the names everyone knows, but the complete public-market expression of India's new economy.`,
+      body: `${numCompanies} companies across ${SECTORS.length} sectors. Not just the names everyone knows, but the complete public-market expression of India's new economy.`,
     },
     METHOD_CARDS[1],
     METHOD_CARDS[2],

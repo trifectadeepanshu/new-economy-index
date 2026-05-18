@@ -12,7 +12,7 @@ import { getISTDate } from "@/lib/market-hours";
 export const dynamic = "force-dynamic";
 
 const HISTORY_CACHE_HEADERS = {
-  "Cache-Control": "s-maxage=3600, stale-while-revalidate",
+  "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
 };
 
 function getFromDate(range: HistoryRange): string {
