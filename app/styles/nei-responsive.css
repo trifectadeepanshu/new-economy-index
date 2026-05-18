@@ -780,9 +780,8 @@
     gap: 40px;
   }
 
-  .nei-pchart-row {
-    grid-template-columns: 110px 1fr 56px;
-    gap: 10px;
+  .nei-portfolio-chart-canvas {
+    height: 220px;
   }
 
   .nei-portfolio-stats-col {

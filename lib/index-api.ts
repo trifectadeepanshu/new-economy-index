@@ -43,6 +43,7 @@ export type IndexHistoryPayload = {
   range: HistoryRange;
   data: IndexHistoryPoint[];
   sectorData?: SectorHistoryPoint[];
+  portfolioData?: IndexHistoryPoint[];
 };
 
 export function isHistoryRange(value: string): value is HistoryRange {

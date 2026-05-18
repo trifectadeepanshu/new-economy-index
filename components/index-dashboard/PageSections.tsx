@@ -5,6 +5,7 @@ import { IndexChart } from "@/components/IndexChart";
 import type { StockData } from "@/lib/index-api";
 import { PORTFOLIO_TICKERS, SECTORS } from "@/lib/companies";
 import { INDEX_BASE_VALUE } from "@/lib/companies";
+import { PortfolioChart } from "@/components/index-dashboard/PortfolioChart";
 import {
   SectionEyebrow,
   TickFrame,
@@ -257,27 +258,6 @@ export function PortfolioSection({
       ? ((indexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
       : null;
 
-  const chartRows = useMemo(() =>
-    portfolioStocks
-      .map((s) => ({
-        name: s.name.replace(/\s*\(.*?\)/, "").trim(),
-        ticker: s.ticker,
-        sinceInc:
-          s.price !== null && s.basePrice !== null && s.basePrice > 0
-            ? ((s.price / s.basePrice) - 1) * 100
-            : null,
-      }))
-      .sort((a, b) => (b.sinceInc ?? -Infinity) - (a.sinceInc ?? -Infinity)),
-    [portfolioStocks]
-  );
-
-  const maxAbs = useMemo(() =>
-    Math.max(...chartRows.map((r) => Math.abs(r.sinceInc ?? 0)), Math.abs(neiSinceInception ?? 0), 15),
-    [chartRows, neiSinceInception]
-  );
-
-  const neiLinePos = 50 + ((neiSinceInception ?? 0) / maxAbs) * 50;
-
   function fmtPct(v: number | null) {
     if (v === null) return "—";
     return `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
@@ -303,41 +283,15 @@ export function PortfolioSection({
           <SectionEyebrow number="05" label="Trifecta Portfolio" light />
           <div className="nei-portfolio-body">
 
-            {/* Left: bar chart */}
+            {/* Left: line chart */}
             <div className="nei-portfolio-chart-col">
               <h2 className="nei-heading nei-portfolio-title">
                 Our portfolio,<span> benchmarked.</span>
               </h2>
-              <div className="nei-pchart">
-                {chartRows.map((row) => {
-                  const val = row.sinceInc;
-                  const isPos = val !== null && val >= 0;
-                  const barW = val !== null ? (Math.abs(val) / maxAbs) * 50 : 0;
-                  const barLeft = isPos ? 50 : 50 - barW;
-                  return (
-                    <div key={row.ticker} className="nei-pchart-row">
-                      <span className="nei-pchart-name">{row.name}</span>
-                      <div className="nei-pchart-track">
-                        <div className="nei-pchart-center" />
-                        <div className="nei-pchart-nei-line" style={{ left: `${neiLinePos}%` }} />
-                        {val !== null && (
-                          <div
-                            className={`nei-pchart-bar ${isPos ? "nei-pchart-bar--pos" : "nei-pchart-bar--neg"}`}
-                            style={{ left: `${barLeft}%`, width: `${barW}%` }}
-                          />
-                        )}
-                      </div>
-                      <span className={`nei-pchart-val nei-mono ${val === null ? "" : isPos ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                        {fmtPct(val)}
-                      </span>
-                    </div>
-                  );
-                })}
-                <div className="nei-pchart-legend">
-                  <span>Since IPO · base = 0%</span>
-                  <span className="nei-pchart-legend-nei">— NEI benchmark</span>
-                </div>
-              </div>
+              <PortfolioChart
+                liveNeiValue={indexValue}
+                livePortfolioValue={portfolioIndexValue}
+              />
             </div>
 
             {/* Right: stats */}

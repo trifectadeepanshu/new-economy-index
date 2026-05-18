@@ -1,5 +1,5 @@
 import { neon } from "@neondatabase/serverless";
-import { COMPANIES, INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
+import { COMPANIES, INDEX_BASE_VALUE, PORTFOLIO_TICKERS, SECTORS, type Sector } from "@/lib/companies";
 import type { IndexHistoryPoint, SectorHistoryPoint } from "@/lib/index-api";
 import { average, priceRatio, round } from "@/lib/index-math";
 
@@ -264,6 +264,42 @@ export async function getLatestStockPrices(): Promise<Record<string, LatestStock
   }
 
   return prices;
+}
+
+export async function getPortfolioIndexHistory(
+  fromDate: string,
+  toDate: string
+): Promise<IndexHistoryPoint[]> {
+  const sql = getSql();
+  const tickers = [...PORTFOLIO_TICKERS];
+  const portfolioCompanies = COMPANIES.filter((c) => PORTFOLIO_TICKERS.has(c.ticker));
+
+  const [rows, basePrices] = await Promise.all([
+    sql`
+      SELECT date::text, ticker, close_price::float
+      FROM stock_snapshots
+      WHERE date >= ${fromDate} AND date <= ${toDate}
+        AND ticker = ANY(${tickers}::varchar[])
+      ORDER BY date ASC
+    `,
+    getEarliestPricesPerTicker(),
+  ]);
+
+  const pricesByDate = stockPricesByDate(rows);
+  const points: IndexHistoryPoint[] = [];
+
+  for (const [date, prices] of [...pricesByDate.entries()].sort()) {
+    const ratios = portfolioCompanies.flatMap((company) => {
+      if (company.listedDate > date) return [];
+      const ratio = priceRatio(prices.get(company.ticker) ?? null, basePrices[company.ticker] ?? null);
+      return ratio === null ? [] : [ratio];
+    });
+    const avgRatio = average(ratios);
+    if (avgRatio === null) continue;
+    points.push({ date, value: round(INDEX_BASE_VALUE * avgRatio, 4) });
+  }
+
+  return points;
 }
 
 export async function getEarliestPricesPerTicker(): Promise<Record<string, number>> {

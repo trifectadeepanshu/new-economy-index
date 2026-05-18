@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getIndexHistory, getSectorIndexHistory } from "@/lib/db";
+import { getIndexHistory, getPortfolioIndexHistory, getSectorIndexHistory } from "@/lib/db";
 import { format, parseISO, subDays, subMonths, subYears } from "date-fns";
 import {
   HISTORY_RANGES,
@@ -43,17 +43,20 @@ export async function GET(req: NextRequest) {
   const fromDate = getFromDate(range);
   const toDate = getISTDate();
   const includeSectors = req.nextUrl.searchParams.get("includeSectors") === "1";
+  const includePortfolio = req.nextUrl.searchParams.get("portfolio") === "1";
 
   try {
-    const [data, sectorData] = await Promise.all([
+    const [data, sectorData, portfolioData] = await Promise.all([
       getIndexHistory(fromDate, toDate),
       includeSectors ? getSectorIndexHistory(fromDate, toDate) : Promise.resolve([]),
+      includePortfolio ? getPortfolioIndexHistory(fromDate, toDate) : Promise.resolve([]),
     ]);
 
     const payload: IndexHistoryPayload = {
       range,
       data,
       ...(includeSectors ? { sectorData } : {}),
+      ...(includePortfolio ? { portfolioData } : {}),
     };
 
     return NextResponse.json(payload, { headers: HISTORY_CACHE_HEADERS });
