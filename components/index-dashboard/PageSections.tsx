@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
 import type { StockData } from "@/lib/index-api";
-import { PORTFOLIO_TICKERS, SECTORS } from "@/lib/companies";
+import { SECTORS } from "@/lib/companies";
 import { INDEX_BASE_VALUE } from "@/lib/companies";
 import { PortfolioChart } from "@/components/index-dashboard/PortfolioChart";
 import {
@@ -229,44 +229,49 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
   );
 }
 
+const RANGE_LABEL: Record<string, string> = {
+  "1Y": "1-year return",
+  "ALL": "since Jun '23",
+};
+
 export function PortfolioSection({
-  stocks,
   indexValue,
 }: {
-  stocks: StockData[];
   indexValue: number | null;
 }) {
-  const portfolioStocks = useMemo(
-    () => stocks.filter((s) => PORTFOLIO_TICKERS.has(s.ticker)),
-    [stocks]
+  const [chartPortfolio, setChartPortfolio] = useState<number | null>(null);
+  const [chartNei, setChartNei] = useState<number | null>(null);
+  const [chartRange, setChartRange] = useState<string>("1Y");
+
+  const handleLatestValues = useCallback(
+    (portfolio: number | null, nei: number | null, range: string) => {
+      setChartPortfolio(portfolio);
+      setChartNei(nei);
+      setChartRange(range);
+    },
+    []
   );
 
-  const portfolioIndexValue = useMemo(() => {
-    const ratios = portfolioStocks
-      .filter((s) => s.price !== null && s.basePrice !== null && s.basePrice > 0)
-      .map((s) => s.price! / s.basePrice!);
-    if (!ratios.length) return null;
-    return INDEX_BASE_VALUE * (ratios.reduce((a, b) => a + b, 0) / ratios.length);
-  }, [portfolioStocks]);
+  const portfolioReturn =
+    chartPortfolio !== null
+      ? ((chartPortfolio - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
+      : null;
+  const neiReturn =
+    chartNei !== null
+      ? ((chartNei - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
+      : null;
 
-  const portfolioSinceInception =
-    portfolioIndexValue !== null
-      ? ((portfolioIndexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
+  const delta =
+    portfolioReturn !== null && neiReturn !== null
+      ? portfolioReturn - neiReturn
       : null;
-  const neiSinceInception =
-    indexValue !== null
-      ? ((indexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
-      : null;
+
+  const rangeLabel = RANGE_LABEL[chartRange] ?? chartRange;
 
   function fmtPct(v: number | null) {
     if (v === null) return "—";
     return `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
   }
-
-  const delta =
-    portfolioSinceInception !== null && neiSinceInception !== null
-      ? portfolioSinceInception - neiSinceInception
-      : null;
 
   return (
     <section id="portfolio" className="nei-portfolio-section nei-dark-section-vars">
@@ -290,10 +295,11 @@ export function PortfolioSection({
               </h2>
               <PortfolioChart
                 liveNeiValue={indexValue}
+                onLatestValues={handleLatestValues}
               />
             </div>
 
-            {/* Right: stats */}
+            {/* Right: stats — values mirror the chart's rebased scale */}
             <div className="nei-portfolio-stats-col">
               <p className="nei-portfolio-copy">
                 10 Trifecta Capital portfolio companies inside the NEI, measured against the broader cohort since each company&apos;s IPO.
@@ -302,19 +308,19 @@ export function PortfolioSection({
                 <div className="nei-portfolio-stat nei-portfolio-stat--highlight">
                   <span className="nei-mono nei-portfolio-stat-label">Trifecta Portfolio</span>
                   <strong className="nei-mono nei-portfolio-stat-value">
-                    {portfolioIndexValue !== null ? formatNumber(portfolioIndexValue, 1) : "—"}
+                    {chartPortfolio !== null ? formatNumber(chartPortfolio, 1) : "—"}
                   </strong>
-                  <span className={`nei-mono nei-portfolio-stat-pct ${portfolioSinceInception !== null && portfolioSinceInception >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                    {fmtPct(portfolioSinceInception)} since inception
+                  <span className={`nei-mono nei-portfolio-stat-pct ${portfolioReturn !== null && portfolioReturn >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
+                    {fmtPct(portfolioReturn)} {rangeLabel}
                   </span>
                 </div>
                 <div className="nei-portfolio-stat">
                   <span className="nei-mono nei-portfolio-stat-label">New Economy Index</span>
                   <strong className="nei-mono nei-portfolio-stat-value nei-portfolio-stat-value--muted">
-                    {indexValue !== null ? formatNumber(indexValue, 1) : "—"}
+                    {chartNei !== null ? formatNumber(chartNei, 1) : "—"}
                   </strong>
-                  <span className={`nei-mono nei-portfolio-stat-pct ${neiSinceInception !== null && neiSinceInception >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                    {fmtPct(neiSinceInception)} since inception
+                  <span className={`nei-mono nei-portfolio-stat-pct ${neiReturn !== null && neiReturn >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
+                    {fmtPct(neiReturn)} {rangeLabel}
                   </span>
                 </div>
               </div>
@@ -323,7 +329,8 @@ export function PortfolioSection({
                   Portfolio is {delta >= 0 ? "outperforming" : "underperforming"} the index by{" "}
                   <span className={delta >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}>
                     {Math.abs(delta).toFixed(1)} pp
-                  </span>
+                  </span>{" "}
+                  ({rangeLabel})
                 </p>
               )}
             </div>

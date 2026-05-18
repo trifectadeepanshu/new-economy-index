@@ -75,8 +75,10 @@ const RANGES: HistoryRange[] = ["1Y", "ALL"];
 
 export function PortfolioChart({
   liveNeiValue,
+  onLatestValues,
 }: {
   liveNeiValue: number | null;
+  onLatestValues?: (portfolio: number | null, nei: number | null, range: HistoryRange) => void;
 }) {
   const [range, setRange] = useState<HistoryRange>("1Y");
   const [neiData, setNeiData] = useState<IndexHistoryPoint[]>([]);
@@ -105,6 +107,18 @@ export function PortfolioChart({
     () => buildChartData(neiData, portfolioData, liveNeiValue, range),
     [neiData, portfolioData, liveNeiValue, range]
   );
+
+  // Report the last rebased values so the stats panel stays in sync with the chart.
+  useEffect(() => {
+    if (!onLatestValues) return;
+    let lastPortfolio: number | null = null;
+    let lastNei: number | null = null;
+    for (const p of chartData) {
+      if (p.portfolio !== null) lastPortfolio = p.portfolio;
+      if (p.nei !== null) lastNei = p.nei;
+    }
+    onLatestValues(lastPortfolio, lastNei, range);
+  }, [chartData, range, onLatestValues]);
 
   const isLoading = loadedRange !== range;
 
