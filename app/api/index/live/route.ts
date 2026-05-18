@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { COMPANIES, INDEX_BASE_VALUE, type Company } from "@/lib/companies";
-import { fetchAllQuotes as fetchYahooQuotes, type QuoteResult } from "@/lib/yahoo-finance";
+import { fetchAllQuotes as fetchUpstoxQuotes, type QuoteResult } from "@/lib/upstox";
 import {
   getEarliestPricesPerTicker,
   getLatestIndexSnapshot,
@@ -14,7 +14,7 @@ import { getISTDate } from "@/lib/market-hours";
 export const dynamic = "force-dynamic";
 
 const LIVE_CACHE_HEADERS = {
-  "Cache-Control": "s-maxage=60, stale-while-revalidate=300",
+  "Cache-Control": "no-store",
 };
 
 type PricePoint = {
@@ -111,7 +111,7 @@ export async function GET() {
   // Try live Yahoo Finance data first
   try {
     const [quotes, basePrices] = await Promise.all([
-      fetchYahooQuotes(active.map((c) => c.yfTicker)),
+      fetchUpstoxQuotes(active.map((c) => c.ticker)),
       getEarliestPricesPerTicker(),
     ]);
 
@@ -119,7 +119,7 @@ export async function GET() {
     const indexValue = getIndexValue(stocks);
 
     if (indexValue === null) {
-      throw new Error("Yahoo Finance returned no prices");
+      throw new Error("Upstox returned no prices");
     }
 
     return NextResponse.json(

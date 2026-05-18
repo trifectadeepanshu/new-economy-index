@@ -240,7 +240,7 @@ export function DashboardFooter() {
                 />
               </div>
               <p>
-                Data via NSE, refreshed every 5 minutes during market hours.
+                Data via NSE, live during market hours.
                 The New Economy Index is for informational purposes only and
                 does not constitute investment advice. © 2026 Trifecta Capital.
               </p>

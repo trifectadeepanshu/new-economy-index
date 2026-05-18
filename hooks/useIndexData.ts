@@ -5,8 +5,8 @@ import type { LiveIndexPayload } from "@/lib/index-api";
 import { isMarketOpen } from "@/lib/market-hours";
 
 const LIVE_ENDPOINT = "/api/index/live";
-const POLL_INTERVAL_MS = 5 * 60 * 1000;
-const MARKET_CHECK_INTERVAL_MS = 60 * 1000;
+const POLL_INTERVAL_MS = 30 * 1000;
+const MARKET_CHECK_INTERVAL_MS = 15 * 1000;
 
 export type LiveIndexData = Omit<LiveIndexPayload, "lastUpdated"> & {
   lastUpdated: Date;
