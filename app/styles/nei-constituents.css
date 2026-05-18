@@ -480,4 +480,40 @@
     color: var(--nei-muted);
     font-size: 11px;
   }
+
+  .nei-company-empty {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 44px 16px 48px;
+    border-top: 1px solid var(--nei-grid);
+    color: var(--nei-muted);
+    text-align: center;
+  }
+
+  .nei-company-empty h3 {
+    margin: 0;
+    color: var(--nei-fg);
+    font: 600 18px var(--font-sora), var(--font-inter), system-ui, sans-serif;
+    letter-spacing: 0;
+  }
+
+  .nei-company-empty p {
+    max-width: 320px;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .nei-company-empty button {
+    min-height: 44px;
+    margin-top: 6px;
+    border: 1px solid var(--nei-fg);
+    border-radius: 8px;
+    background: var(--nei-fg);
+    color: #172C54;
+    padding: 0 18px;
+    font: 600 13px var(--font-inter), system-ui, sans-serif;
+    cursor: pointer;
+  }
 }

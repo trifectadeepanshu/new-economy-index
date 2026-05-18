@@ -6,6 +6,7 @@ import {
   DashboardFooter,
   MethodologySection,
   PerformanceSection,
+  PortfolioSection,
   SectorSection,
 } from "@/components/index-dashboard/PageSections";
 import { useIndexDashboardModel } from "@/components/index-dashboard/useIndexDashboardModel";
@@ -18,7 +19,11 @@ export function IndexDashboard() {
       <TickerDrift stocks={model.stocks} />
       <HeroSection model={model} />
 
-      <PerformanceSection indexValue={model.indexValue} stocks={model.stocks} />
+      <PerformanceSection
+        indexValue={model.indexValue}
+        stocks={model.stocks}
+        numCompanies={model.numCompanies}
+      />
 
       <ConstituentsSection
         stocks={model.stocks}
@@ -29,6 +34,7 @@ export function IndexDashboard() {
       <SectorSection stocks={model.stocks} numCompanies={model.numCompanies} />
 
       <MethodologySection numCompanies={model.numCompanies} />
+      <PortfolioSection stocks={model.stocks} indexValue={model.indexValue} />
       <DashboardFooter />
     </div>
   );

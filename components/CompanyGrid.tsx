@@ -23,6 +23,30 @@ const MOBILE_CARD_VIEW = "(max-width: 640px)";
 const INITIAL_CARD_COUNT = 4;
 const EXPANDED_CARD_COUNT = 8;
 
+function EmptyCompanyState({
+  hasActiveFilters,
+  onReset,
+}: {
+  hasActiveFilters: boolean;
+  onReset: () => void;
+}) {
+  return (
+    <div className="nei-company-empty" role="status">
+      <h3>No companies found</h3>
+      <p>
+        {hasActiveFilters
+          ? "Try a different search or sector filter."
+          : "Company data is unavailable right now."}
+      </p>
+      {hasActiveFilters && (
+        <button type="button" onClick={onReset}>
+          Clear filters
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function CompanyGrid({
   stocks,
   isLoading,
@@ -46,6 +70,7 @@ export function CompanyGrid({
   const rows = useConstituentRows(stocks, sort, sector, query);
   const shouldLimitCards = view === "grid" && isMobileCardViewport === true;
   const visibleRows = shouldLimitCards ? rows.slice(0, visibleCardCount) : rows;
+  const hasActiveFilters = query.trim().length > 0 || sector !== "All";
 
   useEffect(() => {
     const media = window.matchMedia(MOBILE_CARD_VIEW);
@@ -96,6 +121,12 @@ export function CompanyGrid({
     );
   }
 
+  function handleResetFilters() {
+    setQuery("");
+    setSector("All");
+    setVisibleCardCount(INITIAL_CARD_COUNT);
+  }
+
   if (!hasResolvedViewport || !hasResolvedAutoView || (isLoading && stocks.length === 0)) {
     return (
       <CompanyGridSkeleton
@@ -121,14 +152,20 @@ export function CompanyGrid({
         onQueryChange={handleQueryChange}
         onSectorChange={handleSectorChange}
       />
-      {view === "table" ? (
+      {rows.length === 0 ? (
+        <EmptyCompanyState
+          hasActiveFilters={hasActiveFilters}
+          onReset={handleResetFilters}
+        />
+      ) : null}
+      {rows.length > 0 && view === "table" ? (
         <ConstituentTable
           rows={rows}
           sort={sort}
           onSort={handleSort}
           variant={variant}
         />
-      ) : (
+      ) : rows.length > 0 ? (
         <>
           <CompanyCards stocks={visibleRows} />
           {shouldLimitCards && visibleCardCount < rows.length && (
@@ -149,7 +186,7 @@ export function CompanyGrid({
             </div>
           )}
         </>
-      )}
+      ) : null}
     </div>
   );
 }

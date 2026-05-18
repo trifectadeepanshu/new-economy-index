@@ -146,7 +146,7 @@ function getBreadth(stocks: StockData[]) {
 }
 
 export function useIndexDashboardModel() {
-  const { data, isLoading } = useIndexData();
+  const { data, isLoading, error, refresh } = useIndexData();
   const sparkSeries = useSparkSeries();
   const marketOpen = isMarketOpen();
   const nowIST = useMarketClock(marketOpen);
@@ -188,6 +188,8 @@ export function useIndexDashboardModel() {
   return {
     stocks,
     isLoading,
+    dataError: error,
+    refreshData: refresh,
     isStale: Boolean(data?.isStale),
     marketOpen,
     nowIST,

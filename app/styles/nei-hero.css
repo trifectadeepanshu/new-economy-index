@@ -172,6 +172,10 @@
     color: rgba(232,235,240,0.55);
   }
 
+  .nei-hero-mobile-break {
+    display: none;
+  }
+
   .nei-hero-copy {
     max-width: 540px;
     margin: 0;
@@ -206,6 +210,10 @@
   }
 
   .nei-stale-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     margin-bottom: 14px;
     padding: 7px 12px;
     border: 1px solid rgba(232,145,117,0.28);
@@ -213,6 +221,23 @@
     background: rgba(232,145,117,0.10);
     color: #E89175;
     font-size: 12px;
+  }
+
+  .nei-stale-banner.is-error {
+    border-color: rgba(232,145,117,0.36);
+    background: rgba(232,145,117,0.13);
+  }
+
+  .nei-stale-banner button {
+    min-height: 30px;
+    flex-shrink: 0;
+    border: 1px solid rgba(232,145,117,0.42);
+    border-radius: 6px;
+    background: rgba(232,145,117,0.14);
+    color: #F2F4F8;
+    padding: 0 10px;
+    font: 600 12px var(--font-inter), system-ui, sans-serif;
+    cursor: pointer;
   }
 
   .nei-hero-card-header {

@@ -4,6 +4,7 @@ export const SECTORS = [
   "Fintech",
   "B2B",
   "SaaS",
+  "Healthcare",
   "Edtech",
   "Gaming",
   "Deep Tech",
@@ -17,7 +18,21 @@ export type Company = {
   yfTicker: string;
   sector: Sector;
   listedDate: string;
+  isPortfolio: boolean;
 };
+
+export const PORTFOLIO_TICKERS = new Set([
+  "MEESHO",
+  "URBANCO",
+  "IXIGO",
+  "BLUESTONE",
+  "MOBIKWIK",
+  "KISSHT",
+  "BLACKBUCK",
+  "IDEAFORGE",
+  "SHADOWFAX",
+  "NEPHROPLUS",
+]);
 
 type CompanySeed = readonly [
   name: string,
@@ -35,6 +50,7 @@ function withSector(sector: Sector, rows: readonly CompanySeed[]): Company[] {
     yfTicker: yfTicker ?? `${ticker}${INDEX_YAHOO_SUFFIX}`,
     sector,
     listedDate,
+    isPortfolio: PORTFOLIO_TICKERS.has(ticker),
   }));
 }
 
@@ -88,7 +104,6 @@ export const COMPANIES: Company[] = [
     ["TBO.com", "TBOTEK", "2024-05-15"],
     ["BlackBuck", "BLACKBUCK", "2024-11-22"],
     ["Awfis", "AWFIS", "2024-05-30"],
-    ["Medi Assist", "MEDIASSIST", "2024-02-15"],
     ["IdeaForge", "IDEAFORGE", "2023-06-26"],
     ["IndiQube", "INDIQUBE", "2024-08-19"],
     ["UniCommerce", "UNIECOM", "2024-08-13"],
@@ -102,6 +117,11 @@ export const COMPANIES: Company[] = [
     ["Amagi", "AMAGI", "2026-01-22"],
     ["RateGain", "RATEGAIN", "2021-12-17"],
     ["Tracxn Technologies", "TRACXN", "2022-10-20"],
+  ]),
+
+  ...withSector("Healthcare", [
+    ["Medi Assist", "MEDIASSIST", "2024-02-15"],
+    ["NephroPlus (Nephrocare Health Services)", "NEPHROPLUS", "2025-12-17"],
   ]),
 
   ...withSector("Edtech", [

@@ -114,5 +114,9 @@ export function useIndexData() {
     };
   }, [fetchData, refreshIfDue]);
 
-  return state;
+  const refresh = useCallback(() => {
+    void fetchData({ force: true });
+  }, [fetchData]);
+
+  return { ...state, refresh };
 }

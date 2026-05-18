@@ -126,9 +126,11 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
   return (
     <div>
       <h1 className="nei-heading nei-hero-title">
-        India&apos;s new economy,{" "}
+        India&apos;s new <br className="nei-hero-mobile-break" />economy,{" "}
         <br />
-        <span>tracked as a single ticker.</span>
+        <span>
+          tracked as a <br className="nei-hero-mobile-break" />single ticker.
+        </span>
       </h1>
       <p className="nei-hero-copy">
         Trifecta Capital backed India&apos;s next generation of businesses
@@ -160,12 +162,22 @@ function MarketStatus({ marketOpen, nowIST }: { marketOpen: boolean; nowIST: str
 function HeroCard({ model }: { model: IndexDashboardModel }) {
   const sinceInceptionValue = model.sinceInception ?? 0;
   const valueFlashClass = model.valueFlash ? ` nei-value-flash-${model.valueFlash}` : "";
+  const statusBanner = model.dataError
+    ? "Live data unavailable. Showing the latest values we have."
+    : model.isStale
+      ? "Showing last market close. Live prices unavailable."
+      : null;
 
   return (
     <div className="nei-hero-card">
-      {model.isStale && (
-        <div className="nei-stale-banner">
-          Showing last market close · live prices unavailable
+      {statusBanner && (
+        <div className={`nei-stale-banner ${model.dataError ? "is-error" : ""}`}>
+          <span>{statusBanner}</span>
+          {model.dataError && (
+            <button type="button" onClick={model.refreshData}>
+              Retry
+            </button>
+          )}
         </div>
       )}
 

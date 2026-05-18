@@ -1,14 +1,16 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
 import type { StockData } from "@/lib/index-api";
-import { SECTORS } from "@/lib/companies";
+import { PORTFOLIO_TICKERS, SECTORS } from "@/lib/companies";
+import { INDEX_BASE_VALUE } from "@/lib/companies";
 import {
   SectionEyebrow,
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorComposition } from "@/components/index-dashboard/SectorComposition";
+import { formatNumber } from "@/components/index-dashboard/format";
 
 const METHOD_CARDS = [
   {
@@ -73,9 +75,11 @@ function ReferenceShell({
 export function PerformanceSection({
   indexValue,
   stocks,
+  numCompanies,
 }: {
   indexValue: number | null;
   stocks: StockData[];
+  numCompanies: number;
 }) {
   return (
     <ReferenceShell
@@ -83,7 +87,7 @@ export function PerformanceSection({
       eyebrow={{ number: "02", label: "Performance" }}
       title="The NEI since day one."
       mutedTitle="One line, no filter."
-      copy={`Equal-weighted across all ${stocks.length} constituents, rebalanced quarterly. Base 1,000 set in March 2021.`}
+      copy={`Equal-weighted across all ${numCompanies} constituents, rebalanced quarterly. Base 1,000 set in March 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
     </ReferenceShell>
@@ -224,6 +228,132 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
   );
 }
 
+export function PortfolioSection({
+  stocks,
+  indexValue,
+}: {
+  stocks: StockData[];
+  indexValue: number | null;
+}) {
+  const portfolioStocks = useMemo(
+    () => stocks.filter((s) => PORTFOLIO_TICKERS.has(s.ticker)),
+    [stocks]
+  );
+
+  const portfolioIndexValue = useMemo(() => {
+    const ratios = portfolioStocks
+      .filter((s) => s.price !== null && s.basePrice !== null && s.basePrice > 0)
+      .map((s) => s.price! / s.basePrice!);
+    if (!ratios.length) return null;
+    return INDEX_BASE_VALUE * (ratios.reduce((a, b) => a + b, 0) / ratios.length);
+  }, [portfolioStocks]);
+
+  const portfolioSinceInception =
+    portfolioIndexValue !== null
+      ? ((portfolioIndexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
+      : null;
+  const neiSinceInception =
+    indexValue !== null
+      ? ((indexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
+      : null;
+
+  function fmtPct(v: number | null) {
+    if (v === null) return "—";
+    return `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
+  }
+
+  function fmtVal(v: number | null) {
+    return v !== null ? formatNumber(v, 1) : "—";
+  }
+
+  function stockSinceInception(s: StockData) {
+    if (s.price === null || s.basePrice === null || s.basePrice === 0) return null;
+    return ((s.price / s.basePrice) - 1) * 100;
+  }
+
+  return (
+    <section id="portfolio" className="nei-portfolio-section nei-dark-section-vars">
+      <TickFrame
+        className="nei-portfolio-frame"
+        inset={32}
+        tone="paper"
+        lineLen={44}
+        corner={14}
+        opacity={0.36}
+        padded={false}
+      >
+        <div className="nei-portfolio-inner">
+          <SectionEyebrow number="06" label="Trifecta Portfolio" light />
+          <div className="nei-portfolio-header">
+            <h2 className="nei-heading nei-portfolio-title">
+              Our portfolio.
+              <span> Inside the index.</span>
+            </h2>
+            <p className="nei-portfolio-copy">
+              10 of the 54 companies in the NEI are direct Trifecta Capital portfolio companies — businesses we backed before they had a public market track record. Here is how they are doing against the broader cohort.
+            </p>
+          </div>
+
+          <div className="nei-portfolio-compare">
+            <div className="nei-portfolio-compare-card nei-portfolio-compare-card--highlight">
+              <span className="nei-mono nei-portfolio-compare-label">Trifecta Portfolio</span>
+              <strong className="nei-mono nei-portfolio-compare-value">
+                {fmtVal(portfolioIndexValue)}
+              </strong>
+              <span
+                className={`nei-mono nei-portfolio-compare-pct ${
+                  portfolioSinceInception !== null && portfolioSinceInception >= 0
+                    ? "nei-portfolio-pct--pos"
+                    : "nei-portfolio-pct--neg"
+                }`}
+              >
+                {fmtPct(portfolioSinceInception)} since inception
+              </span>
+            </div>
+            <div className="nei-portfolio-compare-vs">vs</div>
+            <div className="nei-portfolio-compare-card">
+              <span className="nei-mono nei-portfolio-compare-label">New Economy Index</span>
+              <strong className="nei-mono nei-portfolio-compare-value">
+                {fmtVal(indexValue)}
+              </strong>
+              <span
+                className={`nei-mono nei-portfolio-compare-pct ${
+                  neiSinceInception !== null && neiSinceInception >= 0
+                    ? "nei-portfolio-pct--pos"
+                    : "nei-portfolio-pct--neg"
+                }`}
+              >
+                {fmtPct(neiSinceInception)} since inception
+              </span>
+            </div>
+          </div>
+
+          <div className="nei-portfolio-grid">
+            {portfolioStocks.map((stock) => {
+              const sinceInc = stockSinceInception(stock);
+              const isPos = sinceInc !== null && sinceInc >= 0;
+              return (
+                <div key={stock.ticker} className="nei-portfolio-row">
+                  <div className="nei-portfolio-row-left">
+                    <span className="nei-portfolio-row-name">{stock.name}</span>
+                    <span className="nei-portfolio-row-sector nei-mono">{stock.sector}</span>
+                  </div>
+                  <div className="nei-portfolio-row-right">
+                    <span className={`nei-mono nei-portfolio-row-pct ${isPos ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
+                      {fmtPct(sinceInc)}
+                    </span>
+                    <span className="nei-portfolio-row-sublabel nei-mono">since IPO</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </TickFrame>
+    </section>
+  );
+}
+
 export function DashboardFooter() {
   return (
     <footer className="nei-footer-v2">
@@ -253,6 +383,7 @@ export function DashboardFooter() {
                 <a href="#constituents">Constituents</a>
                 <a href="#sectors">Sectors</a>
                 <a href="#methodology">Methodology</a>
+                <a href="#portfolio">Portfolio</a>
               </div>
               <div>
                 <strong>Trifecta Capital</strong>
