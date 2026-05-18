@@ -1,10 +1,10 @@
 import Image from "next/image";
-import { useCallback, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
 import type { StockData } from "@/lib/index-api";
-import { SECTORS } from "@/lib/companies";
-import { INDEX_BASE_VALUE } from "@/lib/companies";
+import { INDEX_BASE_VALUE, PORTFOLIO_TICKERS, SECTORS } from "@/lib/companies";
+import { formatNumber } from "@/components/index-dashboard/format";
 import { PortfolioChart } from "@/components/index-dashboard/PortfolioChart";
 import {
   SectionEyebrow,
@@ -228,44 +228,39 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
   );
 }
 
-const RANGE_LABEL: Record<string, string> = {
-  "1Y": "1-year return",
-  "ALL": "since Jun '23",
-};
-
 export function PortfolioSection({
+  stocks,
   indexValue,
 }: {
+  stocks: StockData[];
   indexValue: number | null;
 }) {
-  const [chartPortfolio, setChartPortfolio] = useState<number | null>(null);
-  const [chartNei, setChartNei] = useState<number | null>(null);
-  const [chartRange, setChartRange] = useState<string>("1Y");
-
-  const handleLatestValues = useCallback(
-    (portfolio: number | null, nei: number | null, range: string) => {
-      setChartPortfolio(portfolio);
-      setChartNei(nei);
-      setChartRange(range);
-    },
-    []
+  const portfolioStocks = useMemo(
+    () => stocks.filter((s) => PORTFOLIO_TICKERS.has(s.ticker)),
+    [stocks]
   );
 
-  const portfolioReturn =
-    chartPortfolio !== null
-      ? ((chartPortfolio - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
+  const portfolioIndexValue = useMemo(() => {
+    const ratios = portfolioStocks
+      .filter((s) => s.price !== null && s.basePrice !== null && s.basePrice > 0)
+      .map((s) => s.price! / s.basePrice!);
+    if (!ratios.length) return null;
+    return INDEX_BASE_VALUE * (ratios.reduce((a, b) => a + b, 0) / ratios.length);
+  }, [portfolioStocks]);
+
+  const portfolioSinceInception =
+    portfolioIndexValue !== null
+      ? ((portfolioIndexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
       : null;
-  const neiReturn =
-    chartNei !== null
-      ? ((chartNei - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
+  const neiSinceInception =
+    indexValue !== null
+      ? ((indexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
       : null;
 
   const delta =
-    portfolioReturn !== null && neiReturn !== null
-      ? portfolioReturn - neiReturn
+    portfolioSinceInception !== null && neiSinceInception !== null
+      ? portfolioSinceInception - neiSinceInception
       : null;
-
-  const rangeLabel = RANGE_LABEL[chartRange] ?? chartRange;
 
   function fmtPct(v: number | null) {
     if (v === null) return "—";
@@ -294,27 +289,33 @@ export function PortfolioSection({
               </h2>
               <PortfolioChart
                 liveNeiValue={indexValue}
-                onLatestValues={handleLatestValues}
+                livePortfolioValue={portfolioIndexValue}
               />
             </div>
 
-            {/* Right: stats — values mirror the chart's rebased scale */}
+            {/* Right: stats — same equal-weighted methodology as the full NEI */}
             <div className="nei-portfolio-stats-col">
               <p className="nei-portfolio-copy">
                 10 Trifecta Capital portfolio companies inside the NEI, measured against the broader cohort since each company&apos;s IPO.
               </p>
               <div className="nei-portfolio-stat-pair">
                 <div className="nei-portfolio-stat nei-portfolio-stat--highlight">
-                  <span className="nei-mono nei-portfolio-stat-label">Trifecta Portfolio · {rangeLabel}</span>
-                  <strong className={`nei-mono nei-portfolio-stat-value ${portfolioReturn !== null && portfolioReturn >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                    {fmtPct(portfolioReturn)}
+                  <span className="nei-mono nei-portfolio-stat-label">Trifecta Portfolio</span>
+                  <strong className="nei-mono nei-portfolio-stat-value">
+                    {portfolioIndexValue !== null ? formatNumber(portfolioIndexValue, 1) : "—"}
                   </strong>
+                  <span className={`nei-mono nei-portfolio-stat-pct ${portfolioSinceInception !== null && portfolioSinceInception >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
+                    {fmtPct(portfolioSinceInception)} since inception
+                  </span>
                 </div>
                 <div className="nei-portfolio-stat">
-                  <span className="nei-mono nei-portfolio-stat-label">New Economy Index · {rangeLabel}</span>
-                  <strong className={`nei-mono nei-portfolio-stat-value nei-portfolio-stat-value--muted ${neiReturn !== null && neiReturn >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                    {fmtPct(neiReturn)}
+                  <span className="nei-mono nei-portfolio-stat-label">New Economy Index</span>
+                  <strong className="nei-mono nei-portfolio-stat-value nei-portfolio-stat-value--muted">
+                    {indexValue !== null ? formatNumber(indexValue, 1) : "—"}
                   </strong>
+                  <span className={`nei-mono nei-portfolio-stat-pct ${neiSinceInception !== null && neiSinceInception >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
+                    {fmtPct(neiSinceInception)} since inception
+                  </span>
                 </div>
               </div>
               {delta !== null && (
@@ -322,8 +323,7 @@ export function PortfolioSection({
                   Portfolio is {delta >= 0 ? "outperforming" : "underperforming"} the index by{" "}
                   <span className={delta >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}>
                     {Math.abs(delta).toFixed(1)} pp
-                  </span>{" "}
-                  ({rangeLabel})
+                  </span>
                 </p>
               )}
             </div>

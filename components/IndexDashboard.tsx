@@ -25,7 +25,7 @@ export function IndexDashboard() {
         numCompanies={model.numCompanies}
       />
 
-      <PortfolioSection indexValue={model.indexValue} />
+      <PortfolioSection stocks={model.stocks} indexValue={model.indexValue} />
 
       <ConstituentsSection
         stocks={model.stocks}
