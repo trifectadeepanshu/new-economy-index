@@ -117,7 +117,7 @@ export function ConstituentsSection({
         padded={false}
       >
         <div className="nei-index-inner">
-          <SectionEyebrow number="03" label="Inside the Index" light />
+          <SectionEyebrow number="04" label="Inside the Index" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
               The full cohort, laid out.
@@ -150,7 +150,7 @@ export function SectorSection({
   return (
     <ReferenceShell
       id="sectors"
-      eyebrow={{ number: "04", label: "Sector Composition" }}
+      eyebrow={{ number: "05", label: "Sector Composition" }}
       title="What is India's new economy actually made of?"
       copy="Deeper than fintech. Broader than consumer. See for yourself."
     >
@@ -280,7 +280,7 @@ export function PortfolioSection({
         padded={false}
       >
         <div className="nei-portfolio-inner">
-          <SectionEyebrow number="05" label="Trifecta Portfolio" light />
+          <SectionEyebrow number="03" label="Trifecta Portfolio" light />
           <div className="nei-portfolio-body">
 
             {/* Left: line chart */}
@@ -361,10 +361,10 @@ export function DashboardFooter() {
               <div>
                 <strong>The Index</strong>
                 <a href="#performance">Performance</a>
+                <a href="#portfolio">Portfolio</a>
                 <a href="#constituents">Constituents</a>
                 <a href="#sectors">Sectors</a>
                 <a href="#methodology">Methodology</a>
-                <a href="#portfolio">Portfolio</a>
               </div>
               <div>
                 <strong>Trifecta Capital</strong>
