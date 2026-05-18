@@ -35,11 +35,11 @@ export const metadata: Metadata = {
     "53 listed companies. One number. Trifecta Capital's New Economy Index tracks India's next-generation businesses as a single equal-weighted benchmark.",
   icons: {
     icon: [
-      { url: "/trifecta-logo-header.png", type: "image/png" },
+      { url: "/trifecta-mark.png", type: "image/png" },
       { url: "/nei-mark.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/trifecta-logo-header.png",
-    apple: "/trifecta-logo-header.png",
+    shortcut: "/trifecta-mark.png",
+    apple: "/trifecta-mark.png",
   },
   openGraph: {
     title: "New Economy Index | Trifecta Capital",
