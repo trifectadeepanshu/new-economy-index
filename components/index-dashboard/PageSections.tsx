@@ -326,6 +326,9 @@ export function PortfolioSection({
             </div>
 
           </div>
+          <p className="nei-portfolio-footnote">
+            * Small dips in the portfolio line occur when a new portfolio company lists — its IPO-day price anchors its ratio at 1.0, briefly diluting the equal-weighted average. The full NEI behaves identically when any new constituent is added.
+          </p>
         </div>
       </TickFrame>
     </section>
