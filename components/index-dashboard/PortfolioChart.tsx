@@ -26,7 +26,6 @@ function buildChartData(
   neiData: IndexHistoryPoint[],
   portfolioData: IndexHistoryPoint[],
   liveNeiValue: number | null,
-  livePortfolioValue: number | null,
   range: HistoryRange
 ): PortfolioPoint[] {
   const byDate = new Map<string, PortfolioPoint>();
@@ -45,15 +44,13 @@ function buildChartData(
 
   const points = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
 
-  // Both series use the same ratio-based methodology (mean price/basePrice × 1,000)
-  // so they are already on the same scale — no rebasing needed.
-  if (liveNeiValue !== null || livePortfolioValue !== null) {
-    points.push({
-      date: "now",
-      label: "Now",
-      nei: liveNeiValue,
-      portfolio: livePortfolioValue,
-    });
+  // Append live NEI value — it uses the same ratio-based methodology as the
+  // historical NEI series so the scale is consistent.
+  // Live portfolio is NOT appended: the stats panel uses raw price/basePrice
+  // ratios while the historical chart uses adjusted bases — appending it would
+  // create a visible step at the right edge of the chart.
+  if (liveNeiValue !== null) {
+    points.push({ date: "now", label: "Now", nei: liveNeiValue, portfolio: null });
   }
 
   return points;
@@ -63,10 +60,8 @@ const RANGES: HistoryRange[] = ["1Y", "ALL"];
 
 export function PortfolioChart({
   liveNeiValue,
-  livePortfolioValue,
 }: {
   liveNeiValue: number | null;
-  livePortfolioValue: number | null;
 }) {
   const [range, setRange] = useState<HistoryRange>("1Y");
   const [neiData, setNeiData] = useState<IndexHistoryPoint[]>([]);
@@ -92,8 +87,8 @@ export function PortfolioChart({
   }, [range]);
 
   const chartData = useMemo(
-    () => buildChartData(neiData, portfolioData, liveNeiValue, livePortfolioValue, range),
-    [neiData, portfolioData, liveNeiValue, livePortfolioValue, range]
+    () => buildChartData(neiData, portfolioData, liveNeiValue, range),
+    [neiData, portfolioData, liveNeiValue, range]
   );
 
   const isLoading = loadedRange !== range;

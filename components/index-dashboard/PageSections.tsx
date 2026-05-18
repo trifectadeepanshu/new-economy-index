@@ -287,10 +287,7 @@ export function PortfolioSection({
               <h2 className="nei-heading nei-portfolio-title">
                 Our portfolio,<span> benchmarked.</span>
               </h2>
-              <PortfolioChart
-                liveNeiValue={indexValue}
-                livePortfolioValue={portfolioIndexValue}
-              />
+              <PortfolioChart liveNeiValue={indexValue} />
             </div>
 
             {/* Right: stats — same equal-weighted methodology as the full NEI */}
