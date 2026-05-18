@@ -51,9 +51,8 @@
   }
 
   .nei-v2-nav {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
     padding: 10px max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
   }
 
@@ -62,36 +61,47 @@
   }
 
   .nei-v2-links {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    overflow-x: auto;
-    padding: 2px 0 4px;
-    scrollbar-width: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: max(20px, env(safe-area-inset-left));
+    right: max(20px, env(safe-area-inset-right));
+    display: none;
+    width: auto;
+    padding: 8px;
+    border: 1px solid rgba(232,235,240,0.16);
+    border-radius: 8px;
+    background: rgba(8,11,18,0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 18px 50px rgba(7,11,22,0.34);
   }
 
-  .nei-v2-links::-webkit-scrollbar {
-    display: none;
+  .nei-v2-links.is-open {
+    display: grid;
   }
 
   .nei-v2-links a {
-    display: inline-flex;
-    flex: 0 0 auto;
+    display: flex;
     align-items: center;
-    min-height: 36px;
-    padding: 0 12px;
-    border: 1px solid rgba(232,235,240,0.16);
-    border-radius: 8px;
-    background: rgba(232,235,240,0.06);
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 6px;
+    background: transparent;
     color: rgba(232,235,240,0.78);
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .nei-v2-links .nei-v2-nav-cta {
+    margin-top: 4px;
     border-color: #F2F4F8;
     background: #F2F4F8;
     color: #0B0F19;
-    padding: 0 12px;
+    padding: 0 14px;
+  }
+
+  .nei-mobile-menu-button {
+    display: inline-flex;
+    margin-left: auto;
   }
 
   .nei-hero-inner {
@@ -328,6 +338,11 @@
   .nei-brand-logo {
     width: 122px;
     max-height: 32px;
+  }
+
+  .nei-v2-links {
+    left: 16px;
+    right: 16px;
   }
 
   .nei-hero-inner {

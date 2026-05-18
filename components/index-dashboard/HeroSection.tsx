@@ -1,6 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { COMPANIES } from "@/lib/companies";
 import type { StockData } from "@/lib/index-api";
 import {
@@ -67,6 +69,9 @@ export function TickerDrift({ stocks }: { stocks: StockData[] }) {
 }
 
 function HeroNav() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const closeMenu = () => setIsMenuOpen(false);
+
   return (
     <header className="nei-v2-nav">
       <div className="nei-brand-lockup">
@@ -81,9 +86,25 @@ function HeroNav() {
           />
         </Link>
       </div>
-      <nav className="nei-v2-links" aria-label="Primary navigation">
+      <button
+        type="button"
+        className="nei-mobile-menu-button"
+        aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+        aria-controls="nei-primary-navigation"
+        aria-expanded={isMenuOpen}
+        onClick={() => setIsMenuOpen((open) => !open)}
+      >
+        <span />
+        <span />
+        <span />
+      </button>
+      <nav
+        id="nei-primary-navigation"
+        className={`nei-v2-links ${isMenuOpen ? "is-open" : ""}`}
+        aria-label="Primary navigation"
+      >
         {NAV_LINKS.map(([label, href]) => (
-          <a key={label} href={href}>
+          <a key={label} href={href} onClick={closeMenu}>
             {label}
           </a>
         ))}
@@ -92,6 +113,7 @@ function HeroNav() {
           target="_blank"
           rel="noopener noreferrer"
           className="nei-v2-nav-cta"
+          onClick={closeMenu}
         >
           trifectacapital.in ↗
         </a>
