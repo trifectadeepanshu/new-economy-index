@@ -33,6 +33,11 @@ export const metadata: Metadata = {
   title: "New Economy Index | Trifecta Capital",
   description:
     "53 listed companies. One number. Trifecta Capital's New Economy Index tracks India's next-generation businesses as a single equal-weighted benchmark.",
+  icons: {
+    icon: "/trifecta-mark.png",
+    shortcut: "/trifecta-mark.png",
+    apple: "/trifecta-mark.png",
+  },
   openGraph: {
     title: "New Economy Index | Trifecta Capital",
     description: "India's VC-backed new economy companies — tracked as a single index.",
