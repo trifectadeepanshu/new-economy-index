@@ -274,32 +274,51 @@ export async function getPortfolioIndexHistory(
   const tickers = [...PORTFOLIO_TICKERS];
   const portfolioCompanies = COMPANIES.filter((c) => PORTFOLIO_TICKERS.has(c.ticker));
 
-  const [rows, basePrices] = await Promise.all([
-    sql`
-      SELECT date::text, ticker, close_price::float
-      FROM stock_snapshots
-      WHERE date >= ${fromDate} AND date <= ${toDate}
-        AND ticker = ANY(${tickers}::varchar[])
-      ORDER BY date ASC
-    `,
-    getEarliestPricesPerTicker(),
-  ]);
+  // Fetch ALL historical data for portfolio tickers (not capped to fromDate) so the
+  // chain-linked level is accurate before we slice to the requested range.
+  const rows = await sql`
+    SELECT date::text, ticker, close_price::float
+    FROM stock_snapshots
+    WHERE ticker = ANY(${tickers}::varchar[])
+    ORDER BY date ASC
+  `;
 
   const pricesByDate = stockPricesByDate(rows);
-  const points: IndexHistoryPoint[] = [];
+  const sortedDates = [...pricesByDate.keys()].sort();
 
-  for (const [date, prices] of [...pricesByDate.entries()].sort()) {
-    const ratios = portfolioCompanies.flatMap((company) => {
-      if (company.listedDate > date) return [];
-      const ratio = priceRatio(prices.get(company.ticker) ?? null, basePrices[company.ticker] ?? null);
-      return ratio === null ? [] : [ratio];
-    });
-    const avgRatio = average(ratios);
-    if (avgRatio === null) continue;
-    points.push({ date, value: round(INDEX_BASE_VALUE * avgRatio, 4) });
+  if (!sortedDates.length) return [];
+
+  // Chain-link: compound daily returns instead of averaging price/base ratios.
+  // When a new company lists it contributes 0% on its first day → no discontinuity.
+  let indexValue = INDEX_BASE_VALUE;
+  const allPoints: IndexHistoryPoint[] = [{ date: sortedDates[0], value: round(indexValue) }];
+
+  for (let i = 1; i < sortedDates.length; i++) {
+    const prevDate = sortedDates[i - 1];
+    const currDate = sortedDates[i];
+    const prevPrices = pricesByDate.get(prevDate)!;
+    const currPrices = pricesByDate.get(currDate)!;
+
+    // Only include companies that were listed by prevDate and have prices on both days.
+    // A company on its IPO day (listedDate === currDate) is excluded here — it joins
+    // from the next session onwards with 0% first-day drag on the level.
+    const returns: number[] = [];
+    for (const company of portfolioCompanies) {
+      if (company.listedDate > prevDate) continue;
+      const prev = prevPrices.get(company.ticker);
+      const curr = currPrices.get(company.ticker);
+      if (prev && curr && prev > 0) returns.push(curr / prev - 1);
+    }
+
+    if (returns.length > 0) {
+      const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+      indexValue = indexValue * (1 + avgReturn);
+    }
+
+    allPoints.push({ date: currDate, value: round(indexValue) });
   }
 
-  return points;
+  return allPoints.filter((p) => p.date >= fromDate && p.date <= toDate);
 }
 
 export async function getEarliestPricesPerTicker(): Promise<Record<string, number>> {
