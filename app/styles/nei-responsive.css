@@ -85,6 +85,7 @@
     align-items: center;
     min-height: 44px;
     padding: 0 14px;
+    border: 1px solid transparent;
     border-radius: 6px;
     background: transparent;
     color: rgba(232,235,240,0.78);

@@ -31,14 +31,15 @@ export function CompanyGrid({
   showToggle: showToggleProp,
   variant = "default",
 }: CompanyGridProps) {
-  const [internalView, setInternalView] = useState<CompanyGridView>("table");
+  const [internalView, setInternalView] = useState<CompanyGridView | null>(null);
   const [hasChosenView, setHasChosenView] = useState(false);
   const [sort, setSort] = useState<SortState>(INITIAL_SORT);
   const [query, setQuery] = useState("");
   const [sector, setSector] = useState<SectorFilter>("All");
   const [visibleCardCount, setVisibleCardCount] = useState(INITIAL_CARD_COUNT);
 
-  const view = externalView ?? internalView;
+  const view = externalView ?? internalView ?? "grid";
+  const hasResolvedAutoView = externalView !== undefined || internalView !== null;
   const showToggle = showToggleProp ?? externalView === undefined;
   const rows = useConstituentRows(stocks, sort, sector, query);
 
@@ -86,7 +87,7 @@ export function CompanyGrid({
     );
   }
 
-  if (isLoading && stocks.length === 0) {
+  if (!hasResolvedAutoView || (isLoading && stocks.length === 0)) {
     return (
       <CompanyGridSkeleton
         view={view}

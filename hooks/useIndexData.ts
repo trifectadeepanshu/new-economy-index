@@ -60,16 +60,15 @@ function getErrorMessage(error: unknown) {
 
 export function useIndexData() {
   const [state, setState] = useState<LiveIndexState>(INITIAL_STATE);
-  const lastFetchRef = useRef(0);
+  const lastSuccessfulFetchRef = useRef(0);
   const inFlightRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
     if (inFlightRef.current) return;
-    if (!force && Date.now() - lastFetchRef.current < POLL_INTERVAL_MS) return;
+    if (!force && Date.now() - lastSuccessfulFetchRef.current < POLL_INTERVAL_MS) return;
 
     inFlightRef.current = true;
-    lastFetchRef.current = Date.now();
     abortRef.current?.abort();
 
     const controller = new AbortController();
@@ -77,6 +76,7 @@ export function useIndexData() {
 
     try {
       const data = await fetchLiveIndex(controller.signal);
+      lastSuccessfulFetchRef.current = Date.now();
       setState({ data, isLoading: false, error: null });
     } catch (error) {
       if (!isAbortError(error)) {
