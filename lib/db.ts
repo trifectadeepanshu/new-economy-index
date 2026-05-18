@@ -112,6 +112,41 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_stock_ticker_date
       ON stock_snapshots(ticker, date DESC)
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS market_cap_cache (
+      ticker      VARCHAR(30) PRIMARY KEY,
+      market_cap  DECIMAL(20, 2),
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+}
+
+export async function upsertMarketCaps(entries: { ticker: string; marketCap: number }[]) {
+  if (!entries.length) return;
+  const sql = getSql();
+  const tickers = entries.map((e) => e.ticker);
+  const caps = entries.map((e) => e.marketCap);
+  await sql`
+    INSERT INTO market_cap_cache (ticker, market_cap, updated_at)
+    SELECT * FROM unnest(
+      ${tickers}::varchar[],
+      ${caps}::decimal[],
+      array_fill(NOW(), ARRAY[${tickers.length}])::timestamptz[]
+    ) AS t(ticker, market_cap, updated_at)
+    ON CONFLICT (ticker) DO UPDATE
+      SET market_cap = EXCLUDED.market_cap,
+          updated_at = EXCLUDED.updated_at
+  `;
+}
+
+export async function getLatestMarketCaps(): Promise<Record<string, number>> {
+  const sql = getSql();
+  const rows = await sql`SELECT ticker, market_cap::float FROM market_cap_cache`;
+  const caps: Record<string, number> = {};
+  for (const row of rows) {
+    if (row.market_cap != null) caps[toTicker(row.ticker)] = toNumber(row.market_cap);
+  }
+  return caps;
 }
 
 export async function upsertIndexSnapshot(

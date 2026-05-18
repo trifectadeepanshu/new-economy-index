@@ -5,6 +5,7 @@ import {
   getEarliestPricesPerTicker,
   getLatestIndexSnapshot,
   getLatestStockPrices,
+  getLatestMarketCaps,
   ensureSchema,
 } from "@/lib/db";
 import type { LiveIndexPayload, StockData } from "@/lib/index-api";
@@ -56,12 +57,6 @@ function getIndexChangePct(stocks: StockData[]) {
   return avgChange === null ? null : round(avgChange);
 }
 
-function getTotalMarketCap(quotes: QuoteResult[]) {
-  const marketCaps = finiteNumbers(quotes.map((quote) => quote.marketCap))
-    .filter((value) => value > 0);
-
-  return marketCaps.length > 0 ? marketCaps.reduce((sum, value) => sum + value, 0) : null;
-}
 
 function quotePricesByTicker(quotes: QuoteResult[]): Record<string, PricePoint> {
   return Object.fromEntries(
@@ -108,19 +103,27 @@ export async function GET() {
   const today = getISTDate();
   const active = COMPANIES.filter((c) => c.listedDate <= today);
 
-  // Try live Yahoo Finance data first
+  // Try live Upstox data first
   try {
-    const [quotes, basePrices] = await Promise.all([
+    const [quotes, basePrices, marketCaps] = await Promise.all([
       fetchUpstoxQuotes(active.map((c) => c.ticker)),
       getEarliestPricesPerTicker(),
+      getLatestMarketCaps(),
     ]);
 
-    const stocks = buildStocks(active, quotePricesByTicker(quotes), basePrices);
+    // Merge cached market caps into quotes
+    const pricesWithCaps = quotePricesByTicker(
+      quotes.map((q) => ({ ...q, marketCap: marketCaps[q.ticker] ?? null }))
+    );
+
+    const stocks = buildStocks(active, pricesWithCaps, basePrices);
     const indexValue = getIndexValue(stocks);
 
     if (indexValue === null) {
       throw new Error("Upstox returned no prices");
     }
+
+    const totalMarketCap = Object.values(marketCaps).reduce((sum, v) => sum + v, 0) || null;
 
     return NextResponse.json(
       toPayload({
@@ -128,7 +131,7 @@ export async function GET() {
         indexValue,
         lastUpdated: new Date().toISOString(),
         isStale: false,
-        totalMarketCap: getTotalMarketCap(quotes),
+        totalMarketCap,
       }),
       { headers: LIVE_CACHE_HEADERS }
     );
