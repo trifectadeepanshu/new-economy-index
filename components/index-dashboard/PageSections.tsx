@@ -290,7 +290,6 @@ export function PortfolioSection({
               </h2>
               <PortfolioChart
                 liveNeiValue={indexValue}
-                livePortfolioValue={portfolioIndexValue}
               />
             </div>
 

@@ -22,9 +22,10 @@ type PortfolioPoint = {
   portfolio: number | null;
 };
 
-function mergeSeriesData(
+function buildChartData(
   neiData: IndexHistoryPoint[],
   portfolioData: IndexHistoryPoint[],
+  liveNeiValue: number | null,
   range: HistoryRange
 ): PortfolioPoint[] {
   const byDate = new Map<string, PortfolioPoint>();
@@ -41,17 +42,41 @@ function mergeSeriesData(
     }
   }
 
-  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+  const points = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+
+  // Rebase both series to INDEX_BASE_VALUE at the first date where both have data.
+  // The NEI starts in March 2021 but the portfolio chain-link starts in June 2023
+  // (IdeaForge IPO), so without rebasing the two lines are on incomparable scales.
+  const firstBoth = points.find((p) => p.nei !== null && p.portfolio !== null);
+  if (firstBoth) {
+    const neiBase = firstBoth.nei!;
+    const portfolioBase = firstBoth.portfolio!;
+    for (const p of points) {
+      if (p.nei !== null) p.nei = (p.nei / neiBase) * INDEX_BASE_VALUE;
+      if (p.portfolio !== null) p.portfolio = (p.portfolio / portfolioBase) * INDEX_BASE_VALUE;
+    }
+    // Live NEI can be appended on the same rebased scale.
+    // Live portfolio is skipped — it uses a ratio-based method inconsistent with the
+    // chain-linked historical series, so normalizing it would be misleading.
+    if (liveNeiValue !== null) {
+      points.push({
+        date: "now",
+        label: "Now",
+        nei: (liveNeiValue / neiBase) * INDEX_BASE_VALUE,
+        portfolio: null,
+      });
+    }
+  }
+
+  return points;
 }
 
 const RANGES: HistoryRange[] = ["1Y", "ALL"];
 
 export function PortfolioChart({
   liveNeiValue,
-  livePortfolioValue,
 }: {
   liveNeiValue: number | null;
-  livePortfolioValue: number | null;
 }) {
   const [range, setRange] = useState<HistoryRange>("1Y");
   const [neiData, setNeiData] = useState<IndexHistoryPoint[]>([]);
@@ -76,13 +101,10 @@ export function PortfolioChart({
     return () => controller.abort();
   }, [range]);
 
-  const chartData = useMemo(() => {
-    const merged = mergeSeriesData(neiData, portfolioData, range);
-    if ((liveNeiValue !== null || livePortfolioValue !== null) && merged.length > 0) {
-      return [...merged, { date: "now", label: "Now", nei: liveNeiValue, portfolio: livePortfolioValue }];
-    }
-    return merged;
-  }, [neiData, portfolioData, range, liveNeiValue, livePortfolioValue]);
+  const chartData = useMemo(
+    () => buildChartData(neiData, portfolioData, liveNeiValue, range),
+    [neiData, portfolioData, liveNeiValue, range]
+  );
 
   const isLoading = loadedRange !== range;
 
