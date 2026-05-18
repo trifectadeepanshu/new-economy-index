@@ -32,6 +32,7 @@ export function CompanyGrid({
   variant = "default",
 }: CompanyGridProps) {
   const [internalView, setInternalView] = useState<CompanyGridView | null>(null);
+  const [isMobileCardViewport, setIsMobileCardViewport] = useState<boolean | null>(null);
   const [hasChosenView, setHasChosenView] = useState(false);
   const [sort, setSort] = useState<SortState>(INITIAL_SORT);
   const [query, setQuery] = useState("");
@@ -40,14 +41,22 @@ export function CompanyGrid({
 
   const view = externalView ?? internalView ?? "grid";
   const hasResolvedAutoView = externalView !== undefined || internalView !== null;
+  const hasResolvedViewport = isMobileCardViewport !== null;
   const showToggle = showToggleProp ?? externalView === undefined;
   const rows = useConstituentRows(stocks, sort, sector, query);
+  const shouldLimitCards = view === "grid" && isMobileCardViewport === true;
+  const visibleRows = shouldLimitCards ? rows.slice(0, visibleCardCount) : rows;
 
   useEffect(() => {
-    if (externalView !== undefined || hasChosenView) return;
-
     const media = window.matchMedia(MOBILE_CARD_VIEW);
-    const syncView = () => setInternalView(media.matches ? "grid" : "table");
+    const syncView = () => {
+      const isMobile = media.matches;
+
+      setIsMobileCardViewport(isMobile);
+      if (externalView === undefined && !hasChosenView) {
+        setInternalView(isMobile ? "grid" : "table");
+      }
+    };
 
     syncView();
     media.addEventListener("change", syncView);
@@ -87,7 +96,7 @@ export function CompanyGrid({
     );
   }
 
-  if (!hasResolvedAutoView || (isLoading && stocks.length === 0)) {
+  if (!hasResolvedViewport || !hasResolvedAutoView || (isLoading && stocks.length === 0)) {
     return (
       <CompanyGridSkeleton
         view={view}
@@ -121,8 +130,8 @@ export function CompanyGrid({
         />
       ) : (
         <>
-          <CompanyCards stocks={rows.slice(0, visibleCardCount)} />
-          {visibleCardCount < rows.length && (
+          <CompanyCards stocks={visibleRows} />
+          {shouldLimitCards && visibleCardCount < rows.length && (
             <div className="nei-company-card-more">
               <button
                 type="button"
