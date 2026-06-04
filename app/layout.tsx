@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://new-economy-index.vercel.app"),
   title: "New Economy Index | Trifecta Capital",
   description:
-    "53 listed companies. One number. Trifecta Capital's New Economy Index tracks India's next-generation businesses as a single equal-weighted benchmark.",
+    "53 listed companies. One number. Trifecta Capital's New Economy Index tracks India's next-generation businesses as a single market-cap weighted benchmark.",
   icons: {
     icon: "/trifecta-mark.png",
     shortcut: "/trifecta-mark.png",

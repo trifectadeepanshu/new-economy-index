@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { COMPANIES, INDEX_BASE_VALUE, type Company } from "@/lib/companies";
 import { fetchAllQuotes as fetchUpstoxQuotes, type QuoteResult } from "@/lib/upstox";
-import { fetchAllQuotes as fetchYahooQuotes } from "@/lib/yahoo-finance";
 import {
   getEarliestPricesPerTicker,
   getLatestIndexSnapshot,
@@ -9,7 +8,8 @@ import {
   ensureSchema,
 } from "@/lib/db";
 import type { LiveIndexPayload, StockData } from "@/lib/index-api";
-import { average, finiteNumbers, priceRatio, round } from "@/lib/index-math";
+import { priceRatio, round, weightedAverage } from "@/lib/index-math";
+import { getMarketCaps } from "@/lib/market-caps";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
@@ -22,27 +22,6 @@ let schemaReady: Promise<void> | null = null;
 function ensureSchemaOnce() {
   schemaReady ??= ensureSchema();
   return schemaReady;
-}
-
-const MARKET_CAP_TTL_MS = 60 * 60 * 1000; // 1 hour
-let marketCapCache: { data: Record<string, number>; fetchedAt: number } | null = null;
-
-async function getMarketCaps(yfTickers: string[]): Promise<Record<string, number>> {
-  const now = Date.now();
-  if (marketCapCache && now - marketCapCache.fetchedAt < MARKET_CAP_TTL_MS) {
-    return marketCapCache.data;
-  }
-  try {
-    const quotes = await fetchYahooQuotes(yfTickers);
-    const data: Record<string, number> = {};
-    for (const q of quotes) {
-      if (q.marketCap != null && q.marketCap > 0) data[q.ticker] = q.marketCap;
-    }
-    marketCapCache = { data, fetchedAt: now };
-    return data;
-  } catch {
-    return marketCapCache?.data ?? {};
-  }
 }
 
 type PricePoint = {
@@ -74,14 +53,28 @@ function buildStocks(
   });
 }
 
+function weightedFromStocks<K extends "ratio" | "changePct">(stocks: StockData[], key: K) {
+  const values: number[] = [];
+  const weights: number[] = [];
+  for (const stock of stocks) {
+    const v = stock[key];
+    const w = stock.marketCap;
+    if (typeof v !== "number" || !Number.isFinite(v)) continue;
+    if (w == null || !Number.isFinite(w) || w <= 0) continue;
+    values.push(v);
+    weights.push(w);
+  }
+  return weightedAverage(values, weights);
+}
+
 function getIndexValue(stocks: StockData[]) {
-  const avgRatio = average(finiteNumbers(stocks.map((stock) => stock.ratio)));
-  return avgRatio === null ? null : round(INDEX_BASE_VALUE * avgRatio);
+  const weighted = weightedFromStocks(stocks, "ratio");
+  return weighted === null ? null : round(INDEX_BASE_VALUE * weighted);
 }
 
 function getIndexChangePct(stocks: StockData[]) {
-  const avgChange = average(finiteNumbers(stocks.map((stock) => stock.changePct)));
-  return avgChange === null ? null : round(avgChange);
+  const weighted = weightedFromStocks(stocks, "changePct");
+  return weighted === null ? null : round(weighted);
 }
 
 function quotePricesByTicker(quotes: QuoteResult[]): Record<string, PricePoint> {

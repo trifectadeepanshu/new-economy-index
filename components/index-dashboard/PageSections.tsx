@@ -15,8 +15,8 @@ import { SectorComposition } from "@/components/index-dashboard/SectorCompositio
 const METHOD_CARDS = [
   {
     number: "01",
-    title: "Equal-weighted, by design",
-    body: "No single name skews the read. Every company carries the same weight, so the index moves with the cohort, not the headlines.",
+    title: "Market-cap weighted, by design",
+    body: "Each company's weight reflects its size in the public market. The index moves with the value of the cohort, not just its headcount.",
   },
   {
     number: "03",
@@ -87,7 +87,7 @@ export function PerformanceSection({
       eyebrow={{ number: "02", label: "Performance" }}
       title="The NEI since day one."
       mutedTitle="One line, no filter."
-      copy={`Equal-weighted across all ${numCompanies} constituents, rebalanced quarterly. Base 1,000 set in March 2021.`}
+      copy={`Market-cap weighted across all ${numCompanies} constituents. Base 1,000 set in March 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
     </ReferenceShell>
@@ -241,11 +241,16 @@ export function PortfolioSection({
   );
 
   const portfolioIndexValue = useMemo(() => {
-    const ratios = portfolioStocks
-      .filter((s) => s.price !== null && s.basePrice !== null && s.basePrice > 0)
-      .map((s) => s.price! / s.basePrice!);
-    if (!ratios.length) return null;
-    return INDEX_BASE_VALUE * (ratios.reduce((a, b) => a + b, 0) / ratios.length);
+    let weightedSum = 0;
+    let totalWeight = 0;
+    for (const s of portfolioStocks) {
+      if (s.price == null || s.basePrice == null || s.basePrice <= 0) continue;
+      if (s.marketCap == null || s.marketCap <= 0) continue;
+      weightedSum += (s.price / s.basePrice) * s.marketCap;
+      totalWeight += s.marketCap;
+    }
+    if (totalWeight <= 0) return null;
+    return INDEX_BASE_VALUE * (weightedSum / totalWeight);
   }, [portfolioStocks]);
 
   const portfolioSinceInception =
@@ -290,7 +295,7 @@ export function PortfolioSection({
               <PortfolioChart liveNeiValue={indexValue} livePortfolioValue={portfolioIndexValue} />
             </div>
 
-            {/* Right: stats — same equal-weighted methodology as the full NEI */}
+            {/* Right: stats — same market-cap weighted methodology as the full NEI */}
             <div className="nei-portfolio-stats-col">
               <p className="nei-portfolio-copy">
                 10 Trifecta Capital portfolio companies inside the NEI, measured against the broader cohort since each company&apos;s IPO.
@@ -327,7 +332,7 @@ export function PortfolioSection({
 
           </div>
           <p className="nei-portfolio-footnote">
-            * Small dips in the portfolio line occur when a new portfolio company lists — its IPO-day price anchors its ratio at 1.0, briefly diluting the equal-weighted average. The full NEI behaves identically when any new constituent is added.
+            * Small dips in the portfolio line occur when a new portfolio company lists — its IPO-day price anchors its ratio at 1.0, briefly diluting the cap-weighted average. The full NEI behaves identically when any new constituent is added.
           </p>
         </div>
       </TickFrame>

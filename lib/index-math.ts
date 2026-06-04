@@ -9,6 +9,19 @@ export function average(values: number[]) {
     : null;
 }
 
+export function weightedAverage(values: number[], weights: number[]) {
+  if (values.length === 0 || values.length !== weights.length) return null;
+  let weightedSum = 0;
+  let totalWeight = 0;
+  for (let i = 0; i < values.length; i++) {
+    const w = weights[i];
+    if (!Number.isFinite(w) || w <= 0) continue;
+    weightedSum += values[i] * w;
+    totalWeight += w;
+  }
+  return totalWeight > 0 ? weightedSum / totalWeight : null;
+}
+
 export function finiteNumbers(values: Array<number | null | undefined>) {
   return values.filter(
     (value): value is number => typeof value === "number" && Number.isFinite(value)

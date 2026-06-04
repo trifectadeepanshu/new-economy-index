@@ -8,7 +8,7 @@ import {
   upsertIndexSnapshot,
   upsertStockSnapshotsBatch,
 } from "@/lib/db";
-import { average, finiteNumbers, round } from "@/lib/index-math";
+import { round, weightedAverage } from "@/lib/index-math";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
@@ -46,19 +46,31 @@ function toStockRow(
   };
 }
 
-function getIndexRatios(
+function getWeightedSet(
   companies: Company[],
   currentPrices: Record<string, number>,
-  basePrices: Record<string, number>
+  basePrices: Record<string, number>,
+  marketCaps: Record<string, number>,
+  changePcts: Record<string, number | null>
 ) {
-  return companies.flatMap((company) => {
+  const ratios: number[] = [];
+  const changes: number[] = [];
+  const weights: number[] = [];
+  for (const company of companies) {
     const currentPrice = currentPrices[company.ticker];
     const basePrice = basePrices[company.ticker];
-
-    return currentPrice !== undefined && basePrice !== undefined && basePrice !== 0
-      ? [currentPrice / basePrice]
-      : [];
-  });
+    const cap = marketCaps[company.ticker];
+    const change = changePcts[company.ticker];
+    if (currentPrice == null || !basePrice || !cap || cap <= 0) continue;
+    ratios.push(currentPrice / basePrice);
+    weights.push(cap);
+    if (typeof change === "number" && Number.isFinite(change)) {
+      changes.push(change);
+    } else {
+      changes.push(NaN);
+    }
+  }
+  return { ratios, weights, changes };
 }
 
 export async function GET(req: NextRequest) {
@@ -101,15 +113,31 @@ async function runSnapshot() {
 
   const basePrices = await getEarliestPricesPerTicker();
   const currentPrices = Object.fromEntries(stockRows.map((r) => [r.ticker, r.closePrice]));
-  const ratios = getIndexRatios(active, currentPrices, basePrices);
-  const avgRatio = average(ratios);
+  const changePcts: Record<string, number | null> = Object.fromEntries(
+    stockRows.map((r) => [r.ticker, r.changePct])
+  );
+  const marketCaps: Record<string, number> = {};
+  for (const q of quotes) {
+    if (q.marketCap != null && q.marketCap > 0) marketCaps[q.ticker] = q.marketCap;
+  }
 
-  if (avgRatio === null) {
+  const { ratios, weights, changes } = getWeightedSet(
+    active,
+    currentPrices,
+    basePrices,
+    marketCaps,
+    changePcts
+  );
+
+  const weightedRatio = weightedAverage(ratios, weights);
+  if (weightedRatio === null) {
     return NextResponse.json({ message: "No eligible companies", date: today });
   }
 
-  const indexValue = INDEX_BASE_VALUE * avgRatio;
-  const changePct = average(finiteNumbers(stockRows.map((row) => row.changePct)));
+  const indexValue = INDEX_BASE_VALUE * weightedRatio;
+  const changeWeights = weights.filter((_, i) => Number.isFinite(changes[i]));
+  const changeValues = changes.filter((c) => Number.isFinite(c));
+  const changePct = weightedAverage(changeValues, changeWeights);
 
   await upsertIndexSnapshot(today, indexValue, changePct, ratios.length);
 

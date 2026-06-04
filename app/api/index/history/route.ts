@@ -7,6 +7,7 @@ import {
   type HistoryRange,
   type IndexHistoryPayload,
 } from "@/lib/index-api";
+import { getMarketCaps } from "@/lib/market-caps";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
@@ -46,10 +47,11 @@ export async function GET(req: NextRequest) {
   const includePortfolio = req.nextUrl.searchParams.get("portfolio") === "1";
 
   try {
+    const marketCaps = await getMarketCaps();
     const [data, sectorData, portfolioData] = await Promise.all([
-      getIndexHistory(fromDate, toDate),
-      includeSectors ? getSectorIndexHistory(fromDate, toDate) : Promise.resolve([]),
-      includePortfolio ? getPortfolioIndexHistory(fromDate, toDate) : Promise.resolve([]),
+      getIndexHistory(fromDate, toDate, marketCaps),
+      includeSectors ? getSectorIndexHistory(fromDate, toDate, marketCaps) : Promise.resolve([]),
+      includePortfolio ? getPortfolioIndexHistory(fromDate, toDate, marketCaps) : Promise.resolve([]),
     ]);
 
     const payload: IndexHistoryPayload = {

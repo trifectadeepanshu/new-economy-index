@@ -1,7 +1,8 @@
 import { neon } from "@neondatabase/serverless";
 import { COMPANIES, INDEX_BASE_VALUE, PORTFOLIO_TICKERS, SECTORS, type Sector } from "@/lib/companies";
 import type { IndexHistoryPoint, SectorHistoryPoint } from "@/lib/index-api";
-import { average, priceRatio, round } from "@/lib/index-math";
+import { priceRatio, round, weightedAverage } from "@/lib/index-math";
+import type { MarketCapMap } from "@/lib/market-caps";
 
 const STOCK_BATCH_SIZE = 500;
 const COMPANIES_BY_SECTOR = new Map(
@@ -75,18 +76,29 @@ function stockPricesByDate(rows: DbRow[]) {
   return pricesByDate;
 }
 
-function sectorRatios(
-  sector: Sector,
+type WeightedSet = { ratios: number[]; weights: number[] };
+
+function collectWeighted(
+  companies: { ticker: string; listedDate: string }[],
   date: string,
   prices: Map<string, number>,
-  basePrices: Record<string, number>
-) {
-  return (COMPANIES_BY_SECTOR.get(sector) ?? []).flatMap((company) => {
-    if (company.listedDate > date) return [];
-
-    const ratio = priceRatio(prices.get(company.ticker) ?? null, basePrices[company.ticker] ?? null);
-    return ratio === null ? [] : [ratio];
-  });
+  basePrices: Record<string, number>,
+  marketCaps: MarketCapMap
+): WeightedSet {
+  const ratios: number[] = [];
+  const weights: number[] = [];
+  for (const company of companies) {
+    if (company.listedDate > date) continue;
+    const ratio = priceRatio(
+      prices.get(company.ticker) ?? null,
+      basePrices[company.ticker] ?? null
+    );
+    const cap = marketCaps[company.ticker];
+    if (ratio === null || !cap || cap <= 0) continue;
+    ratios.push(ratio);
+    weights.push(cap);
+  }
+  return { ratios, weights };
 }
 
 export async function ensureSchema() {
@@ -134,26 +146,39 @@ export async function upsertIndexSnapshot(
 
 export async function getIndexHistory(
   fromDate: string,
-  toDate: string
+  toDate: string,
+  marketCaps: MarketCapMap
 ): Promise<IndexHistoryPoint[]> {
   const sql = getSql();
-  const rows = await sql`
-    SELECT date::text, value::float
-    FROM index_snapshots
-    WHERE date >= ${fromDate} AND date <= ${toDate}
-    ORDER BY date ASC
-  `;
-  return rows.map((row) => ({
-    date: String(row.date),
-    value: toNumber(row.value),
-  }));
+  const [rows, basePrices] = await Promise.all([
+    sql`
+      SELECT date::text, ticker, close_price::float
+      FROM stock_snapshots
+      WHERE date >= ${fromDate} AND date <= ${toDate}
+      ORDER BY date ASC
+    `,
+    getEarliestPricesPerTicker(),
+  ]);
+
+  const pricesByDate = stockPricesByDate(rows);
+  const points: IndexHistoryPoint[] = [];
+
+  for (const [date, prices] of pricesByDate) {
+    const { ratios, weights } = collectWeighted(COMPANIES, date, prices, basePrices, marketCaps);
+    const weighted = weightedAverage(ratios, weights);
+    if (weighted === null) continue;
+    points.push({ date, value: round(INDEX_BASE_VALUE * weighted, 4) });
+  }
+
+  return points;
 }
 
 export type SectorIndexHistoryPoint = SectorHistoryPoint;
 
 export async function getSectorIndexHistory(
   fromDate: string,
-  toDate: string
+  toDate: string,
+  marketCaps: MarketCapMap
 ): Promise<SectorIndexHistoryPoint[]> {
   const sql = getSql();
   const [rows, basePrices] = await Promise.all([
@@ -171,14 +196,15 @@ export async function getSectorIndexHistory(
 
   for (const [date, prices] of pricesByDate) {
     for (const sector of SECTORS) {
-      const ratios = sectorRatios(sector, date, prices, basePrices);
-      const avgRatio = average(ratios);
-      if (avgRatio === null) continue;
+      const companies = COMPANIES_BY_SECTOR.get(sector) ?? [];
+      const { ratios, weights } = collectWeighted(companies, date, prices, basePrices, marketCaps);
+      const weighted = weightedAverage(ratios, weights);
+      if (weighted === null) continue;
 
       points.push({
         date,
         sector,
-        value: round(INDEX_BASE_VALUE * avgRatio, 4),
+        value: round(INDEX_BASE_VALUE * weighted, 4),
         numCompanies: ratios.length,
       });
     }
@@ -268,7 +294,8 @@ export async function getLatestStockPrices(): Promise<Record<string, LatestStock
 
 export async function getPortfolioIndexHistory(
   fromDate: string,
-  toDate: string
+  toDate: string,
+  marketCaps: MarketCapMap
 ): Promise<IndexHistoryPoint[]> {
   const sql = getSql();
   const tickers = [...PORTFOLIO_TICKERS];
@@ -289,17 +316,16 @@ export async function getPortfolioIndexHistory(
   const points: IndexHistoryPoint[] = [];
 
   for (const [date, prices] of pricesByDate) {
-    const ratios = portfolioCompanies.flatMap((company) => {
-      if (company.listedDate > date) return [];
-      const ratio = priceRatio(
-        prices.get(company.ticker) ?? null,
-        basePrices[company.ticker] ?? null
-      );
-      return ratio === null ? [] : [ratio];
-    });
-    const avgRatio = average(ratios);
-    if (avgRatio === null) continue;
-    points.push({ date, value: round(INDEX_BASE_VALUE * avgRatio, 4) });
+    const { ratios, weights } = collectWeighted(
+      portfolioCompanies,
+      date,
+      prices,
+      basePrices,
+      marketCaps
+    );
+    const weighted = weightedAverage(ratios, weights);
+    if (weighted === null) continue;
+    points.push({ date, value: round(INDEX_BASE_VALUE * weighted, 4) });
   }
 
   return points;
