@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { useMemo, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
 import type { StockData } from "@/lib/index-api";
-import { INDEX_BASE_VALUE, PORTFOLIO_TICKERS, SECTORS } from "@/lib/companies";
+import { INDEX_BASE_VALUE, SECTORS } from "@/lib/companies";
 import { formatNumber } from "@/components/index-dashboard/format";
 import { PortfolioChart } from "@/components/index-dashboard/PortfolioChart";
 import {
@@ -229,29 +229,15 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
 }
 
 export function PortfolioSection({
-  stocks,
   indexValue,
+  portfolioValue,
 }: {
   stocks: StockData[];
   indexValue: number | null;
+  portfolioValue: number | null;
 }) {
-  const portfolioStocks = useMemo(
-    () => stocks.filter((s) => PORTFOLIO_TICKERS.has(s.ticker)),
-    [stocks]
-  );
-
-  const portfolioIndexValue = useMemo(() => {
-    let weightedSum = 0;
-    let totalWeight = 0;
-    for (const s of portfolioStocks) {
-      if (s.price == null || s.basePrice == null || s.basePrice <= 0) continue;
-      if (s.marketCap == null || s.marketCap <= 0) continue;
-      weightedSum += (s.price / s.basePrice) * s.marketCap;
-      totalWeight += s.marketCap;
-    }
-    if (totalWeight <= 0) return null;
-    return INDEX_BASE_VALUE * (weightedSum / totalWeight);
-  }, [portfolioStocks]);
+  // Divisor-based portfolio sub-index value (consistent with the chart's history line).
+  const portfolioIndexValue = portfolioValue;
 
   const portfolioSinceInception =
     portfolioIndexValue !== null
@@ -332,7 +318,7 @@ export function PortfolioSection({
 
           </div>
           <p className="nei-portfolio-footnote">
-            * Small dips in the portfolio line occur when a new portfolio company lists — its IPO-day price anchors its ratio at 1.0, briefly diluting the cap-weighted average. The full NEI behaves identically when any new constituent is added.
+            * Both lines are market-cap weighted and indexed to 1,000 at the start of the selected range, so the comparison starts from a common base. New constituents enter via a divisor adjustment, which keeps each index continuous on listing day.
           </p>
         </div>
       </TickFrame>

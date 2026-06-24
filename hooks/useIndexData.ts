@@ -35,6 +35,7 @@ function normalizeLiveData(json: LiveIndexPayload): LiveIndexData {
   return {
     indexValue: json.indexValue ?? null,
     indexChangePct: json.indexChangePct ?? null,
+    portfolioValue: json.portfolioValue ?? null,
     numCompanies: json.numCompanies,
     lastUpdated: parseTimestamp(json.lastUpdated),
     isStale: Boolean(json.isStale),

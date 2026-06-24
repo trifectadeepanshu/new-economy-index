@@ -194,6 +194,7 @@ export function useIndexDashboardModel() {
     marketOpen,
     nowIST,
     indexValue,
+    portfolioValue: data?.portfolioValue ?? null,
     displayedValue,
     valueFlash,
     changePct: data?.indexChangePct ?? null,

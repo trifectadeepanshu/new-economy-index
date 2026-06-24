@@ -20,6 +20,7 @@ export type StockData = LiveStockPayload;
 export type LiveIndexPayload = {
   indexValue: number | null;
   indexChangePct: number | null;
+  portfolioValue: number | null;
   numCompanies: number;
   lastUpdated: string | null;
   isStale: boolean;

@@ -45,9 +45,27 @@ function buildChartData(
 
   const points = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
 
-  // Both series use the same ratio-based methodology so they're on the same scale.
+  // Rebase both series to 1,000 at the first visible point so the benchmark
+  // comparison starts from a common base (each has a different inception date).
+  const firstNei = points.find((p) => p.nei !== null)?.nei ?? null;
+  const firstPortfolio = points.find((p) => p.portfolio !== null)?.portfolio ?? null;
+  const neiFactor = firstNei ? INDEX_BASE_VALUE / firstNei : 1;
+  const portfolioFactor = firstPortfolio ? INDEX_BASE_VALUE / firstPortfolio : 1;
+  const rebase = (v: number, factor: number) => Math.round(v * factor * 100) / 100;
+
+  for (const p of points) {
+    if (p.nei !== null) p.nei = rebase(p.nei, neiFactor);
+    if (p.portfolio !== null) p.portfolio = rebase(p.portfolio, portfolioFactor);
+  }
+
+  // Append the live "Now" point, rebased on the same factors.
   if (liveNeiValue !== null || livePortfolioValue !== null) {
-    points.push({ date: "now", label: "Now", nei: liveNeiValue, portfolio: livePortfolioValue });
+    points.push({
+      date: "now",
+      label: "Now",
+      nei: liveNeiValue !== null ? rebase(liveNeiValue, neiFactor) : null,
+      portfolio: livePortfolioValue !== null ? rebase(livePortfolioValue, portfolioFactor) : null,
+    });
   }
 
   return points;

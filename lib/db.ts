@@ -49,9 +49,14 @@ export type LatestStockPrice = {
   changePct: number | null;
 };
 
-export type LiveIndexState = {
+export type DivisorState = {
   divisor: number;
   composition: string[];
+};
+
+export type LiveIndexState = DivisorState & {
+  /** Portfolio sub-index divisor state, for a consistent live portfolio value. */
+  portfolio?: DivisorState;
 };
 
 function getSql() {
@@ -215,9 +220,9 @@ export async function recomputeAndPersistIndex(): Promise<{
 }> {
   const sql = getSql();
   const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
-  const { points, divisor, composition } = computeIndexSeries(prices, shares, ALL_MEMBERS, {
-    baseValue: INDEX_BASE_VALUE,
-  });
+  const base = { baseValue: INDEX_BASE_VALUE };
+  const { points, divisor, composition } = computeIndexSeries(prices, shares, ALL_MEMBERS, base);
+  const portfolio = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, base);
 
   if (!points.length) {
     return { latestDate: null, latestValue: null, numCompanies: 0 };
@@ -248,7 +253,11 @@ export async function recomputeAndPersistIndex(): Promise<{
     `;
   }
 
-  const state: LiveIndexState = { divisor, composition };
+  const state: LiveIndexState = {
+    divisor,
+    composition,
+    portfolio: { divisor: portfolio.divisor, composition: portfolio.composition },
+  };
   await sql`
     INSERT INTO settings (key, value, updated_at)
     VALUES (${LIVE_STATE_KEY}, ${JSON.stringify(state)}, now())

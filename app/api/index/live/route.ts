@@ -75,18 +75,21 @@ function toPayload({
   stocks,
   indexValue,
   indexChangePct,
+  portfolioValue,
   lastUpdated,
   isStale,
 }: {
   stocks: StockData[];
   indexValue: number | null;
   indexChangePct: number | null;
+  portfolioValue: number | null;
   lastUpdated: string | null;
   isStale: boolean;
 }): LiveIndexPayload {
   return {
     indexValue,
     indexChangePct,
+    portfolioValue,
     numCompanies: stocks.length,
     lastUpdated,
     isStale,
@@ -131,6 +134,16 @@ export async function GET() {
       throw new Error("Live divisor state unavailable");
     }
 
+    const portfolioValue = liveState?.portfolio
+      ? liveIndexValue(
+          livePriceMap,
+          carryForward,
+          shares,
+          liveState.portfolio.composition,
+          liveState.portfolio.divisor
+        )
+      : null;
+
     const indexChangePct =
       snapshot && snapshot.value > 0 ? round((indexValue / snapshot.value - 1) * 100) : null;
 
@@ -139,6 +152,7 @@ export async function GET() {
         stocks,
         indexValue,
         indexChangePct,
+        portfolioValue,
         lastUpdated: new Date().toISOString(),
         isStale: false,
       }),
@@ -150,14 +164,22 @@ export async function GET() {
 
   // Fallback: serve last known data from DB
   try {
-    const [snapshot, latestPrices, basePrices, shares] = await Promise.all([
+    const [snapshot, latestPrices, basePrices, shares, liveState] = await Promise.all([
       getLatestIndexSnapshot(),
       getLatestStockPrices(),
       getEarliestPricesPerTicker(),
       getSharesMap(),
+      getLiveIndexState(),
     ]);
 
     const stocks = buildStocks(active, latestPrices, basePrices, shares);
+
+    const closes = new Map<string, number>(
+      Object.entries(latestPrices).map(([t, p]: [string, LatestStockPrice]) => [t, p.price])
+    );
+    const portfolioValue = liveState?.portfolio
+      ? liveIndexValue(closes, closes, shares, liveState.portfolio.composition, liveState.portfolio.divisor)
+      : null;
 
     const lastUpdated = snapshot?.date
       ? new Date(`${snapshot.date}T15:30:00+05:30`).toISOString()
@@ -168,6 +190,7 @@ export async function GET() {
         stocks,
         indexValue: snapshot ? round(snapshot.value) : null,
         indexChangePct: snapshot?.changePct ?? null,
+        portfolioValue,
         lastUpdated,
         isStale: true,
       }),
