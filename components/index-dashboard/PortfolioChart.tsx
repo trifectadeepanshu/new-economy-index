@@ -45,27 +45,11 @@ function buildChartData(
 
   const points = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
 
-  // Rebase both series to 1,000 at the first visible point so the benchmark
-  // comparison starts from a common base (each has a different inception date).
-  const firstNei = points.find((p) => p.nei !== null)?.nei ?? null;
-  const firstPortfolio = points.find((p) => p.portfolio !== null)?.portfolio ?? null;
-  const neiFactor = firstNei ? INDEX_BASE_VALUE / firstNei : 1;
-  const portfolioFactor = firstPortfolio ? INDEX_BASE_VALUE / firstPortfolio : 1;
-  const rebase = (v: number, factor: number) => Math.round(v * factor * 100) / 100;
-
-  for (const p of points) {
-    if (p.nei !== null) p.nei = rebase(p.nei, neiFactor);
-    if (p.portfolio !== null) p.portfolio = rebase(p.portfolio, portfolioFactor);
-  }
-
-  // Append the live "Now" point, rebased on the same factors.
+  // Each index keeps its own inception base of 1,000 (NEI from 2021, portfolio
+  // from its first IPO). Plot absolute values so the portfolio line simply
+  // begins later in the chart at whatever level it holds — no shared rebasing.
   if (liveNeiValue !== null || livePortfolioValue !== null) {
-    points.push({
-      date: "now",
-      label: "Now",
-      nei: liveNeiValue !== null ? rebase(liveNeiValue, neiFactor) : null,
-      portfolio: livePortfolioValue !== null ? rebase(livePortfolioValue, portfolioFactor) : null,
-    });
+    points.push({ date: "now", label: "Now", nei: liveNeiValue, portfolio: livePortfolioValue });
   }
 
   return points;
