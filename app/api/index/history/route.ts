@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getIndexHistory, getPortfolioIndexHistory, getSectorIndexHistory } from "@/lib/db";
+import { getIndexHistoryBundle } from "@/lib/db";
 import { format, parseISO, subDays, subMonths, subYears } from "date-fns";
 import {
   HISTORY_RANGES,
@@ -7,7 +7,6 @@ import {
   type HistoryRange,
   type IndexHistoryPayload,
 } from "@/lib/index-api";
-import { getMarketCaps } from "@/lib/market-caps";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
@@ -47,12 +46,10 @@ export async function GET(req: NextRequest) {
   const includePortfolio = req.nextUrl.searchParams.get("portfolio") === "1";
 
   try {
-    const marketCaps = await getMarketCaps();
-    const [data, sectorData, portfolioData] = await Promise.all([
-      getIndexHistory(fromDate, toDate, marketCaps),
-      includeSectors ? getSectorIndexHistory(fromDate, toDate, marketCaps) : Promise.resolve([]),
-      includePortfolio ? getPortfolioIndexHistory(fromDate, toDate, marketCaps) : Promise.resolve([]),
-    ]);
+    const { data, sectorData, portfolioData } = await getIndexHistoryBundle(fromDate, toDate, {
+      sectors: includeSectors,
+      portfolio: includePortfolio,
+    });
 
     const payload: IndexHistoryPayload = {
       range,

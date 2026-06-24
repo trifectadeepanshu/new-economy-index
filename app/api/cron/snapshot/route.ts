@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COMPANIES, INDEX_BASE_VALUE, type Company } from "@/lib/companies";
+import { COMPANIES, type Company } from "@/lib/companies";
 import { fetchAllQuotes, type QuoteResult } from "@/lib/yahoo-finance";
 import {
   ensureSchema,
-  getEarliestPricesPerTicker,
+  recomputeAndPersistIndex,
   type StockSnapshotInput,
-  upsertIndexSnapshot,
   upsertStockSnapshotsBatch,
 } from "@/lib/db";
-import { round, weightedAverage } from "@/lib/index-math";
+import { round } from "@/lib/index-math";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
@@ -44,33 +43,6 @@ function toStockRow(
     closePrice: quote.price,
     changePct: quote.changePct,
   };
-}
-
-function getWeightedSet(
-  companies: Company[],
-  currentPrices: Record<string, number>,
-  basePrices: Record<string, number>,
-  marketCaps: Record<string, number>,
-  changePcts: Record<string, number | null>
-) {
-  const ratios: number[] = [];
-  const changes: number[] = [];
-  const weights: number[] = [];
-  for (const company of companies) {
-    const currentPrice = currentPrices[company.ticker];
-    const basePrice = basePrices[company.ticker];
-    const cap = marketCaps[company.ticker];
-    const change = changePcts[company.ticker];
-    if (currentPrice == null || !basePrice || !cap || cap <= 0) continue;
-    ratios.push(currentPrice / basePrice);
-    weights.push(cap);
-    if (typeof change === "number" && Number.isFinite(change)) {
-      changes.push(change);
-    } else {
-      changes.push(NaN);
-    }
-  }
-  return { ratios, weights, changes };
 }
 
 export async function GET(req: NextRequest) {
@@ -111,40 +83,17 @@ async function runSnapshot() {
 
   await upsertStockSnapshotsBatch(stockRows);
 
-  const basePrices = await getEarliestPricesPerTicker();
-  const currentPrices = Object.fromEntries(stockRows.map((r) => [r.ticker, r.closePrice]));
-  const changePcts: Record<string, number | null> = Object.fromEntries(
-    stockRows.map((r) => [r.ticker, r.changePct])
-  );
-  const marketCaps: Record<string, number> = {};
-  for (const q of quotes) {
-    if (q.marketCap != null && q.marketCap > 0) marketCaps[q.ticker] = q.marketCap;
-  }
-
-  const { ratios, weights, changes } = getWeightedSet(
-    active,
-    currentPrices,
-    basePrices,
-    marketCaps,
-    changePcts
-  );
-
-  const weightedRatio = weightedAverage(ratios, weights);
-  if (weightedRatio === null) {
+  // Recompute the full market-cap-weighted divisor index from all stored
+  // closes (corrects history) and persist the live divisor for intraday use.
+  const result = await recomputeAndPersistIndex();
+  if (result.latestValue === null) {
     return NextResponse.json({ message: "No eligible companies", date: today });
   }
 
-  const indexValue = INDEX_BASE_VALUE * weightedRatio;
-  const changeWeights = weights.filter((_, i) => Number.isFinite(changes[i]));
-  const changeValues = changes.filter((c) => Number.isFinite(c));
-  const changePct = weightedAverage(changeValues, changeWeights);
-
-  await upsertIndexSnapshot(today, indexValue, changePct, ratios.length);
-
   return NextResponse.json({
     message: "Snapshot saved",
-    date: today,
-    indexValue: round(indexValue),
-    numCompanies: ratios.length,
+    date: result.latestDate,
+    indexValue: round(result.latestValue),
+    numCompanies: result.numCompanies,
   });
 }

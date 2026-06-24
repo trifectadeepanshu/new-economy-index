@@ -1,16 +1,33 @@
 import { neon } from "@neondatabase/serverless";
 import { COMPANIES, INDEX_BASE_VALUE, PORTFOLIO_TICKERS, SECTORS, type Sector } from "@/lib/companies";
 import type { IndexHistoryPoint, SectorHistoryPoint } from "@/lib/index-api";
-import { priceRatio, round, weightedAverage } from "@/lib/index-math";
-import type { MarketCapMap } from "@/lib/market-caps";
+import { round } from "@/lib/index-math";
+import {
+  computeIndexSeries,
+  type DailyPrices,
+  type EngineMember,
+  type IndexPoint,
+} from "@/lib/index-engine";
 
 const STOCK_BATCH_SIZE = 500;
-const COMPANIES_BY_SECTOR = new Map(
+const LIVE_STATE_KEY = "live_index_state";
+
+const ALL_MEMBERS: EngineMember[] = COMPANIES.map((c) => ({
+  ticker: c.ticker,
+  listedDate: c.listedDate,
+}));
+const MEMBERS_BY_SECTOR = new Map<Sector, EngineMember[]>(
   SECTORS.map((sector) => [
     sector,
-    COMPANIES.filter((company) => company.sector === sector),
+    COMPANIES.filter((c) => c.sector === sector).map((c) => ({
+      ticker: c.ticker,
+      listedDate: c.listedDate,
+    })),
   ])
 );
+const PORTFOLIO_MEMBERS: EngineMember[] = COMPANIES.filter((c) =>
+  PORTFOLIO_TICKERS.has(c.ticker)
+).map((c) => ({ ticker: c.ticker, listedDate: c.listedDate }));
 
 type DbRow = Record<string, unknown>;
 
@@ -32,6 +49,11 @@ export type LatestStockPrice = {
   changePct: number | null;
 };
 
+export type LiveIndexState = {
+  divisor: number;
+  composition: string[];
+};
+
 function getSql() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL env var is not set");
@@ -50,63 +72,16 @@ function toTicker(value: unknown) {
   return String(value);
 }
 
-function setNestedPrice(
-  map: Map<string, Map<string, number>>,
-  date: string,
-  ticker: string,
-  price: number
-) {
-  const prices = map.get(date) ?? new Map<string, number>();
-  prices.set(ticker, price);
-  map.set(date, prices);
-}
-
-function stockPricesByDate(rows: DbRow[]) {
-  const pricesByDate = new Map<string, Map<string, number>>();
-
-  for (const row of rows) {
-    setNestedPrice(
-      pricesByDate,
-      String(row.date),
-      toTicker(row.ticker),
-      toNumber(row.close_price)
-    );
-  }
-
-  return pricesByDate;
-}
-
-type WeightedSet = { ratios: number[]; weights: number[] };
-
-function collectWeighted(
-  companies: { ticker: string; listedDate: string }[],
-  date: string,
-  prices: Map<string, number>,
-  basePrices: Record<string, number>,
-  marketCaps: MarketCapMap
-): WeightedSet {
-  const ratios: number[] = [];
-  const weights: number[] = [];
-  for (const company of companies) {
-    if (company.listedDate > date) continue;
-    const ratio = priceRatio(
-      prices.get(company.ticker) ?? null,
-      basePrices[company.ticker] ?? null
-    );
-    const cap = marketCaps[company.ticker];
-    if (ratio === null || !cap || cap <= 0) continue;
-    ratios.push(ratio);
-    weights.push(cap);
-  }
-  return { ratios, weights };
-}
+// ---------------------------------------------------------------------------
+// Schema
+// ---------------------------------------------------------------------------
 
 export async function ensureSchema() {
   const sql = getSql();
   await sql`
     CREATE TABLE IF NOT EXISTS index_snapshots (
       date          DATE PRIMARY KEY,
-      value         DECIMAL(10, 4) NOT NULL,
+      value         DECIMAL(12, 4) NOT NULL,
       change_pct    DECIMAL(8, 4),
       num_companies INTEGER NOT NULL
     )
@@ -124,94 +99,183 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_stock_ticker_date
       ON stock_snapshots(ticker, date DESC)
   `;
-}
-
-
-export async function upsertIndexSnapshot(
-  date: string,
-  value: number,
-  changePct: number | null,
-  numCompanies: number
-) {
-  const sql = getSql();
   await sql`
-    INSERT INTO index_snapshots (date, value, change_pct, num_companies)
-    VALUES (${date}, ${value}, ${changePct}, ${numCompanies})
-    ON CONFLICT (date) DO UPDATE
-      SET value = EXCLUDED.value,
-          change_pct = EXCLUDED.change_pct,
-          num_companies = EXCLUDED.num_companies
+    CREATE TABLE IF NOT EXISTS share_counts (
+      ticker       VARCHAR(30) NOT NULL,
+      quarter_end  DATE NOT NULL,
+      shares       NUMERIC(20, 0) NOT NULL,
+      source       VARCHAR(20) NOT NULL,
+      PRIMARY KEY (ticker, quarter_end)
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS settings (
+      key        VARCHAR(64) PRIMARY KEY,
+      value      TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
   `;
 }
 
-export async function getIndexHistory(
-  fromDate: string,
-  toDate: string,
-  marketCaps: MarketCapMap
-): Promise<IndexHistoryPoint[]> {
+// ---------------------------------------------------------------------------
+// Engine inputs
+// ---------------------------------------------------------------------------
+
+/** Load every stored daily close as date -> (ticker -> close). */
+async function loadAllPrices(): Promise<DailyPrices> {
   const sql = getSql();
-  const [rows, basePrices] = await Promise.all([
-    sql`
-      SELECT date::text, ticker, close_price::float
-      FROM stock_snapshots
-      WHERE date >= ${fromDate} AND date <= ${toDate}
-      ORDER BY date ASC
-    `,
-    getEarliestPricesPerTicker(),
-  ]);
+  const rows = (await sql`
+    SELECT date::text AS date, ticker, close_price::float AS close
+    FROM stock_snapshots
+    ORDER BY date ASC
+  `) as DbRow[];
 
-  const pricesByDate = stockPricesByDate(rows);
-  const points: IndexHistoryPoint[] = [];
-
-  for (const [date, prices] of pricesByDate) {
-    const { ratios, weights } = collectWeighted(COMPANIES, date, prices, basePrices, marketCaps);
-    const weighted = weightedAverage(ratios, weights);
-    if (weighted === null) continue;
-    points.push({ date, value: round(INDEX_BASE_VALUE * weighted, 4) });
+  const prices: DailyPrices = new Map();
+  for (const row of rows) {
+    const date = String(row.date);
+    let day = prices.get(date);
+    if (!day) prices.set(date, (day = new Map()));
+    day.set(toTicker(row.ticker), toNumber(row.close));
   }
-
-  return points;
+  return prices;
 }
 
-export type SectorIndexHistoryPoint = SectorHistoryPoint;
+/** Constant point-in-time share count per ticker (latest stored quarter). */
+export async function getSharesMap(): Promise<Map<string, number>> {
+  const sql = getSql();
+  const rows = (await sql`
+    SELECT DISTINCT ON (ticker) ticker, shares::float AS shares
+    FROM share_counts
+    ORDER BY ticker, quarter_end DESC
+  `) as DbRow[];
+  return new Map(rows.map((r) => [toTicker(r.ticker), toNumber(r.shares)]));
+}
 
-export async function getSectorIndexHistory(
+function slice(points: IndexPoint[], fromDate: string, toDate: string): IndexHistoryPoint[] {
+  return points
+    .filter((p) => p.date >= fromDate && p.date <= toDate)
+    .map((p) => ({ date: p.date, value: p.value }));
+}
+
+// ---------------------------------------------------------------------------
+// History (divisor index — computed from inception, then sliced)
+// ---------------------------------------------------------------------------
+
+export type IndexHistoryBundle = {
+  data: IndexHistoryPoint[];
+  sectorData: SectorHistoryPoint[];
+  portfolioData: IndexHistoryPoint[];
+};
+
+export async function getIndexHistoryBundle(
   fromDate: string,
   toDate: string,
-  marketCaps: MarketCapMap
-): Promise<SectorIndexHistoryPoint[]> {
-  const sql = getSql();
-  const [rows, basePrices] = await Promise.all([
-    sql`
-      SELECT date::text, ticker, close_price::float
-      FROM stock_snapshots
-      WHERE date >= ${fromDate} AND date <= ${toDate}
-      ORDER BY date ASC
-    `,
-    getEarliestPricesPerTicker(),
-  ]);
+  opts: { sectors: boolean; portfolio: boolean }
+): Promise<IndexHistoryBundle> {
+  const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
+  const base = { baseValue: INDEX_BASE_VALUE };
 
-  const pricesByDate = stockPricesByDate(rows);
-  const points: SectorIndexHistoryPoint[] = [];
+  const main = computeIndexSeries(prices, shares, ALL_MEMBERS, base);
+  const data = slice(main.points, fromDate, toDate);
 
-  for (const [date, prices] of pricesByDate) {
+  const sectorData: SectorHistoryPoint[] = [];
+  if (opts.sectors) {
     for (const sector of SECTORS) {
-      const companies = COMPANIES_BY_SECTOR.get(sector) ?? [];
-      const { ratios, weights } = collectWeighted(companies, date, prices, basePrices, marketCaps);
-      const weighted = weightedAverage(ratios, weights);
-      if (weighted === null) continue;
-
-      points.push({
-        date,
-        sector,
-        value: round(INDEX_BASE_VALUE * weighted, 4),
-        numCompanies: ratios.length,
-      });
+      const members = MEMBERS_BY_SECTOR.get(sector) ?? [];
+      const result = computeIndexSeries(prices, shares, members, base);
+      for (const p of result.points) {
+        if (p.date < fromDate || p.date > toDate) continue;
+        sectorData.push({ date: p.date, sector, value: p.value, numCompanies: p.numCompanies });
+      }
     }
   }
 
-  return points;
+  let portfolioData: IndexHistoryPoint[] = [];
+  if (opts.portfolio) {
+    const result = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, base);
+    portfolioData = slice(result.points, fromDate, toDate);
+  }
+
+  return { data, sectorData, portfolioData };
 }
+
+// ---------------------------------------------------------------------------
+// Recompute + persist (cron / backfill)
+// ---------------------------------------------------------------------------
+
+/**
+ * Recompute the full divisor index from all stored prices and persist:
+ *   - the complete daily series into index_snapshots (corrects history too)
+ *   - the live divisor + composition into settings (for intraday live value)
+ */
+export async function recomputeAndPersistIndex(): Promise<{
+  latestDate: string | null;
+  latestValue: number | null;
+  numCompanies: number;
+}> {
+  const sql = getSql();
+  const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
+  const { points, divisor, composition } = computeIndexSeries(prices, shares, ALL_MEMBERS, {
+    baseValue: INDEX_BASE_VALUE,
+  });
+
+  if (!points.length) {
+    return { latestDate: null, latestValue: null, numCompanies: 0 };
+  }
+
+  // Daily change_pct = day-over-day index return.
+  const rows = points.map((p, i) => ({
+    date: p.date,
+    value: p.value,
+    changePct: i > 0 ? round((p.value / points[i - 1].value - 1) * 100, 4) : null,
+    num: p.numCompanies,
+  }));
+
+  for (let i = 0; i < rows.length; i += STOCK_BATCH_SIZE) {
+    const chunk = rows.slice(i, i + STOCK_BATCH_SIZE);
+    await sql`
+      INSERT INTO index_snapshots (date, value, change_pct, num_companies)
+      SELECT * FROM unnest(
+        ${chunk.map((r) => r.date)}::date[],
+        ${chunk.map((r) => r.value)}::decimal[],
+        ${chunk.map((r) => r.changePct)}::decimal[],
+        ${chunk.map((r) => r.num)}::integer[]
+      ) AS t(date, value, change_pct, num_companies)
+      ON CONFLICT (date) DO UPDATE
+        SET value = EXCLUDED.value,
+            change_pct = EXCLUDED.change_pct,
+            num_companies = EXCLUDED.num_companies
+    `;
+  }
+
+  const state: LiveIndexState = { divisor, composition };
+  await sql`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES (${LIVE_STATE_KEY}, ${JSON.stringify(state)}, now())
+    ON CONFLICT (key) DO UPDATE
+      SET value = EXCLUDED.value, updated_at = now()
+  `;
+
+  const last = points[points.length - 1];
+  return { latestDate: last.date, latestValue: last.value, numCompanies: last.numCompanies };
+}
+
+export async function getLiveIndexState(): Promise<LiveIndexState | null> {
+  const sql = getSql();
+  const rows = (await sql`SELECT value FROM settings WHERE key = ${LIVE_STATE_KEY}`) as DbRow[];
+  if (!rows.length) return null;
+  try {
+    const parsed = JSON.parse(String(rows[0].value)) as LiveIndexState;
+    if (typeof parsed.divisor === "number" && Array.isArray(parsed.composition)) return parsed;
+  } catch {
+    /* ignore malformed state */
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Snapshots (latest + writes)
+// ---------------------------------------------------------------------------
 
 export async function getLatestIndexSnapshot(): Promise<LatestIndexSnapshot | null> {
   const sql = getSql();
@@ -223,28 +287,11 @@ export async function getLatestIndexSnapshot(): Promise<LatestIndexSnapshot | nu
   `;
   if (!rows.length) return null;
   const row = rows[0];
-
   return {
     date: String(row.date),
     value: toNumber(row.value),
     changePct: toNullableNumber(row.change_pct),
   };
-}
-
-export async function upsertStockSnapshot(
-  date: string,
-  ticker: string,
-  closePrice: number,
-  changePct: number | null
-) {
-  const sql = getSql();
-  await sql`
-    INSERT INTO stock_snapshots (date, ticker, close_price, change_pct)
-    VALUES (${date}, ${ticker}, ${closePrice}, ${changePct})
-    ON CONFLICT (date, ticker) DO UPDATE
-      SET close_price = EXCLUDED.close_price,
-          change_pct = EXCLUDED.change_pct
-  `;
 }
 
 export async function upsertStockSnapshotsBatch(rows: StockSnapshotInput[]) {
@@ -253,18 +300,13 @@ export async function upsertStockSnapshotsBatch(rows: StockSnapshotInput[]) {
 
   for (let i = 0; i < rows.length; i += STOCK_BATCH_SIZE) {
     const chunk = rows.slice(i, i + STOCK_BATCH_SIZE);
-    const dates = chunk.map((r) => r.date);
-    const tickers = chunk.map((r) => r.ticker);
-    const prices = chunk.map((r) => r.closePrice);
-    const changes = chunk.map((r) => r.changePct);
-
     await sql`
       INSERT INTO stock_snapshots (date, ticker, close_price, change_pct)
       SELECT * FROM unnest(
-        ${dates}::date[],
-        ${tickers}::varchar[],
-        ${prices}::decimal[],
-        ${changes}::decimal[]
+        ${chunk.map((r) => r.date)}::date[],
+        ${chunk.map((r) => r.ticker)}::varchar[],
+        ${chunk.map((r) => r.closePrice)}::decimal[],
+        ${chunk.map((r) => r.changePct)}::decimal[]
       ) AS t(date, ticker, close_price, change_pct)
       ON CONFLICT (date, ticker) DO UPDATE
         SET close_price = EXCLUDED.close_price,
@@ -288,49 +330,10 @@ export async function getLatestStockPrices(): Promise<Record<string, LatestStock
       changePct: toNullableNumber(row.change_pct),
     };
   }
-
   return prices;
 }
 
-export async function getPortfolioIndexHistory(
-  fromDate: string,
-  toDate: string,
-  marketCaps: MarketCapMap
-): Promise<IndexHistoryPoint[]> {
-  const sql = getSql();
-  const tickers = [...PORTFOLIO_TICKERS];
-  const portfolioCompanies = COMPANIES.filter((c) => PORTFOLIO_TICKERS.has(c.ticker));
-
-  const [rows, basePrices] = await Promise.all([
-    sql`
-      SELECT date::text, ticker, close_price::float
-      FROM stock_snapshots
-      WHERE ticker = ANY(${tickers}::varchar[])
-        AND date >= ${fromDate} AND date <= ${toDate}
-      ORDER BY date ASC
-    `,
-    getEarliestPricesPerTicker(),
-  ]);
-
-  const pricesByDate = stockPricesByDate(rows);
-  const points: IndexHistoryPoint[] = [];
-
-  for (const [date, prices] of pricesByDate) {
-    const { ratios, weights } = collectWeighted(
-      portfolioCompanies,
-      date,
-      prices,
-      basePrices,
-      marketCaps
-    );
-    const weighted = weightedAverage(ratios, weights);
-    if (weighted === null) continue;
-    points.push({ date, value: round(INDEX_BASE_VALUE * weighted, 4) });
-  }
-
-  return points;
-}
-
+/** Earliest stored close per ticker — used for per-stock "since inception" display. */
 export async function getEarliestPricesPerTicker(): Promise<Record<string, number>> {
   const sql = getSql();
   const rows = await sql`
@@ -343,6 +346,5 @@ export async function getEarliestPricesPerTicker(): Promise<Record<string, numbe
   for (const row of rows) {
     prices[toTicker(row.ticker)] = toNumber(row.close_price);
   }
-
   return prices;
 }
