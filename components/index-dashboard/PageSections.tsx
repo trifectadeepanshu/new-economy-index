@@ -232,7 +232,6 @@ export function PortfolioSection({
   indexValue,
   portfolioValue,
 }: {
-  stocks: StockData[];
   indexValue: number | null;
   portfolioValue: number | null;
 }) {

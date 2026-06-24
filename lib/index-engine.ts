@@ -109,8 +109,13 @@ export function computeIndexSeries(
     const today = prices.get(date)!;
     for (const [ticker, close] of today) lastClose.set(ticker, close);
 
-    // Eligible = listed on/before today and has a (carry-forward) price.
-    const eligible = members.filter((m) => isIncluded(m, date) && lastClose.has(m.ticker));
+    // Eligible = listed on/before today, with both a (carry-forward) price and
+    // a known share count. Requiring shares ensures a company only enters once it
+    // can actually contribute market cap (otherwise it would inflate the count,
+    // contribute nothing, and never re-link once shares later arrive).
+    const eligible = members.filter(
+      (m) => isIncluded(m, date) && lastClose.has(m.ticker) && shares.has(m.ticker)
+    );
     const signature = eligible.map((m) => m.ticker).sort().join(",");
 
     // Re-link the divisor whenever the composition changes (new listings).
