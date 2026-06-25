@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIndexHistoryBundle } from "@/lib/db";
+import { INDEX_BASE_DATE } from "@/lib/companies";
 import { format, parseISO, subDays, subMonths, subYears } from "date-fns";
 import {
   HISTORY_RANGES,
@@ -25,7 +26,7 @@ function getFromDate(range: HistoryRange): string {
     case "1Y":
       return format(subYears(today, 1), "yyyy-MM-dd");
     case "ALL":
-      return "2021-03-01";
+      return INDEX_BASE_DATE;
   }
 }
 

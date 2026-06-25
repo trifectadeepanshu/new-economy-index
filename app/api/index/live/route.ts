@@ -12,8 +12,15 @@ import {
 } from "@/lib/db";
 import type { LiveIndexPayload, StockData } from "@/lib/index-api";
 import { priceRatio, round } from "@/lib/index-math";
-import { liveIndexValue } from "@/lib/index-engine";
+import { liveIndexValue, type QuarterlySharesMap } from "@/lib/index-engine";
 import { getISTDate } from "@/lib/market-hours";
+
+/** Latest known point-in-time share count per ticker (for market-cap display). */
+function latestShares(shares: QuarterlySharesMap): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const [ticker, pts] of shares) if (pts.length) out.set(ticker, pts[pts.length - 1].shares);
+  return out;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +83,7 @@ function toPayload({
   indexValue,
   indexChangePct,
   portfolioValue,
+  numCompanies,
   lastUpdated,
   isStale,
 }: {
@@ -83,6 +91,7 @@ function toPayload({
   indexValue: number | null;
   indexChangePct: number | null;
   portfolioValue: number | null;
+  numCompanies: number;
   lastUpdated: string | null;
   isStale: boolean;
 }): LiveIndexPayload {
@@ -90,7 +99,7 @@ function toPayload({
     indexValue,
     indexChangePct,
     portfolioValue,
-    numCompanies: stocks.length,
+    numCompanies,
     lastUpdated,
     isStale,
     totalMarketCap: sumMarketCap(stocks),
@@ -116,7 +125,7 @@ export async function GET() {
     ]);
 
     const livePrices = quotePricesByTicker(quotes);
-    const stocks = buildStocks(active, livePrices, basePrices, shares);
+    const stocks = buildStocks(active, livePrices, basePrices, latestShares(shares));
 
     // Extend the divisor chain with live prices, carrying forward last close.
     const livePriceMap = new Map<string, number>();
@@ -127,7 +136,7 @@ export async function GET() {
 
     const indexValue =
       liveState != null
-        ? liveIndexValue(livePriceMap, carryForward, shares, liveState.composition, liveState.divisor)
+        ? liveIndexValue(livePriceMap, carryForward, liveState.members, liveState.divisor)
         : null;
 
     if (indexValue === null) {
@@ -135,13 +144,7 @@ export async function GET() {
     }
 
     const portfolioValue = liveState?.portfolio
-      ? liveIndexValue(
-          livePriceMap,
-          carryForward,
-          shares,
-          liveState.portfolio.composition,
-          liveState.portfolio.divisor
-        )
+      ? liveIndexValue(livePriceMap, carryForward, liveState.portfolio.members, liveState.portfolio.divisor)
       : null;
 
     const indexChangePct =
@@ -153,6 +156,7 @@ export async function GET() {
         indexValue,
         indexChangePct,
         portfolioValue,
+        numCompanies: liveState?.members.length ?? stocks.length,
         lastUpdated: new Date().toISOString(),
         isStale: false,
       }),
@@ -172,13 +176,13 @@ export async function GET() {
       getLiveIndexState(),
     ]);
 
-    const stocks = buildStocks(active, latestPrices, basePrices, shares);
+    const stocks = buildStocks(active, latestPrices, basePrices, latestShares(shares));
 
     const closes = new Map<string, number>(
       Object.entries(latestPrices).map(([t, p]: [string, LatestStockPrice]) => [t, p.price])
     );
     const portfolioValue = liveState?.portfolio
-      ? liveIndexValue(closes, closes, shares, liveState.portfolio.composition, liveState.portfolio.divisor)
+      ? liveIndexValue(closes, closes, liveState.portfolio.members, liveState.portfolio.divisor)
       : null;
 
     const lastUpdated = snapshot?.date
@@ -191,6 +195,7 @@ export async function GET() {
         indexValue: snapshot ? round(snapshot.value) : null,
         indexChangePct: snapshot?.changePct ?? null,
         portfolioValue,
+        numCompanies: liveState?.members.length ?? stocks.length,
         lastUpdated,
         isStale: true,
       }),

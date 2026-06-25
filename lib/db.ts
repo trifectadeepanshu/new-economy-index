@@ -1,5 +1,12 @@
 import { neon } from "@neondatabase/serverless";
-import { COMPANIES, INDEX_BASE_VALUE, PORTFOLIO_TICKERS, SECTORS, type Sector } from "@/lib/companies";
+import {
+  COMPANIES,
+  INDEX_BASE_DATE,
+  INDEX_BASE_VALUE,
+  PORTFOLIO_TICKERS,
+  SECTORS,
+  type Sector,
+} from "@/lib/companies";
 import type { IndexHistoryPoint, SectorHistoryPoint } from "@/lib/index-api";
 import { round } from "@/lib/index-math";
 import {
@@ -7,10 +14,16 @@ import {
   type DailyPrices,
   type EngineMember,
   type IndexPoint,
+  type LiveMember,
+  type QuarterlySharesMap,
 } from "@/lib/index-engine";
 
 const STOCK_BATCH_SIZE = 500;
 const LIVE_STATE_KEY = "live_index_state";
+
+// Index includes the top 50 by market cap each quarter; sub-indices use all members.
+const INDEX_TOP_N = 50;
+const SUBINDEX_TOP_N = Number.POSITIVE_INFINITY;
 
 const ALL_MEMBERS: EngineMember[] = COMPANIES.map((c) => ({
   ticker: c.ticker,
@@ -51,7 +64,7 @@ export type LatestStockPrice = {
 
 export type DivisorState = {
   divisor: number;
-  composition: string[];
+  members: LiveMember[];
 };
 
 export type LiveIndexState = DivisorState & {
@@ -106,11 +119,11 @@ export async function ensureSchema() {
   `;
   await sql`
     CREATE TABLE IF NOT EXISTS share_counts (
-      ticker       VARCHAR(30) NOT NULL,
-      quarter_end  DATE NOT NULL,
-      shares       NUMERIC(20, 0) NOT NULL,
-      source       VARCHAR(20) NOT NULL,
-      PRIMARY KEY (ticker, quarter_end)
+      ticker  VARCHAR(30) NOT NULL,
+      as_of   DATE NOT NULL,
+      shares  NUMERIC(20, 0) NOT NULL,
+      source  VARCHAR(24) NOT NULL,
+      PRIMARY KEY (ticker, as_of)
     )
   `;
   await sql`
@@ -145,15 +158,22 @@ async function loadAllPrices(): Promise<DailyPrices> {
   return prices;
 }
 
-/** Constant point-in-time share count per ticker (latest stored quarter). */
-export async function getSharesMap(): Promise<Map<string, number>> {
+/** Point-in-time share-count history per ticker (sorted ascending by asOf). */
+export async function getSharesMap(): Promise<QuarterlySharesMap> {
   const sql = getSql();
   const rows = (await sql`
-    SELECT DISTINCT ON (ticker) ticker, shares::float AS shares
+    SELECT ticker, as_of::text AS as_of, shares::float AS shares
     FROM share_counts
-    ORDER BY ticker, quarter_end DESC
+    ORDER BY ticker, as_of ASC
   `) as DbRow[];
-  return new Map(rows.map((r) => [toTicker(r.ticker), toNumber(r.shares)]));
+  const map: QuarterlySharesMap = new Map();
+  for (const r of rows) {
+    const ticker = toTicker(r.ticker);
+    let arr = map.get(ticker);
+    if (!arr) map.set(ticker, (arr = []));
+    arr.push({ asOf: String(r.as_of), shares: toNumber(r.shares) });
+  }
+  return map;
 }
 
 function slice(points: IndexPoint[], fromDate: string, toDate: string): IndexHistoryPoint[] {
@@ -178,16 +198,17 @@ export async function getIndexHistoryBundle(
   opts: { sectors: boolean; portfolio: boolean }
 ): Promise<IndexHistoryBundle> {
   const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
-  const base = { baseValue: INDEX_BASE_VALUE };
+  const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N };
+  const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N };
 
-  const main = computeIndexSeries(prices, shares, ALL_MEMBERS, base);
+  const main = computeIndexSeries(prices, shares, ALL_MEMBERS, indexOpts);
   const data = slice(main.points, fromDate, toDate);
 
   const sectorData: SectorHistoryPoint[] = [];
   if (opts.sectors) {
     for (const sector of SECTORS) {
       const members = MEMBERS_BY_SECTOR.get(sector) ?? [];
-      const result = computeIndexSeries(prices, shares, members, base);
+      const result = computeIndexSeries(prices, shares, members, subOpts);
       for (const p of result.points) {
         if (p.date < fromDate || p.date > toDate) continue;
         sectorData.push({ date: p.date, sector, value: p.value, numCompanies: p.numCompanies });
@@ -197,7 +218,7 @@ export async function getIndexHistoryBundle(
 
   let portfolioData: IndexHistoryPoint[] = [];
   if (opts.portfolio) {
-    const result = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, base);
+    const result = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, subOpts);
     portfolioData = slice(result.points, fromDate, toDate);
   }
 
@@ -220,9 +241,10 @@ export async function recomputeAndPersistIndex(): Promise<{
 }> {
   const sql = getSql();
   const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
-  const base = { baseValue: INDEX_BASE_VALUE };
-  const { points, divisor, composition } = computeIndexSeries(prices, shares, ALL_MEMBERS, base);
-  const portfolio = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, base);
+  const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N };
+  const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N };
+  const { points, divisor, members } = computeIndexSeries(prices, shares, ALL_MEMBERS, indexOpts);
+  const portfolio = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, subOpts);
 
   if (!points.length) {
     return { latestDate: null, latestValue: null, numCompanies: 0 };
@@ -255,8 +277,8 @@ export async function recomputeAndPersistIndex(): Promise<{
 
   const state: LiveIndexState = {
     divisor,
-    composition,
-    portfolio: { divisor: portfolio.divisor, composition: portfolio.composition },
+    members,
+    portfolio: { divisor: portfolio.divisor, members: portfolio.members },
   };
   await sql`
     INSERT INTO settings (key, value, updated_at)
@@ -275,7 +297,7 @@ export async function getLiveIndexState(): Promise<LiveIndexState | null> {
   if (!rows.length) return null;
   try {
     const parsed = JSON.parse(String(rows[0].value)) as LiveIndexState;
-    if (typeof parsed.divisor === "number" && Array.isArray(parsed.composition)) return parsed;
+    if (typeof parsed.divisor === "number" && Array.isArray(parsed.members)) return parsed;
   } catch {
     /* ignore malformed state */
   }
