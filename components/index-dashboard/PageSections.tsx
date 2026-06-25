@@ -317,7 +317,7 @@ export function PortfolioSection({
 
           </div>
           <p className="nei-portfolio-footnote">
-            * Both lines are market-cap weighted, each based at 1,000 at its own inception (NEI from March 2021; the portfolio from its first IPO), so the portfolio line begins later in the chart. New constituents enter via a divisor adjustment, which keeps each index continuous on listing day.
+            * Both lines are market-cap weighted and indexed to 1,000 at the start of the displayed range, so they share a common base. The full NEI is a top-50 index based at 1,000 on 31 Dec 2020; the portfolio sub-index covers the 10 Trifecta names from their first IPO. Constituents are reconstituted quarterly and enter via a divisor adjustment that keeps each index continuous.
           </p>
         </div>
       </TickFrame>
