@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:capiq": "tsx scripts/import-capiq-workbook.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

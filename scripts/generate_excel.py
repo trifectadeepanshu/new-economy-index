@@ -1,21 +1,17 @@
 """
-Generate the NEI Excel workbook with three sheets, mirroring the live
-market-cap-weighted, divisor-based index engine (lib/index-engine.ts):
+Deprecated.
 
-  1. NEI Constituents   — latest market cap, shares and weight per company
-  2. NEI Index History  — daily divisor-index level since inception
-  3. Portfolio Sub-Index — divisor sub-index for the 10 portfolio companies
+This script used an older listing-date composition model and an old constituent
+universe. It is intentionally stopped before execution so it cannot generate a
+workbook that disagrees with the app's quarterly top-50 index engine.
 
-Methodology (identical to the dashboard):
-  index(t) = Σ(close_i × shares_i) / divisor
-  - shares are constant point-in-time counts from the share_counts table
-  - each company joins on its listing day; the divisor is chain-linked on every
-    composition change so the level never jumps when a constituent is added
-  - each index is based at 1,000 at its own inception
-
-The COMPANIES list below must mirror lib/companies.ts. Run after the
-share_counts table is populated (scripts/backfill-shares.ts).
+Use `npm run import:capiq -- --workbook "/path/to/workbook.xlsx"` to load the
+canonical CapIQ workbook cache into the database and recompute the app index.
 """
+
+raise SystemExit(
+    "scripts/generate_excel.py is deprecated; use scripts/import-capiq-workbook.ts instead."
+)
 
 import os
 import openpyxl

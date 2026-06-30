@@ -28,6 +28,13 @@ Backfill historical snapshots:
 npx tsx scripts/backfill.ts
 ```
 
+Import the canonical CapIQ workbook cache and recompute the index:
+
+```bash
+npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_v2 (1).xlsx"
+npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_v2 (1).xlsx" --apply
+```
+
 Vercel runs `/api/cron/snapshot` on market weekdays via `vercel.json`.
 
 ## Checks
