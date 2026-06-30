@@ -124,8 +124,19 @@ export async function GET() {
       getLatestStockPrices(),
     ]);
 
+    // Overlay live Upstox quotes on the latest stored closes so every company
+    // (including those without an Upstox instrument key) shows price data.
     const livePrices = quotePricesByTicker(quotes);
-    const stocks = buildStocks(active, livePrices, basePrices, latestShares(shares));
+    const merged: Record<string, PricePoint> = {};
+    for (const c of active) {
+      const live = livePrices[c.ticker];
+      const close = latestClose[c.ticker];
+      merged[c.ticker] = {
+        price: live?.price ?? close?.price ?? null,
+        changePct: live?.changePct ?? close?.changePct ?? null,
+      };
+    }
+    const stocks = buildStocks(active, merged, basePrices, latestShares(shares));
 
     // Extend the divisor chain with live prices, carrying forward last close.
     const livePriceMap = new Map<string, number>();
