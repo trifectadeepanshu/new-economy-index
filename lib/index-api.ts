@@ -25,6 +25,8 @@ export type LiveIndexPayload = {
   lastUpdated: string | null;
   isStale: boolean;
   totalMarketCap: number | null;
+  /** Live USD/INR rate used to convert all monetary values. */
+  usdInr: number | null;
   stocks: LiveStockPayload[];
 };
 

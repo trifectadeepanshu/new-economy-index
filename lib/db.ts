@@ -9,6 +9,7 @@ import {
 } from "@/lib/companies";
 import type { IndexHistoryPoint, SectorHistoryPoint } from "@/lib/index-api";
 import { round } from "@/lib/index-math";
+import { getFxRates, rateAsOf, toUsdIndex, type FxRates } from "@/lib/fx";
 import {
   computeIndexSeries,
   type DailyPrices,
@@ -133,6 +134,12 @@ export async function ensureSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS fx_rates (
+      date DATE PRIMARY KEY,
+      rate NUMERIC(10, 4) NOT NULL
+    )
+  `;
 }
 
 // ---------------------------------------------------------------------------
@@ -176,10 +183,14 @@ export async function getSharesMap(): Promise<QuarterlySharesMap> {
   return map;
 }
 
-function slice(points: IndexPoint[], fromDate: string, toDate: string): IndexHistoryPoint[] {
+/** Slice to [from, to] and convert each INR level to USD via that date's rate. */
+function slice(points: IndexPoint[], fromDate: string, toDate: string, fx: FxRates): IndexHistoryPoint[] {
   return points
     .filter((p) => p.date >= fromDate && p.date <= toDate)
-    .map((p) => ({ date: p.date, value: p.value }));
+    .map((p) => ({
+      date: p.date,
+      value: round(toUsdIndex(p.value, rateAsOf(fx.points, p.date) ?? fx.baseRate, fx.baseRate), 4),
+    }));
 }
 
 // ---------------------------------------------------------------------------
@@ -197,12 +208,12 @@ export async function getIndexHistoryBundle(
   toDate: string,
   opts: { sectors: boolean; portfolio: boolean }
 ): Promise<IndexHistoryBundle> {
-  const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
+  const [prices, shares, fx] = await Promise.all([loadAllPrices(), getSharesMap(), getFxRates()]);
   const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N };
   const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N };
 
   const main = computeIndexSeries(prices, shares, ALL_MEMBERS, indexOpts);
-  const data = slice(main.points, fromDate, toDate);
+  const data = slice(main.points, fromDate, toDate, fx);
 
   const sectorData: SectorHistoryPoint[] = [];
   if (opts.sectors) {
@@ -211,7 +222,13 @@ export async function getIndexHistoryBundle(
       const result = computeIndexSeries(prices, shares, members, subOpts);
       for (const p of result.points) {
         if (p.date < fromDate || p.date > toDate) continue;
-        sectorData.push({ date: p.date, sector, value: p.value, numCompanies: p.numCompanies });
+        const rate = rateAsOf(fx.points, p.date) ?? fx.baseRate;
+        sectorData.push({
+          date: p.date,
+          sector,
+          value: round(toUsdIndex(p.value, rate, fx.baseRate), 4),
+          numCompanies: p.numCompanies,
+        });
       }
     }
   }
@@ -219,7 +236,7 @@ export async function getIndexHistoryBundle(
   let portfolioData: IndexHistoryPoint[] = [];
   if (opts.portfolio) {
     const result = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, subOpts);
-    portfolioData = slice(result.points, fromDate, toDate);
+    portfolioData = slice(result.points, fromDate, toDate, fx);
   }
 
   return { data, sectorData, portfolioData };

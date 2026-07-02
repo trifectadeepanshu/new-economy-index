@@ -7,6 +7,7 @@ import { isMarketOpen } from "@/lib/market-hours";
 const LIVE_ENDPOINT = "/api/index/live";
 const POLL_INTERVAL_MS = 30 * 1000;
 const MARKET_CHECK_INTERVAL_MS = 15 * 1000;
+const FX_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 
 export type LiveIndexData = Omit<LiveIndexPayload, "lastUpdated"> & {
   lastUpdated: Date;
@@ -40,6 +41,7 @@ function normalizeLiveData(json: LiveIndexPayload): LiveIndexData {
     lastUpdated: parseTimestamp(json.lastUpdated),
     isStale: Boolean(json.isStale),
     totalMarketCap: json.totalMarketCap ?? null,
+    usdInr: json.usdInr ?? null,
     stocks: json.stocks ?? [],
   };
 }
@@ -102,6 +104,9 @@ export function useIndexData() {
     void fetchData({ force: true });
 
     const marketCheck = window.setInterval(refreshIfDue, MARKET_CHECK_INTERVAL_MS);
+    // Always refresh at least every 15 minutes so the live USD/INR rate (and the
+    // USD-converted values) stay current even when the equity market is closed.
+    const fxRefresh = window.setInterval(() => void fetchData({ force: true }), FX_REFRESH_INTERVAL_MS);
     const handleVisibility = () => {
       if (document.visibilityState === "visible") void fetchData({ force: true });
     };
@@ -110,6 +115,7 @@ export function useIndexData() {
 
     return () => {
       window.clearInterval(marketCheck);
+      window.clearInterval(fxRefresh);
       document.removeEventListener("visibilitychange", handleVisibility);
       abortRef.current?.abort();
     };

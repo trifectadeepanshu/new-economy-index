@@ -13,6 +13,7 @@ import {
 import type { LiveIndexPayload, StockData } from "@/lib/index-api";
 import { priceRatio, round } from "@/lib/index-math";
 import { liveIndexValue, type QuarterlySharesMap } from "@/lib/index-engine";
+import { getFxRates, fetchLiveUsdInr, rateAsOf, toUsdIndex } from "@/lib/fx";
 import { getISTDate } from "@/lib/market-hours";
 
 /** Latest known point-in-time share count per ticker (for market-cap display). */
@@ -43,24 +44,26 @@ function buildStocks(
   companies: Company[],
   prices: Record<string, PricePoint | undefined>,
   basePrices: Record<string, number>,
-  shares: Map<string, number>
+  shares: Map<string, number>,
+  usdInr: number
 ): StockData[] {
+  const toUsd = (v: number | null) => (v != null && usdInr > 0 ? v / usdInr : null);
   return companies.map(({ ticker, name, sector }) => {
     const current = prices[ticker];
-    const basePrice = basePrices[ticker] ?? null;
-    const price = current?.price ?? null;
+    const basePriceInr = basePrices[ticker] ?? null;
+    const priceInr = current?.price ?? null;
     const sh = shares.get(ticker);
-    const marketCap = price != null && sh != null ? price * sh : null;
+    const marketCapInr = priceInr != null && sh != null ? priceInr * sh : null;
 
     return {
       ticker,
       name,
       sector,
-      price,
+      price: toUsd(priceInr),
       changePct: current?.changePct ?? null,
-      marketCap,
-      basePrice,
-      ratio: priceRatio(price, basePrice),
+      marketCap: toUsd(marketCapInr),
+      basePrice: toUsd(basePriceInr),
+      ratio: priceRatio(priceInr, basePriceInr), // unitless — FX cancels
     };
   });
 }
@@ -84,6 +87,7 @@ function toPayload({
   indexChangePct,
   portfolioValue,
   numCompanies,
+  usdInr,
   lastUpdated,
   isStale,
 }: {
@@ -92,6 +96,7 @@ function toPayload({
   indexChangePct: number | null;
   portfolioValue: number | null;
   numCompanies: number;
+  usdInr: number | null;
   lastUpdated: string | null;
   isStale: boolean;
 }): LiveIndexPayload {
@@ -103,6 +108,7 @@ function toPayload({
     lastUpdated,
     isStale,
     totalMarketCap: sumMarketCap(stocks),
+    usdInr,
     stocks,
   };
 }
@@ -115,14 +121,16 @@ export async function GET() {
 
   // Try live Upstox data first
   try {
-    const [quotes, basePrices, shares, liveState, snapshot, latestClose] = await Promise.all([
+    const [quotes, basePrices, shares, liveState, snapshot, latestClose, fx] = await Promise.all([
       fetchUpstoxQuotes(active.map((c) => c.ticker)),
       getEarliestPricesPerTicker(),
       getSharesMap(),
       getLiveIndexState(),
       getLatestIndexSnapshot(),
       getLatestStockPrices(),
+      getFxRates(),
     ]);
+    const usdInr = await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate);
 
     // Overlay live Upstox quotes on the latest stored closes so every company
     // (including those without an Upstox instrument key) shows price data.
@@ -136,7 +144,7 @@ export async function GET() {
         changePct: live?.changePct ?? close?.changePct ?? null,
       };
     }
-    const stocks = buildStocks(active, merged, basePrices, latestShares(shares));
+    const stocks = buildStocks(active, merged, basePrices, latestShares(shares), usdInr);
 
     // Extend the divisor chain with live prices, carrying forward last close.
     const livePriceMap = new Map<string, number>();
@@ -145,21 +153,29 @@ export async function GET() {
       Object.entries(latestClose).map(([t, p]: [string, LatestStockPrice]) => [t, p.price])
     );
 
-    const indexValue =
+    const indexInr =
       liveState != null
         ? liveIndexValue(livePriceMap, carryForward, liveState.members, liveState.divisor)
         : null;
 
-    if (indexValue === null) {
+    if (indexInr === null) {
       throw new Error("Live divisor state unavailable");
     }
 
-    const portfolioValue = liveState?.portfolio
+    const indexValue = round(toUsdIndex(indexInr, usdInr, fx.baseRate), 4);
+    const portfolioInr = liveState?.portfolio
       ? liveIndexValue(livePriceMap, carryForward, liveState.portfolio.members, liveState.portfolio.divisor)
       : null;
+    const portfolioValue =
+      portfolioInr !== null ? round(toUsdIndex(portfolioInr, usdInr, fx.baseRate), 4) : null;
 
+    // Day change in USD terms (includes the FX move vs the prior close).
+    const prevCloseUsd =
+      snapshot && snapshot.value > 0
+        ? toUsdIndex(snapshot.value, rateAsOf(fx.points, snapshot.date) ?? fx.baseRate, fx.baseRate)
+        : null;
     const indexChangePct =
-      snapshot && snapshot.value > 0 ? round((indexValue / snapshot.value - 1) * 100) : null;
+      prevCloseUsd && prevCloseUsd > 0 ? round((indexValue / prevCloseUsd - 1) * 100) : null;
 
     return NextResponse.json(
       toPayload({
@@ -168,6 +184,7 @@ export async function GET() {
         indexChangePct,
         portfolioValue,
         numCompanies: liveState?.members.length ?? stocks.length,
+        usdInr: round(usdInr, 4),
         lastUpdated: new Date().toISOString(),
         isStale: false,
       }),
@@ -179,22 +196,26 @@ export async function GET() {
 
   // Fallback: serve last known data from DB
   try {
-    const [snapshot, latestPrices, basePrices, shares, liveState] = await Promise.all([
+    const [snapshot, latestPrices, basePrices, shares, liveState, fx] = await Promise.all([
       getLatestIndexSnapshot(),
       getLatestStockPrices(),
       getEarliestPricesPerTicker(),
       getSharesMap(),
       getLiveIndexState(),
+      getFxRates(),
     ]);
+    const usdInr = await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate);
 
-    const stocks = buildStocks(active, latestPrices, basePrices, latestShares(shares));
+    const stocks = buildStocks(active, latestPrices, basePrices, latestShares(shares), usdInr);
 
     const closes = new Map<string, number>(
       Object.entries(latestPrices).map(([t, p]: [string, LatestStockPrice]) => [t, p.price])
     );
-    const portfolioValue = liveState?.portfolio
+    const portfolioInr = liveState?.portfolio
       ? liveIndexValue(closes, closes, liveState.portfolio.members, liveState.portfolio.divisor)
       : null;
+    const portfolioValue =
+      portfolioInr !== null ? round(toUsdIndex(portfolioInr, usdInr, fx.baseRate), 4) : null;
 
     const lastUpdated = snapshot?.date
       ? new Date(`${snapshot.date}T15:30:00+05:30`).toISOString()
@@ -203,10 +224,11 @@ export async function GET() {
     return NextResponse.json(
       toPayload({
         stocks,
-        indexValue: snapshot ? round(snapshot.value) : null,
+        indexValue: snapshot ? round(toUsdIndex(snapshot.value, usdInr, fx.baseRate), 4) : null,
         indexChangePct: snapshot?.changePct ?? null,
         portfolioValue,
         numCompanies: liveState?.members.length ?? stocks.length,
+        usdInr: round(usdInr, 4),
         lastUpdated,
         isStale: true,
       }),

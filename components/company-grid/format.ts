@@ -3,7 +3,7 @@ export { formatMarketCap } from "@/lib/formatters";
 export function formatPrice(price: number | null) {
   if (price === null) return "—";
 
-  return `₹${price.toLocaleString("en-IN", {
+  return `$${price.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;

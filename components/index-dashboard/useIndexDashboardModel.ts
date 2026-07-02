@@ -201,6 +201,7 @@ export function useIndexDashboardModel() {
     dayChange: data?.indexChangePct ?? 0,
     numCompanies: data?.numCompanies ?? COMPANIES.length,
     totalMarketCap: data?.totalMarketCap ?? null,
+    usdInr: data?.usdInr ?? null,
     dataLoaded,
     sinceInception,
     heroSeries,
