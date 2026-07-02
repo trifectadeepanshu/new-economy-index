@@ -144,7 +144,10 @@ export async function GET() {
         changePct: live?.changePct ?? close?.changePct ?? null,
       };
     }
-    const stocks = buildStocks(active, merged, basePrices, latestShares(shares), usdInr);
+    // Show only the index constituents (current top-50), not the full universe.
+    const indexTickers = new Set(liveState?.members.map((m) => m.ticker) ?? active.map((c) => c.ticker));
+    const constituents = active.filter((c) => indexTickers.has(c.ticker));
+    const stocks = buildStocks(constituents, merged, basePrices, latestShares(shares), usdInr);
 
     // Extend the divisor chain with live prices, carrying forward last close.
     const livePriceMap = new Map<string, number>();
@@ -206,7 +209,10 @@ export async function GET() {
     ]);
     const usdInr = await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate);
 
-    const stocks = buildStocks(active, latestPrices, basePrices, latestShares(shares), usdInr);
+    // Show only the index constituents (current top-50), not the full universe.
+    const indexTickers = new Set(liveState?.members.map((m) => m.ticker) ?? active.map((c) => c.ticker));
+    const constituents = active.filter((c) => indexTickers.has(c.ticker));
+    const stocks = buildStocks(constituents, latestPrices, basePrices, latestShares(shares), usdInr);
 
     const closes = new Map<string, number>(
       Object.entries(latestPrices).map(([t, p]: [string, LatestStockPrice]) => [t, p.price])
