@@ -4,7 +4,6 @@ import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
 import type { StockData } from "@/lib/index-api";
 import { SECTORS } from "@/lib/companies";
-import { PortfolioChart } from "@/components/index-dashboard/PortfolioChart";
 import {
   SectionEyebrow,
   TickFrame,
@@ -115,7 +114,7 @@ export function ConstituentsSection({
         padded={false}
       >
         <div className="nei-index-inner">
-          <SectionEyebrow number="04" label="Inside the Index" light />
+          <SectionEyebrow number="03" label="Inside the Index" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
               The full cohort, laid out.
@@ -148,7 +147,7 @@ export function SectorSection({
   return (
     <ReferenceShell
       id="sectors"
-      eyebrow={{ number: "05", label: "Sector Composition" }}
+      eyebrow={{ number: "04", label: "Sector Composition" }}
       title="What is India's new economy actually made of?"
       copy="Deeper than fintech. Broader than consumer. See for yourself."
     >
@@ -187,7 +186,7 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
         padded={false}
       >
         <div className="nei-method-inner">
-          <SectionEyebrow number="06" label="Why we built this" light />
+          <SectionEyebrow number="05" label="Why we built this" light />
           <div className="nei-method-grid">
             <div>
               <h2 className="nei-heading nei-method-title">
@@ -227,56 +226,6 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
   );
 }
 
-export function PortfolioSection({
-  indexValue,
-  portfolioValue,
-}: {
-  indexValue: number | null;
-  portfolioValue: number | null;
-}) {
-  // Divisor-based portfolio sub-index value (consistent with the chart's history line).
-  const portfolioIndexValue = portfolioValue;
-
-  return (
-    <section id="portfolio" className="nei-portfolio-section nei-dark-section-vars">
-      <TickFrame
-        className="nei-portfolio-frame"
-        inset={32}
-        tone="paper"
-        lineLen={44}
-        corner={14}
-        opacity={0.36}
-        padded={false}
-      >
-        <div className="nei-portfolio-inner">
-          <SectionEyebrow number="03" label="Trifecta Portfolio" light />
-          <div className="nei-portfolio-body">
-
-            {/* Left: line chart */}
-            <div className="nei-portfolio-chart-col">
-              <h2 className="nei-heading nei-portfolio-title">
-                Our portfolio,<span> benchmarked.</span>
-              </h2>
-              <PortfolioChart liveNeiValue={indexValue} livePortfolioValue={portfolioIndexValue} />
-            </div>
-
-            {/* Right: descriptive copy (performance stats removed) */}
-            <div className="nei-portfolio-stats-col">
-              <p className="nei-portfolio-copy">
-                10 Trifecta Capital portfolio companies inside the NEI, measured against the broader cohort since each company&apos;s IPO.
-              </p>
-            </div>
-
-          </div>
-          <p className="nei-portfolio-footnote">
-            * Both lines are market-cap weighted and indexed to 1,000 at the start of the displayed range, so they share a common base. The full NEI is a top-50 index based at 1,000 on 31 Dec 2020; the portfolio sub-index covers the 10 Trifecta names from their first IPO. Constituents are reconstituted quarterly and enter via a divisor adjustment that keeps each index continuous.
-          </p>
-        </div>
-      </TickFrame>
-    </section>
-  );
-}
-
 export function DashboardFooter() {
   return (
     <footer className="nei-footer-v2">
@@ -303,7 +252,6 @@ export function DashboardFooter() {
               <div>
                 <strong>The Index</strong>
                 <a href="#performance">Performance</a>
-                <a href="#portfolio">Portfolio</a>
                 <a href="#constituents">Constituents</a>
                 <a href="#sectors">Sectors</a>
                 <a href="#methodology">Methodology</a>
