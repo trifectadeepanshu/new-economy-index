@@ -37,6 +37,15 @@ export async function getFxRates(): Promise<FxRates> {
   return { points, baseRate: rateAsOf(points, INDEX_BASE_DATE) ?? points[0]?.rate ?? FALLBACK_RATE };
 }
 
+/** Record (or update) the USD/INR rate for a given date. */
+export async function upsertFxRate(date: string, rate: number): Promise<void> {
+  const sql = getSql();
+  await sql`
+    INSERT INTO fx_rates (date, rate) VALUES (${date}, ${rate})
+    ON CONFLICT (date) DO UPDATE SET rate = EXCLUDED.rate
+  `;
+}
+
 /** USD/INR on the latest date on/before `date` (carry-forward). */
 export function rateAsOf(points: { date: string; rate: number }[], date: string): number | null {
   let val: number | null = null;

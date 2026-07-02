@@ -83,6 +83,16 @@ async function runSnapshot() {
 
   await upsertStockSnapshotsBatch(stockRows);
 
+  // Record today's USD/INR so the daily history conversion stays current.
+  try {
+    const { getFxRates, fetchLiveUsdInr, upsertFxRate } = await import("@/lib/fx");
+    const fx = await getFxRates();
+    const rate = await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate);
+    await upsertFxRate(today, rate);
+  } catch (err) {
+    console.warn("[/api/cron/snapshot] USD/INR update skipped:", err);
+  }
+
   // Recompute the full market-cap-weighted divisor index from all stored
   // closes (corrects history) and persist the live divisor for intraday use.
   const result = await recomputeAndPersistIndex();
