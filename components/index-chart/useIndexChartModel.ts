@@ -1,11 +1,10 @@
 import { useMemo } from "react";
-import { SECTORS, type Sector } from "@/lib/companies";
+import { type Sector } from "@/lib/companies";
 import type { HistoryRange, IndexHistoryPoint, SectorHistoryPoint, StockData } from "@/lib/index-api";
 import {
   buildCompareData,
   getChartTitle,
   getLatestColor,
-  getLiveSectorValues,
   getRangeChangePct,
   toChartPoint,
 } from "@/components/index-chart/data";
@@ -30,10 +29,7 @@ export function useIndexChartModel({
   range,
   sectorData,
   selectedSector,
-  stocks,
 }: ChartModelInput) {
-  const liveSectorValues = useMemo(() => getLiveSectorValues(stocks), [stocks]);
-
   const indexData = useMemo<ChartPoint[]>(() => {
     const points = historyData.map((point) => toChartPoint(point, range));
     return liveValue !== null && points.length
@@ -41,25 +37,20 @@ export function useIndexChartModel({
       : points;
   }, [historyData, liveValue, range]);
 
-  const compareData = useMemo<ComparePoint[]>(() => {
-    const points = buildCompareData(sectorData, range);
-    const hasLiveValues = SECTORS.some((sector) => liveSectorValues[sector] !== undefined);
+  // Sector sub-indices use the divisor engine; there's no client-side live
+  // value for them, so the lines end at the latest close (no fake "Now" point).
+  const compareData = useMemo<ComparePoint[]>(
+    () => buildCompareData(sectorData, range),
+    [range, sectorData]
+  );
 
-    return hasLiveValues && points.length
-      ? [...points, { date: "now", label: "Now", ...liveSectorValues }]
-      : points;
-  }, [liveSectorValues, range, sectorData]);
-
-  const detailData = useMemo<ChartPoint[]>(() => {
-    const points = sectorData
-      .filter((point) => point.sector === selectedSector)
-      .map((point) => toChartPoint(point, range));
-    const liveSectorValue = liveSectorValues[selectedSector];
-
-    return liveSectorValue !== undefined && points.length
-      ? [...points, { date: "now", label: "Now", value: liveSectorValue }]
-      : points;
-  }, [liveSectorValues, range, sectorData, selectedSector]);
+  const detailData = useMemo<ChartPoint[]>(
+    () =>
+      sectorData
+        .filter((point) => point.sector === selectedSector)
+        .map((point) => toChartPoint(point, range)),
+    [range, sectorData, selectedSector]
+  );
 
   const currentData: ChartRow[] =
     activeMode === "compare" ? compareData : activeMode === "detail" ? detailData : indexData;
