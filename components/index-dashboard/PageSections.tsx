@@ -3,8 +3,7 @@ import { type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
 import type { StockData } from "@/lib/index-api";
-import { INDEX_BASE_VALUE, SECTORS } from "@/lib/companies";
-import { formatNumber } from "@/components/index-dashboard/format";
+import { SECTORS } from "@/lib/companies";
 import { PortfolioChart } from "@/components/index-dashboard/PortfolioChart";
 import {
   SectionEyebrow,
@@ -238,25 +237,6 @@ export function PortfolioSection({
   // Divisor-based portfolio sub-index value (consistent with the chart's history line).
   const portfolioIndexValue = portfolioValue;
 
-  const portfolioSinceInception =
-    portfolioIndexValue !== null
-      ? ((portfolioIndexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
-      : null;
-  const neiSinceInception =
-    indexValue !== null
-      ? ((indexValue - INDEX_BASE_VALUE) / INDEX_BASE_VALUE) * 100
-      : null;
-
-  const delta =
-    portfolioSinceInception !== null && neiSinceInception !== null
-      ? portfolioSinceInception - neiSinceInception
-      : null;
-
-  function fmtPct(v: number | null) {
-    if (v === null) return "—";
-    return `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
-  }
-
   return (
     <section id="portfolio" className="nei-portfolio-section nei-dark-section-vars">
       <TickFrame
@@ -280,39 +260,11 @@ export function PortfolioSection({
               <PortfolioChart liveNeiValue={indexValue} livePortfolioValue={portfolioIndexValue} />
             </div>
 
-            {/* Right: stats — same market-cap weighted methodology as the full NEI */}
+            {/* Right: descriptive copy (performance stats removed) */}
             <div className="nei-portfolio-stats-col">
               <p className="nei-portfolio-copy">
                 10 Trifecta Capital portfolio companies inside the NEI, measured against the broader cohort since each company&apos;s IPO.
               </p>
-              <div className="nei-portfolio-stat-pair">
-                <div className="nei-portfolio-stat nei-portfolio-stat--highlight">
-                  <span className="nei-mono nei-portfolio-stat-label">Trifecta Portfolio</span>
-                  <strong className="nei-mono nei-portfolio-stat-value">
-                    {portfolioIndexValue !== null ? formatNumber(portfolioIndexValue, 1) : "—"}
-                  </strong>
-                  <span className={`nei-mono nei-portfolio-stat-pct ${portfolioSinceInception !== null && portfolioSinceInception >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                    {fmtPct(portfolioSinceInception)} since inception
-                  </span>
-                </div>
-                <div className="nei-portfolio-stat">
-                  <span className="nei-mono nei-portfolio-stat-label">New Economy Index</span>
-                  <strong className="nei-mono nei-portfolio-stat-value nei-portfolio-stat-value--muted">
-                    {indexValue !== null ? formatNumber(indexValue, 1) : "—"}
-                  </strong>
-                  <span className={`nei-mono nei-portfolio-stat-pct ${neiSinceInception !== null && neiSinceInception >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}`}>
-                    {fmtPct(neiSinceInception)} since inception
-                  </span>
-                </div>
-              </div>
-              {delta !== null && (
-                <p className="nei-portfolio-delta nei-mono">
-                  Portfolio is {delta >= 0 ? "outperforming" : "underperforming"} the index by{" "}
-                  <span className={delta >= 0 ? "nei-portfolio-pct--pos" : "nei-portfolio-pct--neg"}>
-                    {Math.abs(delta).toFixed(1)} pp
-                  </span>
-                </p>
-              )}
             </div>
 
           </div>
