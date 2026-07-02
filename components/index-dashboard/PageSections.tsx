@@ -159,7 +159,7 @@ export function SectorSection({
 
 export function MethodologySection({ numCompanies }: { numCompanies: number }) {
   const methodStats = [
-    { label: "Deployed", value: "₹8,000 Cr" },
+    { label: "Deployed", value: "$1B" },
     { label: "Companies invested", value: "220+" },
     { label: "Funds", value: "5" },
     { label: "Years", value: "10+" },
