@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useIndexData } from "@/hooks/useIndexData";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
-import type { Currency, IndexHistoryPayload, StockData } from "@/lib/index-api";
+import type { IndexHistoryPayload, StockData } from "@/lib/index-api";
 import { COMPANIES, INDEX_BASE_VALUE } from "@/lib/companies";
 import { isMarketOpen } from "@/lib/market-hours";
 import { formatNumber } from "@/components/index-dashboard/format";
@@ -56,13 +56,13 @@ function useCountUp(target: number | null) {
   return displayed;
 }
 
-function useSparkSeries(currency: Currency) {
+function useSparkSeries() {
   const [series, setSeries] = useState<number[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    fetch(`/api/index/history?range=1Y&currency=${currency}`, { signal: controller.signal })
+    fetch("/api/index/history?range=1Y", { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json() as Promise<IndexHistoryPayload>;
@@ -81,7 +81,7 @@ function useSparkSeries(currency: Currency) {
       });
 
     return () => controller.abort();
-  }, [currency]);
+  }, []);
 
   return series;
 }
@@ -149,7 +149,7 @@ function getBreadth(stocks: StockData[]) {
 export function useIndexDashboardModel() {
   const { currency, setCurrency } = useCurrency();
   const { data, isLoading, error, refresh } = useIndexData(currency);
-  const sparkSeries = useSparkSeries(currency);
+  const sparkSeries = useSparkSeries();
   const marketOpen = isMarketOpen();
   const nowIST = useMarketClock(marketOpen);
 

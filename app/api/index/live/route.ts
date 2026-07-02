@@ -13,7 +13,7 @@ import {
 import type { Currency, LiveIndexPayload, StockData } from "@/lib/index-api";
 import { priceRatio, round } from "@/lib/index-math";
 import { liveIndexValue, type QuarterlySharesMap } from "@/lib/index-engine";
-import { getFxRates, fetchLiveUsdInr, rateAsOf, toUsdIndex } from "@/lib/fx";
+import { getFxRates, fetchLiveUsdInr } from "@/lib/fx";
 import { getISTDate } from "@/lib/market-hours";
 
 /** Latest known point-in-time share count per ticker (for market-cap display). */
@@ -142,8 +142,6 @@ export async function GET(req: NextRequest) {
       getFxRates(),
     ]);
     const usdInr = await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate);
-    // Index-level conversion for the chosen currency (identity for INR).
-    const toDisplay = (inr: number) => (usd ? toUsdIndex(inr, usdInr, fx.baseRate) : inr);
 
     // Overlay live Upstox quotes on the latest stored closes so every company
     // (including those without an Upstox instrument key) shows price data.
@@ -178,21 +176,15 @@ export async function GET(req: NextRequest) {
       throw new Error("Live divisor state unavailable");
     }
 
-    const indexValue = round(toDisplay(indexInr), 4);
+    // The index level is a single unitless number (same in any currency).
+    const indexValue = round(indexInr, 4);
     const portfolioInr = liveState?.portfolio
       ? liveIndexValue(livePriceMap, carryForward, liveState.portfolio.members, liveState.portfolio.divisor)
       : null;
-    const portfolioValue = portfolioInr !== null ? round(toDisplay(portfolioInr), 4) : null;
+    const portfolioValue = portfolioInr !== null ? round(portfolioInr, 4) : null;
 
-    // Day change in the chosen currency (USD includes the FX move vs prior close).
-    const prevClose =
-      snapshot && snapshot.value > 0
-        ? usd
-          ? toUsdIndex(snapshot.value, rateAsOf(fx.points, snapshot.date) ?? fx.baseRate, fx.baseRate)
-          : snapshot.value
-        : null;
     const indexChangePct =
-      prevClose && prevClose > 0 ? round((indexValue / prevClose - 1) * 100) : null;
+      snapshot && snapshot.value > 0 ? round((indexValue / snapshot.value - 1) * 100) : null;
 
     return NextResponse.json(
       toPayload({
@@ -223,7 +215,6 @@ export async function GET(req: NextRequest) {
       getFxRates(),
     ]);
     const usdInr = await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate);
-    const toDisplay = (inr: number) => (usd ? toUsdIndex(inr, usdInr, fx.baseRate) : inr);
 
     // Show only the index constituents (current top-50), not the full universe.
     const indexTickers = new Set(liveState?.members.map((m) => m.ticker) ?? active.map((c) => c.ticker));
@@ -236,7 +227,7 @@ export async function GET(req: NextRequest) {
     const portfolioInr = liveState?.portfolio
       ? liveIndexValue(closes, closes, liveState.portfolio.members, liveState.portfolio.divisor)
       : null;
-    const portfolioValue = portfolioInr !== null ? round(toDisplay(portfolioInr), 4) : null;
+    const portfolioValue = portfolioInr !== null ? round(portfolioInr, 4) : null;
 
     const lastUpdated = snapshot?.date
       ? new Date(`${snapshot.date}T15:30:00+05:30`).toISOString()
@@ -245,7 +236,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       toPayload({
         stocks,
-        indexValue: snapshot ? round(toDisplay(snapshot.value), 4) : null,
+        indexValue: snapshot ? round(snapshot.value, 4) : null,
         indexChangePct: snapshot?.changePct ?? null,
         portfolioValue,
         numCompanies: liveState?.members.length ?? stocks.length,

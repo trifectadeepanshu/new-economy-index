@@ -45,13 +45,11 @@ export async function GET(req: NextRequest) {
   const toDate = getISTDate();
   const includeSectors = req.nextUrl.searchParams.get("includeSectors") === "1";
   const includePortfolio = req.nextUrl.searchParams.get("portfolio") === "1";
-  const usd = req.nextUrl.searchParams.get("currency") === "usd";
 
   try {
     const { data, sectorData, portfolioData } = await getIndexHistoryBundle(fromDate, toDate, {
       sectors: includeSectors,
       portfolio: includePortfolio,
-      usd,
     });
 
     const payload: IndexHistoryPayload = {
