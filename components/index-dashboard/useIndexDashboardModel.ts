@@ -204,7 +204,10 @@ export function useIndexDashboardModel() {
     numCompanies: data?.numCompanies ?? COMPANIES.length,
     totalMarketCap: data?.totalMarketCap ?? null,
     usdInr: data?.usdInr ?? null,
+    // `currency` matches the fetched values (for formatting); `selectedCurrency`
+    // is the toggle state (for immediate button feedback before the refetch).
     currency: data?.currency ?? currency,
+    selectedCurrency: currency,
     setCurrency,
     dataLoaded,
     sinceInception,

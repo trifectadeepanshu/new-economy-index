@@ -189,8 +189,8 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
               <button
                 key={c}
                 type="button"
-                className={`nei-currency-btn${model.currency === c ? " is-active" : ""}`}
-                aria-pressed={model.currency === c}
+                className={`nei-currency-btn${model.selectedCurrency === c ? " is-active" : ""}`}
+                aria-pressed={model.selectedCurrency === c}
                 onClick={() => model.setCurrency(c)}
               >
                 {c.toUpperCase()}

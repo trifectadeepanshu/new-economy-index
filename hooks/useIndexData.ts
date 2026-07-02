@@ -65,23 +65,22 @@ function getErrorMessage(error: unknown) {
 export function useIndexData(currency: Currency) {
   const [state, setState] = useState<LiveIndexState>(INITIAL_STATE);
   const lastSuccessfulFetchRef = useRef(0);
-  const inFlightRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
   const currencyRef = useRef(currency);
   currencyRef.current = currency;
 
+  // Non-forced calls are throttled; forced calls (mount, currency switch,
+  // visibility) always run and abort any in-flight request so the newest wins.
   const fetchData = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
-    if (inFlightRef.current) return;
     if (!force && Date.now() - lastSuccessfulFetchRef.current < POLL_INTERVAL_MS) return;
 
-    inFlightRef.current = true;
     abortRef.current?.abort();
-
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
       const data = await fetchLiveIndex(currencyRef.current, controller.signal);
+      if (controller.signal.aborted) return;
       lastSuccessfulFetchRef.current = Date.now();
       setState({ data, isLoading: false, error: null });
     } catch (error) {
@@ -92,9 +91,6 @@ export function useIndexData(currency: Currency) {
           error: getErrorMessage(error),
         }));
       }
-    } finally {
-      if (abortRef.current === controller) abortRef.current = null;
-      inFlightRef.current = false;
     }
   }, []);
 
