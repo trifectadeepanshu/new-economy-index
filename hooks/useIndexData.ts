@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { LiveIndexPayload } from "@/lib/index-api";
+import type { Currency, LiveIndexPayload } from "@/lib/index-api";
 import { isMarketOpen } from "@/lib/market-hours";
 
 const LIVE_ENDPOINT = "/api/index/live";
@@ -41,13 +41,14 @@ function normalizeLiveData(json: LiveIndexPayload): LiveIndexData {
     lastUpdated: parseTimestamp(json.lastUpdated),
     isStale: Boolean(json.isStale),
     totalMarketCap: json.totalMarketCap ?? null,
+    currency: json.currency ?? "inr",
     usdInr: json.usdInr ?? null,
     stocks: json.stocks ?? [],
   };
 }
 
-async function fetchLiveIndex(signal?: AbortSignal) {
-  const response = await fetch(LIVE_ENDPOINT, { signal });
+async function fetchLiveIndex(currency: Currency, signal?: AbortSignal) {
+  const response = await fetch(`${LIVE_ENDPOINT}?currency=${currency}`, { signal });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
   return normalizeLiveData((await response.json()) as LiveIndexPayload);
@@ -61,11 +62,13 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown error";
 }
 
-export function useIndexData() {
+export function useIndexData(currency: Currency) {
   const [state, setState] = useState<LiveIndexState>(INITIAL_STATE);
   const lastSuccessfulFetchRef = useRef(0);
   const inFlightRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const currencyRef = useRef(currency);
+  currencyRef.current = currency;
 
   const fetchData = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
     if (inFlightRef.current) return;
@@ -78,7 +81,7 @@ export function useIndexData() {
     abortRef.current = controller;
 
     try {
-      const data = await fetchLiveIndex(controller.signal);
+      const data = await fetchLiveIndex(currencyRef.current, controller.signal);
       lastSuccessfulFetchRef.current = Date.now();
       setState({ data, isLoading: false, error: null });
     } catch (error) {
@@ -120,6 +123,11 @@ export function useIndexData() {
       abortRef.current?.abort();
     };
   }, [fetchData, refreshIfDue]);
+
+  // Refetch immediately when the display currency changes.
+  useEffect(() => {
+    void fetchData({ force: true });
+  }, [currency, fetchData]);
 
   const refresh = useCallback(() => {
     void fetchData({ force: true });

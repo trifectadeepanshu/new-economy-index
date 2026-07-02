@@ -1,4 +1,4 @@
-import type { StockData } from "@/lib/index-api";
+import type { Currency, StockData } from "@/lib/index-api";
 
 export type CompanyGridView = "table" | "grid";
 export type CompanyGridVariant = "default" | "terminal";
@@ -16,6 +16,7 @@ export type SectorFilter = "All" | string;
 export type CompanyGridProps = {
   stocks: StockData[];
   isLoading: boolean;
+  currency?: Currency;
   view?: CompanyGridView;
   onViewChange?: (view: CompanyGridView) => void;
   showToggle?: boolean;

@@ -183,15 +183,30 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
 
       <div className="nei-hero-card-header">
         <MarketStatus marketOpen={model.marketOpen} nowIST={model.nowIST} />
-        {model.changePct !== null && (
-          <span
-            className={`nei-day-change-pill ${
-              model.dayChange >= 0 ? "is-positive" : "is-negative"
-            }`}
-          >
-            {formatPercent(model.dayChange)}
-          </span>
-        )}
+        <div className="nei-hero-header-right">
+          <div className="nei-currency-toggle" role="group" aria-label="Display currency">
+            {(["inr", "usd"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                className={`nei-currency-btn${model.currency === c ? " is-active" : ""}`}
+                aria-pressed={model.currency === c}
+                onClick={() => model.setCurrency(c)}
+              >
+                {c.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          {model.changePct !== null && (
+            <span
+              className={`nei-day-change-pill ${
+                model.dayChange >= 0 ? "is-positive" : "is-negative"
+              }`}
+            >
+              {formatPercent(model.dayChange)}
+            </span>
+          )}
+        </div>
       </div>
 
       {model.isLoading && model.indexValue === null ? (
@@ -229,7 +244,7 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
       <div className="nei-mktcap-row">
         <span className="nei-hero-stat-label">New Economy · Total Market Cap</span>
         <span className="nei-mono nei-mktcap-value">
-          {model.totalMarketCap !== null ? formatMarketCap(model.totalMarketCap) : "—"}
+          {model.totalMarketCap !== null ? formatMarketCap(model.totalMarketCap, model.currency) : "—"}
         </span>
       </div>
 

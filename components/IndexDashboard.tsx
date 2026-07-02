@@ -9,8 +9,17 @@ import {
   SectorSection,
 } from "@/components/index-dashboard/PageSections";
 import { useIndexDashboardModel } from "@/components/index-dashboard/useIndexDashboardModel";
+import { CurrencyProvider } from "@/components/index-dashboard/CurrencyContext";
 
 export function IndexDashboard() {
+  return (
+    <CurrencyProvider>
+      <IndexDashboardInner />
+    </CurrencyProvider>
+  );
+}
+
+function IndexDashboardInner() {
   const model = useIndexDashboardModel();
 
   return (
@@ -28,6 +37,7 @@ export function IndexDashboard() {
         stocks={model.stocks}
         isLoading={model.isLoading}
         numCompanies={model.numCompanies}
+        currency={model.currency}
       />
 
       <SectorSection stocks={model.stocks} numCompanies={model.numCompanies} />

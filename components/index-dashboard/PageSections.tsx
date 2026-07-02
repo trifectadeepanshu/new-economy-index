@@ -2,7 +2,7 @@ import Image from "next/image";
 import { type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
-import type { StockData } from "@/lib/index-api";
+import type { Currency, StockData } from "@/lib/index-api";
 import { SECTORS } from "@/lib/companies";
 import {
   SectionEyebrow,
@@ -96,10 +96,12 @@ export function ConstituentsSection({
   stocks,
   isLoading,
   numCompanies,
+  currency,
 }: {
   stocks: StockData[];
   isLoading: boolean;
   numCompanies: number;
+  currency: Currency;
 }) {
   return (
     <section id="constituents" className="nei-index-section nei-dark-section-vars">
@@ -129,6 +131,7 @@ export function ConstituentsSection({
               stocks={stocks}
               isLoading={isLoading}
               variant="terminal"
+              currency={currency}
             />
           </div>
         </div>

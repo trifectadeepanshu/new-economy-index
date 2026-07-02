@@ -1,9 +1,12 @@
+import type { Currency } from "@/lib/index-api";
 export { formatMarketCap } from "@/lib/formatters";
 
-export function formatPrice(price: number | null) {
+export function formatPrice(price: number | null, currency: Currency = "inr") {
   if (price === null) return "—";
 
-  return `$${price.toLocaleString("en-US", {
+  const symbol = currency === "usd" ? "$" : "₹";
+  const locale = currency === "usd" ? "en-US" : "en-IN";
+  return `${symbol}${price.toLocaleString(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;

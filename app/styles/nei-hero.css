@@ -291,6 +291,39 @@
     color: #E89175;
   }
 
+  .nei-hero-header-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nei-currency-toggle {
+    display: inline-flex;
+    border: 1px solid rgba(232,235,240,0.14);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .nei-currency-btn {
+    padding: 4px 11px;
+    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+    letter-spacing: 0.08em;
+    color: rgba(232,235,240,0.5);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .nei-currency-btn:hover {
+    color: rgba(232,235,240,0.8);
+  }
+
+  .nei-currency-btn.is-active {
+    background: rgba(224,122,56,0.16);
+    color: #E89175;
+  }
+
   .nei-index-value-skeleton {
     margin: 8px 0 10px;
   }

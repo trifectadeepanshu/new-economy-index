@@ -17,6 +17,8 @@ export type LiveStockPayload = {
 
 export type StockData = LiveStockPayload;
 
+export type Currency = "inr" | "usd";
+
 export type LiveIndexPayload = {
   indexValue: number | null;
   indexChangePct: number | null;
@@ -25,7 +27,9 @@ export type LiveIndexPayload = {
   lastUpdated: string | null;
   isStale: boolean;
   totalMarketCap: number | null;
-  /** Live USD/INR rate used to convert all monetary values. */
+  /** Currency the monetary values are expressed in. */
+  currency: Currency;
+  /** Live USD/INR rate (shown regardless of display currency). */
   usdInr: number | null;
   stocks: LiveStockPayload[];
 };

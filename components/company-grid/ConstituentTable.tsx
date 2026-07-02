@@ -11,6 +11,7 @@ import type {
   SortKey,
   SortState,
 } from "@/components/company-grid/types";
+import type { Currency } from "@/lib/index-api";
 
 const COLUMNS: Array<{
   key: SortKey;
@@ -104,11 +105,13 @@ export function ConstituentTable({
   sort,
   onSort,
   variant = "default",
+  currency = "inr",
 }: {
   rows: ConstituentRow[];
   sort: SortState;
   onSort: (key: SortKey) => void;
   variant?: CompanyGridVariant;
+  currency?: Currency;
 }) {
   const isTerminal = variant === "terminal";
 
@@ -129,8 +132,8 @@ export function ConstituentTable({
                 <td>
                   <span className="nei-sector-name">{row.sector}</span>
                 </td>
-                <td className="is-right nei-mono">{formatPrice(row.price)}</td>
-                <td className="is-right nei-mono">{formatMarketCap(row.marketCap)}</td>
+                <td className="is-right nei-mono">{formatPrice(row.price, currency)}</td>
+                <td className="is-right nei-mono">{formatMarketCap(row.marketCap, currency)}</td>
                 <td
                   className={`is-right nei-mono ${
                     (row.changePct ?? 0) >= 0 ? "is-positive" : "is-negative"

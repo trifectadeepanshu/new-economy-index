@@ -50,6 +50,7 @@ function EmptyCompanyState({
 export function CompanyGrid({
   stocks,
   isLoading,
+  currency = "inr",
   view: externalView,
   onViewChange,
   showToggle: showToggleProp,
@@ -164,10 +165,11 @@ export function CompanyGrid({
           sort={sort}
           onSort={handleSort}
           variant={variant}
+          currency={currency}
         />
       ) : rows.length > 0 ? (
         <>
-          <CompanyCards stocks={visibleRows} />
+          <CompanyCards stocks={visibleRows} currency={currency} />
           {shouldLimitCards && visibleCardCount < rows.length && (
             <div className="nei-company-card-more">
               <button

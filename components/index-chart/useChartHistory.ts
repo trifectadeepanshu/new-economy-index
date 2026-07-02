@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { HistoryRange, IndexHistoryPayload } from "@/lib/index-api";
 import type { HistoryState } from "@/components/index-chart/types";
+import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 
 const INITIAL_HISTORY_STATE: HistoryState = {
   range: null,
@@ -14,13 +15,14 @@ function isAbortError(error: unknown) {
 }
 
 export function useChartHistory(range: HistoryRange) {
+  const { currency } = useCurrency();
   const [state, setState] = useState<HistoryState>(INITIAL_HISTORY_STATE);
 
   useEffect(() => {
     const controller = new AbortController();
     let ignore = false;
 
-    fetch(`/api/index/history?range=${range}&includeSectors=1`, {
+    fetch(`/api/index/history?range=${range}&includeSectors=1&currency=${currency}`, {
       signal: controller.signal,
     })
       .then((response) => {
@@ -52,7 +54,7 @@ export function useChartHistory(range: HistoryRange) {
       ignore = true;
       controller.abort();
     };
-  }, [range]);
+  }, [range, currency]);
 
   return { ...state, loading: state.range !== range };
 }
