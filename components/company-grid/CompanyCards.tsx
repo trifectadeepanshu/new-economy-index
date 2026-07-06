@@ -2,7 +2,6 @@ import { COMPANIES } from "@/lib/companies";
 import type { Currency, StockData } from "@/lib/index-api";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import {
-  displayCompanyName,
   formatMarketCap,
   formatPrice,
   formatSignedPercent,
@@ -21,9 +20,9 @@ function CompanyCard({ row, currency }: { row: StockData; currency: Currency }) 
       <div className="nei-company-card-header">
         <CompanyLogo ticker={row.ticker} name={row.name} />
         <div className="nei-company-card-title">
-          <h3 className="nei-heading">{displayCompanyName(row.name)}</h3>
+          <h3 className="nei-heading">{row.displayName}</h3>
           <p className="nei-mono">
-            {row.ticker}
+            {row.sector}
             {listedYear && <span> · {listedYear}</span>}
           </p>
         </div>

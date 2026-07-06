@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import {
   COMPANIES,
+  INDEX_ANCHOR_DATE,
   INDEX_BASE_DATE,
   INDEX_BASE_VALUE,
   PORTFOLIO_TICKERS,
@@ -205,8 +206,8 @@ export async function getIndexHistoryBundle(
   opts: { sectors: boolean; portfolio: boolean }
 ): Promise<IndexHistoryBundle> {
   const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
-  const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N };
-  const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N };
+  const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N, anchorDate: INDEX_ANCHOR_DATE };
+  const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N, anchorDate: INDEX_ANCHOR_DATE };
 
   const main = computeIndexSeries(prices, shares, ALL_MEMBERS, indexOpts);
   const data = slice(main.points, fromDate, toDate);
@@ -248,8 +249,8 @@ export async function recomputeAndPersistIndex(): Promise<{
 }> {
   const sql = getSql();
   const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
-  const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N };
-  const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N };
+  const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N, anchorDate: INDEX_ANCHOR_DATE };
+  const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N, anchorDate: INDEX_ANCHOR_DATE };
   const { points, divisor, members } = computeIndexSeries(prices, shares, ALL_MEMBERS, indexOpts);
   const portfolio = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, subOpts);
 

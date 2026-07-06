@@ -47,8 +47,14 @@ export type IndexResult = {
 
 export type EngineOptions = {
   baseValue: number;
-  baseDate: string; // first quarter-end (index = baseValue here)
+  baseDate: string; // first quarter-end (drives the quarterly rebalance mechanics)
   topN: number; // max constituents per quarter (Infinity for no cap)
+  /**
+   * Optional display anchor: rescale the whole series so the first point on/after
+   * this date equals baseValue, and drop earlier points. Keeps the quarterly
+   * mechanics (baseDate) intact while anchoring the shown "base 1,000" here.
+   */
+  anchorDate?: string;
 };
 
 /** Quarter-end dates (Mar 31 / Jun 30 / Sep 30 / Dec 31) from baseDate through lastDate. */
@@ -201,13 +207,27 @@ export function computeIndexSeries(
 
   // Current-quarter state for live extension.
   const curQ = quarters[quarters.length - 1];
-  const curDiv = divisor.get(curQ) ?? 0;
+  let curDiv = divisor.get(curQ) ?? 0;
   const curSh = qShares.get(curQ)!;
   const curMembers: LiveMember[] = [...(qFlag.get(curQ) ?? [])]
     .filter((t) => curSh.has(t))
     .map((t) => ({ ticker: t, shares: curSh.get(t)! }));
 
-  return { points: out, divisor: curDiv, members: curMembers };
+  // Optional display anchor: rescale so the first point on/after anchorDate is
+  // baseValue, drop earlier points, and scale the divisor so live values match.
+  let points = out;
+  if (options.anchorDate) {
+    const anchor = out.find((p) => p.date >= options.anchorDate!);
+    if (anchor && anchor.value > 0) {
+      const factor = baseValue / anchor.value;
+      points = out
+        .filter((p) => p.date >= options.anchorDate!)
+        .map((p) => ({ ...p, value: Math.round(p.value * factor * 10000) / 10000 }));
+      curDiv = curDiv / factor; // index = mc / divisor, so scaling value by `factor` divides the divisor
+    }
+  }
+
+  return { points, divisor: curDiv, members: curMembers };
 }
 
 /**

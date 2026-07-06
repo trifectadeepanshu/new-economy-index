@@ -85,7 +85,7 @@ export function PerformanceSection({
       eyebrow={{ number: "02", label: "Performance" }}
       title="The NEI since day one."
       mutedTitle="One line, no filter."
-      copy={`Market-cap weighted across all ${numCompanies} constituents. Base 1,000 set in March 2021.`}
+      copy={`Market-cap weighted across the top ${numCompanies} constituents. Base 1,000 set in January 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
     </ReferenceShell>
@@ -123,7 +123,7 @@ export function ConstituentsSection({
               <span> Filter, sort, explore.</span>
             </h2>
             <p className="nei-index-copy">
-              {numCompanies} companies across {SECTORS.length} sectors. The complete public-market picture of India&apos;s new economy.
+              {numCompanies} companies across {SECTORS.length} sectors. The complete public-market picture of India&apos;s new economy. Names marked <span className="nei-portfolio-badge">P</span> are Trifecta Capital portfolio companies.
             </p>
           </div>
           <div className="nei-index-panel">

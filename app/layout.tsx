@@ -30,23 +30,23 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://new-economy-index.vercel.app"),
-  title: "New Economy Index | Trifecta Capital",
+  title: "India's Top 50 New Economy Index | Trifecta Capital",
   description:
-    "53 listed companies. One number. Trifecta Capital's New Economy Index tracks India's next-generation businesses as a single market-cap weighted benchmark.",
+    "Tracks the top 50 VC-backed companies that have now gone public — India's new economy as a single market-cap weighted index.",
   icons: {
     icon: "/trifecta-mark.png",
     shortcut: "/trifecta-mark.png",
     apple: "/trifecta-mark.png",
   },
   openGraph: {
-    title: "New Economy Index | Trifecta Capital",
-    description: "India's VC-backed new economy companies — tracked as a single index.",
+    title: "India's Top 50 New Economy Index | Trifecta Capital",
+    description: "Tracks the top 50 VC-backed companies that have now gone public.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "New Economy Index | Trifecta Capital",
-    description: "India's VC-backed new economy companies — tracked as a single index.",
+    title: "India's Top 50 New Economy Index | Trifecta Capital",
+    description: "Tracks the top 50 VC-backed companies that have now gone public.",
   },
 };
 

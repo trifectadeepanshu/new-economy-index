@@ -7,6 +7,7 @@ export type HistoryRange = (typeof HISTORY_RANGES)[number];
 export type LiveStockPayload = {
   ticker: string;
   name: string;
+  displayName: string;
   sector: Sector;
   price: number | null;
   changePct: number | null;

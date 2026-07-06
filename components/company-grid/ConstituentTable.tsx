@@ -11,6 +11,7 @@ import type {
   SortKey,
   SortState,
 } from "@/components/company-grid/types";
+import { PORTFOLIO_TICKERS } from "@/lib/companies";
 import type { Currency } from "@/lib/index-api";
 
 const COLUMNS: Array<{
@@ -18,7 +19,7 @@ const COLUMNS: Array<{
   label: string;
   align: "left" | "right";
 }> = [
-  { key: "name", label: "Ticker / Name", align: "left" },
+  { key: "name", label: "Company", align: "left" },
   { key: "sector", label: "Sector", align: "left" },
   { key: "price", label: "Price", align: "right" },
   { key: "marketCap", label: "Market Cap", align: "right" },
@@ -93,7 +94,14 @@ function CompanyCell({
     <div className="nei-company-cell">
       {showLogo && <CompanyLogo ticker={row.ticker} name={row.name} size={30} />}
       <div>
-        <strong>{row.ticker}</strong>
+        <strong>
+          {row.displayName}
+          {PORTFOLIO_TICKERS.has(row.ticker) && (
+            <span className="nei-portfolio-badge" title="Trifecta Capital portfolio company">
+              P
+            </span>
+          )}
+        </strong>
         <span>{row.name}</span>
       </div>
     </div>

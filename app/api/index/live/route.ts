@@ -50,7 +50,7 @@ function buildStocks(
 ): StockData[] {
   const conv = (v: number | null) =>
     v == null ? null : usdInr && usdInr > 0 ? v / usdInr : v;
-  return companies.map(({ ticker, name, sector }) => {
+  return companies.map(({ ticker, name, displayName, sector }) => {
     const current = prices[ticker];
     const basePriceInr = basePrices[ticker] ?? null;
     const priceInr = current?.price ?? null;
@@ -60,6 +60,7 @@ function buildStocks(
     return {
       ticker,
       name,
+      displayName,
       sector,
       price: conv(priceInr),
       changePct: current?.changePct ?? null,

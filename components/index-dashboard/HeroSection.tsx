@@ -25,13 +25,14 @@ const NAV_LINKS = [
   ["Methodology", "#methodology"],
 ] as const;
 
-type TickerItem = Pick<StockData, "ticker" | "price" | "changePct">;
+type TickerItem = Pick<StockData, "ticker" | "displayName" | "price" | "changePct">;
 
 function getTickerItems(stocks: StockData[]): TickerItem[] {
   const rows: TickerItem[] = stocks.length
     ? stocks
     : COMPANIES.map((company) => ({
         ticker: company.ticker,
+        displayName: company.displayName,
         price: null,
         changePct: null,
       }));
@@ -50,7 +51,7 @@ export function TickerDrift({ stocks }: { stocks: StockData[] }) {
       <div className="nei-ticker-track">
         {[...items, ...items].map((row, index) => (
           <span key={`${row.ticker}-${index}`} className="nei-ticker-chip">
-            <span className="nei-ticker-symbol">{row.ticker}</span>
+            <span className="nei-ticker-symbol">{row.displayName}</span>
             <span className="nei-ticker-price">
               {row.price !== null ? row.price.toFixed(2) : "—"}
             </span>
@@ -134,8 +135,8 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
       </h1>
       <p className="nei-hero-copy">
         Trifecta Capital backed India&apos;s next generation of businesses
-        before they had a track record. The New Economy Index tracks what it
-        looks like now. {numCompanies} listed companies, one number.
+        before they had a track record. India&apos;s Top 50 New Economy Index
+        tracks the top 50 VC-backed companies that have now gone public — one number.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">
