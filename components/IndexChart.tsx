@@ -15,13 +15,15 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
   const [visibleBenchmarks, setVisibleBenchmarks] = useState<Set<BenchmarkKey>>(
     () => new Set(BENCHMARK_KEYS)
   );
-  const { historyData, sectorData, benchmarks, loading, error } = useChartHistory(range);
+  const [showTrifecta, setShowTrifecta] = useState(true);
+  const { historyData, sectorData, portfolioData, benchmarks, loading, error } = useChartHistory(range);
 
   const isReference = variant === "reference";
   const model = useIndexChartModel({
     activeMode: "index",
     focusedSector: null,
     historyData,
+    portfolioData,
     benchmarks,
     liveValue,
     range,
@@ -29,6 +31,8 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
     selectedSector: "Platforms",
     stocks,
   });
+
+  const hasTrifecta = portfolioData.length > 0;
 
   const availableBenchmarks = benchmarks.map((b) => b.symbol);
 
@@ -72,14 +76,29 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
             onSectorFocus={() => {}}
             selectedSector="Platforms"
             visibleBenchmarks={visibleBenchmarks}
+            showTrifecta={showTrifecta && hasTrifecta}
           />
 
-          {availableBenchmarks.length > 0 && (
+          {(availableBenchmarks.length > 0 || hasTrifecta) && (
             <div className="nei-benchmark-legend" role="group" aria-label="Benchmarks">
               <span className="nei-benchmark-chip is-nei">
                 <span className="nei-benchmark-dot" style={{ background: "var(--nei-accent)" }} />
                 India&apos;s Top 50 NEI
               </span>
+              {hasTrifecta && (
+                <button
+                  type="button"
+                  className={`nei-benchmark-chip${showTrifecta ? " is-on" : ""}`}
+                  aria-pressed={showTrifecta}
+                  onClick={() => setShowTrifecta((v) => !v)}
+                >
+                  <span
+                    className="nei-benchmark-dot"
+                    style={{ background: showTrifecta ? "#E07A38" : "transparent", borderColor: "#E07A38" }}
+                  />
+                  Trifecta portfolio
+                </button>
+              )}
               {availableBenchmarks.map((key) => {
                 const on = visibleBenchmarks.has(key);
                 return (

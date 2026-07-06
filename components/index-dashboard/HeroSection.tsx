@@ -256,6 +256,13 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
         </span>
       </div>
 
+      <div className="nei-mktcap-row">
+        <span className="nei-hero-stat-label">Trifecta portfolio · share of index</span>
+        <span className="nei-mono nei-mktcap-value">
+          {model.trifectaWeightPct !== null ? `${model.trifectaWeightPct.toFixed(1)}%` : "—"}
+        </span>
+      </div>
+
       <div className="nei-hero-card-stats">
         {model.heroStats.map((stat, index) => (
           <div

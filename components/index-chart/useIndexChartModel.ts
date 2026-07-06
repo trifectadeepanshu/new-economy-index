@@ -21,6 +21,7 @@ type ChartModelInput = {
   activeMode: ChartMode;
   focusedSector: Sector | null;
   historyData: IndexHistoryPoint[];
+  portfolioData: IndexHistoryPoint[];
   benchmarks: BenchmarkSeries[];
   liveValue: number | null;
   range: HistoryRange;
@@ -33,6 +34,7 @@ export function useIndexChartModel({
   activeMode,
   focusedSector,
   historyData,
+  portfolioData,
   benchmarks,
   liveValue,
   range,
@@ -40,22 +42,27 @@ export function useIndexChartModel({
   selectedSector,
 }: ChartModelInput) {
   const indexData = useMemo<ChartPoint[]>(() => {
-    const benchByDate = new Map<string, Partial<Record<BenchmarkKey, number>>>();
+    const overlayByDate = new Map<string, Partial<Record<BenchmarkKey | "TRIFECTA", number>>>();
     for (const b of benchmarks) {
       for (const pt of b.points) {
-        const entry = benchByDate.get(pt.date) ?? {};
+        const entry = overlayByDate.get(pt.date) ?? {};
         entry[b.symbol] = pt.value;
-        benchByDate.set(pt.date, entry);
+        overlayByDate.set(pt.date, entry);
       }
+    }
+    for (const pt of portfolioData) {
+      const entry = overlayByDate.get(pt.date) ?? {};
+      entry.TRIFECTA = pt.value;
+      overlayByDate.set(pt.date, entry);
     }
     const points = historyData.map((point) => ({
       ...toChartPoint(point, range),
-      ...benchByDate.get(point.date),
+      ...overlayByDate.get(point.date),
     }));
     return liveValue !== null && points.length
       ? [...points, { date: "now", label: "Now", value: liveValue }]
       : points;
-  }, [historyData, benchmarks, liveValue, range]);
+  }, [historyData, portfolioData, benchmarks, liveValue, range]);
 
   // Sector sub-indices use the divisor engine; there's no client-side live
   // value for them, so the lines end at the latest close (no fake "Now" point).

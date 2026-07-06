@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COMPANIES, type Company } from "@/lib/companies";
+import { COMPANIES, PORTFOLIO_TICKERS, type Company } from "@/lib/companies";
 import { fetchAllQuotes as fetchUpstoxQuotes, type QuoteResult } from "@/lib/upstox";
 import {
   ensureSchema,
@@ -84,6 +84,16 @@ function sumMarketCap(stocks: StockData[]): number | null {
   return total > 0 ? total : null;
 }
 
+/** Trifecta portfolio names' share of the index market cap (currency-independent). */
+function trifectaWeight(stocks: StockData[]): number | null {
+  const total = stocks.reduce((sum, s) => sum + (s.marketCap ?? 0), 0);
+  if (total <= 0) return null;
+  const pf = stocks
+    .filter((s) => PORTFOLIO_TICKERS.has(s.ticker))
+    .reduce((sum, s) => sum + (s.marketCap ?? 0), 0);
+  return Math.round((pf / total) * 10000) / 100;
+}
+
 function toPayload({
   stocks,
   indexValue,
@@ -115,6 +125,7 @@ function toPayload({
     totalMarketCap: sumMarketCap(stocks),
     currency,
     usdInr,
+    trifectaWeightPct: trifectaWeight(stocks),
     stocks,
   };
 }

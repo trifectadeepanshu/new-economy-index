@@ -32,6 +32,8 @@ export type LiveIndexPayload = {
   currency: Currency;
   /** Live USD/INR rate (shown regardless of display currency). */
   usdInr: number | null;
+  /** Trifecta portfolio companies' combined market cap as % of the index total. */
+  trifectaWeightPct: number | null;
   stocks: LiveStockPayload[];
 };
 

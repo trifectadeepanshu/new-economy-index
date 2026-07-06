@@ -27,6 +27,7 @@ type ChartCanvasProps = {
   onSectorFocus: (sector: Sector | null) => void;
   selectedSector: Sector;
   visibleBenchmarks?: Set<BenchmarkKey>;
+  showTrifecta?: boolean;
 };
 
 export function ChartCanvas({
@@ -39,6 +40,7 @@ export function ChartCanvas({
   onSectorFocus,
   selectedSector,
   visibleBenchmarks,
+  showTrifecta,
 }: ChartCanvasProps) {
   return (
     <div className="nei-chart-canvas">
@@ -108,6 +110,19 @@ export function ChartCanvas({
           ) : (
             <>
               <BenchmarkLines visibleBenchmarks={visibleBenchmarks} />
+              {showTrifecta && (
+                <Line
+                  type="monotone"
+                  dataKey="TRIFECTA"
+                  name="Trifecta portfolio"
+                  stroke="#E07A38"
+                  strokeWidth={1.8}
+                  dot={false}
+                  connectNulls
+                  isAnimationActive={false}
+                  activeDot={{ r: 3, fill: "#E07A38", stroke: "#FFFFFF", strokeWidth: 1.5 }}
+                />
+              )}
               <IndexLine
                 activeMode={activeMode}
                 areaGradientId={areaGradientId}

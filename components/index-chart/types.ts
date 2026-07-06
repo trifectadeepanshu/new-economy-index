@@ -15,6 +15,7 @@ export type ChartPoint = {
   date: string;
   label: string;
   value: number;
+  TRIFECTA?: number;
 } & Partial<Record<BenchmarkKey, number>>;
 
 export type ComparePoint = {
@@ -28,6 +29,7 @@ export type HistoryState = {
   range: HistoryRange | null;
   historyData: IndexHistoryPoint[];
   sectorData: SectorHistoryPoint[];
+  portfolioData: IndexHistoryPoint[];
   benchmarks: BenchmarkSeries[];
   error: string | null;
 };
