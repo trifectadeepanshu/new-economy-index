@@ -208,4 +208,62 @@
     border-radius: 999px;
     border: 1.5px solid transparent;
   }
+
+  .nei-sector-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .nei-sector-chart-card {
+    padding: 14px 16px 12px;
+    border: 1px solid rgba(11,15,25,0.08);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .nei-sector-chart-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .nei-sector-chart-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 999px;
+  }
+
+  .nei-sector-chart-head strong {
+    color: #0B0F19;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .nei-sector-chart-val {
+    margin-left: auto;
+    color: rgba(11,15,25,0.55);
+    font-size: 12px;
+  }
+
+  .nei-sector-chart-spark {
+    height: 52px;
+  }
+
+  .nei-sector-chart-chg {
+    display: block;
+    margin-top: 8px;
+    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+  }
+
+  .nei-sector-chart-chg.is-pos {
+    color: #1B8A55;
+  }
+
+  .nei-sector-chart-chg.is-neg {
+    color: #C74A2E;
+  }
 }

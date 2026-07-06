@@ -9,6 +9,7 @@ import {
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorComposition } from "@/components/index-dashboard/SectorComposition";
+import { SectorCharts } from "@/components/index-dashboard/SectorCharts";
 
 const METHOD_CARDS = [
   {
@@ -155,6 +156,7 @@ export function SectorSection({
       copy="Deeper than fintech. Broader than consumer. See for yourself."
     >
       <SectorComposition stocks={stocks} totalListings={numCompanies} />
+      <SectorCharts />
     </ReferenceShell>
   );
 }
