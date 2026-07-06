@@ -68,3 +68,34 @@ export type IndexHistoryPayload = {
 export function isHistoryRange(value: string): value is HistoryRange {
   return HISTORY_RANGES.includes(value as HistoryRange);
 }
+
+// --- Company detail (modal) ---------------------------------------------------
+
+export type CompanyFinancialYear = {
+  fy: string; // "FY24"
+  revenue: number | null; // in `currency`
+  pat: number | null; // in `currency`, as reported
+  ebitdaMargin: number | null; // %
+  patMargin: number | null; // %
+  revenueGrowth: number | null; // % YoY
+  assetIntensity: number | null; // total assets / revenue (x)
+};
+
+export type AnalystConsensus = {
+  strongBuy: number;
+  buy: number;
+  hold: number;
+  sell: number;
+  strongSell: number;
+  key: string | null; // e.g. "buy", "hold"
+  numAnalysts: number | null;
+};
+
+export type CompanyDetail = {
+  ticker: string;
+  currency: Currency;
+  description: string | null;
+  financials: CompanyFinancialYear[];
+  analyst: AnalystConsensus | null;
+  priceSeries: { date: string; close: number }[]; // in `currency`
+};

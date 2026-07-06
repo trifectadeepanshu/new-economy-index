@@ -10,6 +10,8 @@ import {
   useConstituentRows,
 } from "@/components/company-grid/useConstituentRows";
 import { ViewToggle } from "@/components/company-grid/ViewToggle";
+import { CompanyModal } from "@/components/company-grid/CompanyModal";
+import type { StockData } from "@/lib/index-api";
 import type {
   CompanyGridProps,
   CompanyGridView,
@@ -63,6 +65,7 @@ export function CompanyGrid({
   const [query, setQuery] = useState("");
   const [sector, setSector] = useState<SectorFilter>("All");
   const [visibleCardCount, setVisibleCardCount] = useState(INITIAL_CARD_COUNT);
+  const [selected, setSelected] = useState<StockData | null>(null);
 
   const view = externalView ?? internalView ?? "grid";
   const hasResolvedAutoView = externalView !== undefined || internalView !== null;
@@ -166,10 +169,11 @@ export function CompanyGrid({
           onSort={handleSort}
           variant={variant}
           currency={currency}
+          onSelect={setSelected}
         />
       ) : rows.length > 0 ? (
         <>
-          <CompanyCards stocks={visibleRows} currency={currency} />
+          <CompanyCards stocks={visibleRows} currency={currency} onSelect={setSelected} />
           {shouldLimitCards && visibleCardCount < rows.length && (
             <div className="nei-company-card-more">
               <button
@@ -189,6 +193,8 @@ export function CompanyGrid({
           )}
         </>
       ) : null}
+
+      <CompanyModal stock={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }

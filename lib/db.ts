@@ -148,6 +148,37 @@ export async function ensureSchema() {
       PRIMARY KEY (symbol, date)
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS company_financials (
+      ticker       VARCHAR(30) NOT NULL,
+      fiscal_year  DATE NOT NULL,
+      revenue      NUMERIC(20, 0),
+      ebitda       NUMERIC(20, 0),
+      pat          NUMERIC(20, 0),
+      total_assets NUMERIC(20, 0),
+      PRIMARY KEY (ticker, fiscal_year)
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS company_profiles (
+      ticker      VARCHAR(30) PRIMARY KEY,
+      description TEXT,
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS analyst_ratings (
+      ticker       VARCHAR(30) PRIMARY KEY,
+      strong_buy   INTEGER NOT NULL DEFAULT 0,
+      buy          INTEGER NOT NULL DEFAULT 0,
+      hold         INTEGER NOT NULL DEFAULT 0,
+      sell         INTEGER NOT NULL DEFAULT 0,
+      strong_sell  INTEGER NOT NULL DEFAULT 0,
+      rating_key   VARCHAR(24),
+      num_analysts INTEGER,
+      updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
 }
 
 // ---------------------------------------------------------------------------

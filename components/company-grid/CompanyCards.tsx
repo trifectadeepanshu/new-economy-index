@@ -11,12 +11,20 @@ const LISTED_YEAR_BY_TICKER = new Map(
   COMPANIES.map((company) => [company.ticker, company.listedDate.slice(0, 4)])
 );
 
-function CompanyCard({ row, currency }: { row: StockData; currency: Currency }) {
+function CompanyCard({
+  row,
+  currency,
+  onSelect,
+}: {
+  row: StockData;
+  currency: Currency;
+  onSelect?: (row: StockData) => void;
+}) {
   const listedYear = LISTED_YEAR_BY_TICKER.get(row.ticker);
   const isUp = (row.changePct ?? 0) >= 0;
 
   return (
-    <article className="nei-company-card">
+    <article className="nei-company-card nei-company-card-clickable" onClick={() => onSelect?.(row)}>
       <div className="nei-company-card-header">
         <CompanyLogo ticker={row.ticker} name={row.name} />
         <div className="nei-company-card-title">
@@ -43,11 +51,19 @@ function CompanyCard({ row, currency }: { row: StockData; currency: Currency }) 
   );
 }
 
-export function CompanyCards({ stocks, currency = "inr" }: { stocks: StockData[]; currency?: Currency }) {
+export function CompanyCards({
+  stocks,
+  currency = "inr",
+  onSelect,
+}: {
+  stocks: StockData[];
+  currency?: Currency;
+  onSelect?: (row: StockData) => void;
+}) {
   return (
     <div className="nei-company-card-grid">
       {stocks.map((row) => (
-        <CompanyCard key={row.ticker} row={row} currency={currency} />
+        <CompanyCard key={row.ticker} row={row} currency={currency} onSelect={onSelect} />
       ))}
     </div>
   );

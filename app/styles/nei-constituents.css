@@ -531,4 +531,125 @@
     font: 600 13px var(--font-inter), system-ui, sans-serif;
     cursor: pointer;
   }
+
+  /* Clickable rows / cards */
+  .nei-constituent-row { cursor: pointer; transition: background 0.12s ease; }
+  .nei-constituent-row:hover { background: rgba(232,235,240,0.05); }
+  .nei-company-card-clickable { cursor: pointer; transition: transform 0.12s ease, border-color 0.12s ease; }
+  .nei-company-card-clickable:hover { transform: translateY(-2px); border-color: rgba(232,235,240,0.2); }
+
+  /* Company modal */
+  .nei-cm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 5vh 16px;
+    background: rgba(6, 12, 26, 0.72);
+    backdrop-filter: blur(4px);
+    overflow-y: auto;
+  }
+
+  .nei-cm-panel {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    background: #0D1E3A;
+    border: 1px solid rgba(232,235,240,0.12);
+    border-radius: 16px;
+    padding: 26px 28px 30px;
+    color: #E8EBF0;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+
+  .nei-cm-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(232,235,240,0.08);
+    color: #E8EBF0;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .nei-cm-close:hover { background: rgba(232,235,240,0.16); }
+
+  .nei-cm-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding-right: 34px;
+  }
+  .nei-cm-head h2 { font-size: 24px; color: #FFFFFF; display: flex; align-items: center; }
+  .nei-cm-sub { margin-top: 4px; color: rgba(232,235,240,0.5); font-size: 12px; }
+  .nei-cm-price { text-align: right; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+  .nei-cm-price strong { font-size: 20px; }
+  .nei-cm-price .is-pos { color: #7DD89B; font-size: 12px; }
+  .nei-cm-price .is-neg { color: #E89175; font-size: 12px; }
+  .nei-cm-mcap { color: rgba(232,235,240,0.45); font-size: 11px; }
+
+  .nei-cm-desc {
+    margin-top: 16px;
+    color: rgba(232,235,240,0.72);
+    font-size: 13px;
+    line-height: 1.6;
+    max-height: 118px;
+    overflow-y: auto;
+  }
+
+  .nei-cm-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .nei-cm-card {
+    padding: 13px 14px;
+    border: 1px solid rgba(232,235,240,0.1);
+    border-radius: 11px;
+    background: rgba(232,235,240,0.03);
+  }
+  .nei-cm-card-label {
+    display: block;
+    color: rgba(232,235,240,0.45);
+    font: 600 10px var(--font-jetbrains), ui-monospace, monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .nei-cm-card strong { display: block; font-size: 19px; margin-top: 6px; color: #FFFFFF; }
+  .nei-cm-card-sub { font-size: 11px; color: rgba(232,235,240,0.5); }
+  .nei-cm-card-sub.is-pos { color: #7DD89B; }
+  .nei-cm-card-sub.is-neg { color: #E89175; }
+
+  .nei-cm-bars { display: flex; align-items: flex-end; gap: 3px; height: 40px; margin-top: 10px; }
+  .nei-cm-bar { flex: 1; border-radius: 2px; background: rgba(169,192,255,0.28); min-height: 3px; }
+  .nei-cm-bar.is-latest { background: var(--nei-accent, #E07A38); }
+
+  .nei-cm-section { margin-top: 22px; }
+  .nei-cm-chart { margin-top: 8px; }
+  .nei-cm-nodata { color: rgba(232,235,240,0.4); font-size: 12px; margin-top: 8px; }
+
+  .nei-cm-analyst-bar {
+    display: flex;
+    height: 12px;
+    margin-top: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(232,235,240,0.08);
+  }
+  .nei-cm-analyst-bar .is-buy { background: #4FA96B; }
+  .nei-cm-analyst-bar .is-hold { background: #C9A24A; }
+  .nei-cm-analyst-bar .is-sell { background: #D06A4E; }
+  .nei-cm-analyst-legend { display: flex; gap: 14px; margin-top: 8px; font-size: 11px; }
+  .nei-cm-analyst-legend .is-buy { color: #7DD89B; }
+  .nei-cm-analyst-legend .is-hold { color: #E4C877; }
+  .nei-cm-analyst-legend .is-sell { color: #E89175; }
+  .nei-cm-analyst-count { color: rgba(232,235,240,0.4); margin-left: auto; }
 }

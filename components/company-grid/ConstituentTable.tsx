@@ -114,12 +114,14 @@ export function ConstituentTable({
   onSort,
   variant = "default",
   currency = "inr",
+  onSelect,
 }: {
   rows: ConstituentRow[];
   sort: SortState;
   onSort: (key: SortKey) => void;
   variant?: CompanyGridVariant;
   currency?: Currency;
+  onSelect?: (row: ConstituentRow) => void;
 }) {
   const isTerminal = variant === "terminal";
 
@@ -130,7 +132,12 @@ export function ConstituentTable({
           <TableHeader sort={sort} onSort={onSort} />
           <tbody>
             {rows.map((row, index) => (
-              <tr key={row.ticker}>
+              <tr
+                key={row.ticker}
+                className="nei-constituent-row"
+                onClick={() => onSelect?.(row)}
+                title={`View ${row.displayName}`}
+              >
                 <td className="nei-row-number">
                   {String(index + 1).padStart(2, "0")}
                 </td>
