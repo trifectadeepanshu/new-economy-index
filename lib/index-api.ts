@@ -47,11 +47,20 @@ export type SectorHistoryPoint = {
   numCompanies: number;
 };
 
+export type BenchmarkKey = "NIFTY50" | "NIFTYMIDCAP";
+
+export type BenchmarkSeries = {
+  symbol: BenchmarkKey;
+  label: string;
+  points: IndexHistoryPoint[];
+};
+
 export type IndexHistoryPayload = {
   range: HistoryRange;
   data: IndexHistoryPoint[];
   sectorData?: SectorHistoryPoint[];
   portfolioData?: IndexHistoryPoint[];
+  benchmarks?: BenchmarkSeries[];
 };
 
 export function isHistoryRange(value: string): value is HistoryRange {

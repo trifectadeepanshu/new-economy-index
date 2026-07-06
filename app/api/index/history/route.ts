@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIndexHistoryBundle } from "@/lib/db";
+import { getBenchmarkSeries } from "@/lib/benchmarks";
 import { INDEX_ANCHOR_DATE } from "@/lib/companies";
 import { format, parseISO, subDays, subMonths, subYears } from "date-fns";
 import {
@@ -45,18 +46,23 @@ export async function GET(req: NextRequest) {
   const toDate = getISTDate();
   const includeSectors = req.nextUrl.searchParams.get("includeSectors") === "1";
   const includePortfolio = req.nextUrl.searchParams.get("portfolio") === "1";
+  const includeBenchmarks = req.nextUrl.searchParams.get("benchmarks") === "1";
 
   try {
-    const { data, sectorData, portfolioData } = await getIndexHistoryBundle(fromDate, toDate, {
-      sectors: includeSectors,
-      portfolio: includePortfolio,
-    });
+    const [{ data, sectorData, portfolioData }, benchmarks] = await Promise.all([
+      getIndexHistoryBundle(fromDate, toDate, {
+        sectors: includeSectors,
+        portfolio: includePortfolio,
+      }),
+      includeBenchmarks ? getBenchmarkSeries(fromDate, toDate) : Promise.resolve([]),
+    ]);
 
     const payload: IndexHistoryPayload = {
       range,
       data,
       ...(includeSectors ? { sectorData } : {}),
       ...(includePortfolio ? { portfolioData } : {}),
+      ...(includeBenchmarks ? { benchmarks } : {}),
     };
 
     return NextResponse.json(payload, { headers: HISTORY_CACHE_HEADERS });

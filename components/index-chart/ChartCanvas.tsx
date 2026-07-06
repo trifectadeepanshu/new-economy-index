@@ -11,10 +11,11 @@ import {
   YAxis,
 } from "recharts";
 import { INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
-import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
+import { BENCHMARK_META, SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
 import { formatValue } from "@/components/index-chart/format";
 import { ChartTooltip } from "@/components/index-chart/ChartTooltip";
 import type { ChartMode, ChartPoint, ChartRow } from "@/components/index-chart/types";
+import type { BenchmarkKey } from "@/lib/index-api";
 
 type ChartCanvasProps = {
   activeMode: ChartMode;
@@ -25,6 +26,7 @@ type ChartCanvasProps = {
   latestPoint?: ChartPoint;
   onSectorFocus: (sector: Sector | null) => void;
   selectedSector: Sector;
+  visibleBenchmarks?: Set<BenchmarkKey>;
 };
 
 export function ChartCanvas({
@@ -36,6 +38,7 @@ export function ChartCanvas({
   latestPoint,
   onSectorFocus,
   selectedSector,
+  visibleBenchmarks,
 }: ChartCanvasProps) {
   return (
     <div className="nei-chart-canvas">
@@ -103,13 +106,16 @@ export function ChartCanvas({
               onSectorFocus={onSectorFocus}
             />
           ) : (
-            <IndexLine
-              activeMode={activeMode}
-              areaGradientId={areaGradientId}
-              latestColor={latestColor}
-              latestPoint={latestPoint}
-              selectedSector={selectedSector}
-            />
+            <>
+              <BenchmarkLines visibleBenchmarks={visibleBenchmarks} />
+              <IndexLine
+                activeMode={activeMode}
+                areaGradientId={areaGradientId}
+                latestColor={latestColor}
+                latestPoint={latestPoint}
+                selectedSector={selectedSector}
+              />
+            </>
           )}
         </ComposedChart>
       </ResponsiveContainer>
@@ -150,6 +156,32 @@ function SectorLines({
       />
     );
   });
+}
+
+function BenchmarkLines({ visibleBenchmarks }: { visibleBenchmarks?: Set<BenchmarkKey> }) {
+  if (!visibleBenchmarks) return null;
+  return (
+    <>
+      {(Object.keys(BENCHMARK_META) as BenchmarkKey[])
+        .filter((key) => visibleBenchmarks.has(key))
+        .map((key) => (
+          <Line
+            key={key}
+            type="monotone"
+            dataKey={key}
+            name={BENCHMARK_META[key].label}
+            stroke={BENCHMARK_META[key].color}
+            strokeWidth={1.5}
+            strokeDasharray="5 4"
+            strokeOpacity={0.75}
+            dot={false}
+            connectNulls
+            isAnimationActive={false}
+            activeDot={{ r: 3, fill: BENCHMARK_META[key].color, stroke: "#FFFFFF", strokeWidth: 1.5 }}
+          />
+        ))}
+    </>
+  );
 }
 
 function IndexLine({

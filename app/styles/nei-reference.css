@@ -163,4 +163,49 @@
     border-radius: 8px;
     background: linear-gradient(90deg, #1E3A5F, #4A6FAA);
   }
+
+  .nei-benchmark-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .nei-benchmark-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(11,15,25,0.14);
+    background: transparent;
+    color: rgba(11,15,25,0.5);
+    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  }
+
+  .nei-benchmark-chip.is-nei {
+    cursor: default;
+    color: #0B0F19;
+    border-color: transparent;
+  }
+
+  .nei-benchmark-chip.is-on {
+    color: #0B0F19;
+  }
+
+  .nei-benchmark-chip:not(.is-on):not(.is-nei) {
+    opacity: 0.55;
+  }
+
+  .nei-benchmark-dot {
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+  }
 }

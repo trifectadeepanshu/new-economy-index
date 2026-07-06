@@ -6,6 +6,7 @@ const INITIAL_HISTORY_STATE: HistoryState = {
   range: null,
   historyData: [],
   sectorData: [],
+  benchmarks: [],
   error: null,
 };
 
@@ -20,7 +21,7 @@ export function useChartHistory(range: HistoryRange) {
     const controller = new AbortController();
     let ignore = false;
 
-    fetch(`/api/index/history?range=${range}&includeSectors=1`, {
+    fetch(`/api/index/history?range=${range}&includeSectors=1&benchmarks=1`, {
       signal: controller.signal,
     })
       .then((response) => {
@@ -34,6 +35,7 @@ export function useChartHistory(range: HistoryRange) {
           range,
           historyData: json.data ?? [],
           sectorData: json.sectorData ?? [],
+          benchmarks: json.benchmarks ?? [],
           error: null,
         });
       })
@@ -44,6 +46,7 @@ export function useChartHistory(range: HistoryRange) {
           range,
           historyData: [],
           sectorData: [],
+          benchmarks: [],
           error: error instanceof Error ? error.message : "Failed to load chart data",
         });
       });

@@ -1,6 +1,13 @@
 import { useMemo } from "react";
 import { type Sector } from "@/lib/companies";
-import type { HistoryRange, IndexHistoryPoint, SectorHistoryPoint, StockData } from "@/lib/index-api";
+import type {
+  BenchmarkKey,
+  BenchmarkSeries,
+  HistoryRange,
+  IndexHistoryPoint,
+  SectorHistoryPoint,
+  StockData,
+} from "@/lib/index-api";
 import {
   buildCompareData,
   getChartTitle,
@@ -14,6 +21,7 @@ type ChartModelInput = {
   activeMode: ChartMode;
   focusedSector: Sector | null;
   historyData: IndexHistoryPoint[];
+  benchmarks: BenchmarkSeries[];
   liveValue: number | null;
   range: HistoryRange;
   sectorData: SectorHistoryPoint[];
@@ -25,17 +33,29 @@ export function useIndexChartModel({
   activeMode,
   focusedSector,
   historyData,
+  benchmarks,
   liveValue,
   range,
   sectorData,
   selectedSector,
 }: ChartModelInput) {
   const indexData = useMemo<ChartPoint[]>(() => {
-    const points = historyData.map((point) => toChartPoint(point, range));
+    const benchByDate = new Map<string, Partial<Record<BenchmarkKey, number>>>();
+    for (const b of benchmarks) {
+      for (const pt of b.points) {
+        const entry = benchByDate.get(pt.date) ?? {};
+        entry[b.symbol] = pt.value;
+        benchByDate.set(pt.date, entry);
+      }
+    }
+    const points = historyData.map((point) => ({
+      ...toChartPoint(point, range),
+      ...benchByDate.get(point.date),
+    }));
     return liveValue !== null && points.length
       ? [...points, { date: "now", label: "Now", value: liveValue }]
       : points;
-  }, [historyData, liveValue, range]);
+  }, [historyData, benchmarks, liveValue, range]);
 
   // Sector sub-indices use the divisor engine; there's no client-side live
   // value for them, so the lines end at the latest close (no fake "Now" point).

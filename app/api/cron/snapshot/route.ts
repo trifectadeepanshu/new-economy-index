@@ -93,6 +93,24 @@ async function runSnapshot() {
     console.warn("[/api/cron/snapshot] USD/INR update skipped:", err);
   }
 
+  // Record today's benchmark closes (Nifty 50 / Midcap) for the chart overlays.
+  try {
+    const { BENCHMARKS, upsertBenchmarkClose } = await import("@/lib/benchmarks");
+    for (const b of BENCHMARKS) {
+      const res = await fetch(
+        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(b.yf)}?range=1d&interval=1d`,
+        { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }
+      );
+      const json = (await res.json()) as {
+        chart?: { result?: Array<{ meta?: { regularMarketPrice?: number } }> };
+      };
+      const close = json.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if (typeof close === "number" && close > 0) await upsertBenchmarkClose(b.symbol, today, close);
+    }
+  } catch (err) {
+    console.warn("[/api/cron/snapshot] benchmark update skipped:", err);
+  }
+
   // Recompute the full market-cap-weighted divisor index from all stored
   // closes (corrects history) and persist the live divisor for intraday use.
   const result = await recomputeAndPersistIndex();

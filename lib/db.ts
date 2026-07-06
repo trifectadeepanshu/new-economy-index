@@ -140,6 +140,14 @@ export async function ensureSchema() {
       rate NUMERIC(10, 4) NOT NULL
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS benchmark_prices (
+      symbol VARCHAR(24) NOT NULL,
+      date   DATE NOT NULL,
+      close  NUMERIC(14, 2) NOT NULL,
+      PRIMARY KEY (symbol, date)
+    )
+  `;
 }
 
 // ---------------------------------------------------------------------------
