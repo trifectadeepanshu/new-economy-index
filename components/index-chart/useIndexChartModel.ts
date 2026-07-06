@@ -42,19 +42,26 @@ export function useIndexChartModel({
   selectedSector,
 }: ChartModelInput) {
   const indexData = useMemo<ChartPoint[]>(() => {
+    // Align every comparison line to the NEI's level at its first visible point
+    // so all lines start from the same place on any range (NEI stays absolute).
+    const neiByDate = new Map(historyData.map((p) => [p.date, p.value]));
+    const neiFirst = historyData[0]?.value ?? null;
+
     const overlayByDate = new Map<string, Partial<Record<BenchmarkKey | "TRIFECTA", number>>>();
-    for (const b of benchmarks) {
-      for (const pt of b.points) {
+    const addOverlay = (key: BenchmarkKey | "TRIFECTA", pts: { date: string; value: number }[]) => {
+      const first = pts[0];
+      if (!first || !first.value || neiFirst == null) return;
+      const target = neiByDate.get(first.date) ?? neiFirst;
+      const factor = target / first.value;
+      for (const pt of pts) {
         const entry = overlayByDate.get(pt.date) ?? {};
-        entry[b.symbol] = pt.value;
+        entry[key] = Math.round(pt.value * factor * 100) / 100;
         overlayByDate.set(pt.date, entry);
       }
-    }
-    for (const pt of portfolioData) {
-      const entry = overlayByDate.get(pt.date) ?? {};
-      entry.TRIFECTA = pt.value;
-      overlayByDate.set(pt.date, entry);
-    }
+    };
+    for (const b of benchmarks) addOverlay(b.symbol, b.points);
+    addOverlay("TRIFECTA", portfolioData);
+
     const points = historyData.map((point) => ({
       ...toChartPoint(point, range),
       ...overlayByDate.get(point.date),
