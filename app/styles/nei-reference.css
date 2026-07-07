@@ -209,61 +209,77 @@
     border: 1.5px solid transparent;
   }
 
-  .nei-sector-charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 14px;
-    margin-top: 28px;
+  .nei-sector-single {
+    margin-top: 30px;
   }
 
-  .nei-sector-chart-card {
-    padding: 14px 16px 12px;
-    border: 1px solid rgba(11,15,25,0.08);
-    border-radius: 12px;
-    background: rgba(255,255,255,0.5);
-  }
-
-  .nei-sector-chart-head {
+  .nei-sector-tabs-row {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 18px;
   }
 
-  .nei-sector-chart-dot {
+  .nei-sector-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(11,15,25,0.12);
+    background: transparent;
+    color: rgba(11,15,25,0.55);
+    font: 600 12px var(--font-inter), system-ui, sans-serif;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .nei-sector-tab:hover {
+    color: #0B0F19;
+  }
+
+  .nei-sector-tab.is-active {
+    background: #0B0F19;
+    border-color: #0B0F19;
+    color: #FFFFFF;
+  }
+
+  .nei-sector-tab-dot {
     width: 8px;
     height: 8px;
     flex-shrink: 0;
     border-radius: 999px;
   }
 
-  .nei-sector-chart-head strong {
+  .nei-sector-single-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+
+  .nei-sector-single-head strong {
     color: #0B0F19;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
   }
 
-  .nei-sector-chart-val {
-    margin-left: auto;
-    color: rgba(11,15,25,0.55);
+  .nei-sector-single-val {
+    font-size: 22px;
+    color: #0B0F19;
+    font-weight: 500;
+  }
+
+  .nei-sector-single-chg {
     font-size: 12px;
+    font-weight: 600;
   }
 
-  .nei-sector-chart-spark {
-    height: 52px;
-  }
+  .nei-sector-single-chg.is-pos { color: #1B8A55; }
+  .nei-sector-single-chg.is-neg { color: #C74A2E; }
 
-  .nei-sector-chart-chg {
-    display: block;
-    margin-top: 8px;
-    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
-  }
-
-  .nei-sector-chart-chg.is-pos {
-    color: #1B8A55;
-  }
-
-  .nei-sector-chart-chg.is-neg {
-    color: #C74A2E;
+  .nei-sector-single-chart {
+    height: 300px;
+    margin-top: 6px;
   }
 }
