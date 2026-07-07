@@ -26,7 +26,11 @@ export function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null;
 
-  const rows = payload.filter(hasTooltipValue).sort((a, b) => b.value - a.value);
+  // Drop the NEI area's tooltip entry (dataKey "value"); the NEI line covers it.
+  const rows = payload
+    .filter(hasTooltipValue)
+    .filter((item) => item.name !== "value")
+    .sort((a, b) => b.value - a.value);
   if (!rows.length) return null;
 
   return (

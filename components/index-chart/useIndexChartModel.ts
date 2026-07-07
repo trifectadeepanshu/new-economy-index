@@ -42,32 +42,32 @@ export function useIndexChartModel({
   selectedSector,
 }: ChartModelInput) {
   const indexData = useMemo<ChartPoint[]>(() => {
-    // Align every comparison line to the NEI's level at its first visible point
-    // so all lines start from the same place on any range (NEI stays absolute).
-    const neiByDate = new Map(historyData.map((p) => [p.date, p.value]));
+    // Index every line to 1,000 at the first visible point of the range, so all
+    // lines start together at 1,000 and the chart reads as relative performance.
+    const round2 = (v: number) => Math.round(v * 100) / 100;
     const neiFirst = historyData[0]?.value ?? null;
+    const neiFactor = neiFirst ? 1000 / neiFirst : 1;
 
     const overlayByDate = new Map<string, Partial<Record<BenchmarkKey | "TRIFECTA", number>>>();
     const addOverlay = (key: BenchmarkKey | "TRIFECTA", pts: { date: string; value: number }[]) => {
       const first = pts[0];
-      if (!first || !first.value || neiFirst == null) return;
-      const target = neiByDate.get(first.date) ?? neiFirst;
-      const factor = target / first.value;
+      if (!first || !first.value) return;
+      const factor = 1000 / first.value;
       for (const pt of pts) {
         const entry = overlayByDate.get(pt.date) ?? {};
-        entry[key] = Math.round(pt.value * factor * 100) / 100;
+        entry[key] = round2(pt.value * factor);
         overlayByDate.set(pt.date, entry);
       }
     };
     for (const b of benchmarks) addOverlay(b.symbol, b.points);
     addOverlay("TRIFECTA", portfolioData);
 
-    const points = historyData.map((point) => ({
-      ...toChartPoint(point, range),
-      ...overlayByDate.get(point.date),
-    }));
+    const points = historyData.map((point) => {
+      const cp = toChartPoint(point, range);
+      return { ...cp, value: round2(cp.value * neiFactor), ...overlayByDate.get(point.date) };
+    });
     return liveValue !== null && points.length
-      ? [...points, { date: "now", label: "Now", value: liveValue }]
+      ? [...points, { date: "now", label: "Now", value: round2(liveValue * neiFactor) }]
       : points;
   }, [historyData, portfolioData, benchmarks, liveValue, range]);
 
