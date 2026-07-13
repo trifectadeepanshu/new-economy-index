@@ -56,6 +56,10 @@
     padding: 10px max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
   }
 
+  .nei-v2-nav-right {
+    gap: 10px;
+  }
+
   .nei-brand-logo {
     width: 136px;
   }
@@ -102,7 +106,13 @@
 
   .nei-mobile-menu-button {
     display: inline-flex;
-    margin-left: auto;
+    margin-left: 0;
+  }
+
+  .nei-nav-currency-toggle .nei-currency-btn {
+    min-width: 50px;
+    min-height: 38px;
+    padding: 0 10px;
   }
 
   .nei-hero-inner {
@@ -332,6 +342,10 @@
     padding: 8px 16px 0;
   }
 
+  .nei-v2-nav-right {
+    gap: 8px;
+  }
+
   .nei-brand-link {
     min-height: 40px;
   }
@@ -344,6 +358,18 @@
   .nei-v2-links {
     left: 16px;
     right: 16px;
+  }
+
+  .nei-nav-currency-toggle {
+    min-height: 44px;
+    padding: 3px;
+  }
+
+  .nei-nav-currency-toggle .nei-currency-btn {
+    min-width: 48px;
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 11px;
   }
 
   .nei-hero-inner {

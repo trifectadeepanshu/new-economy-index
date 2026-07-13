@@ -69,7 +69,36 @@ export function TickerDrift({ stocks }: { stocks: StockData[] }) {
   );
 }
 
-function HeroNav() {
+function CurrencyToggle({
+  selectedCurrency,
+  setCurrency,
+  className = "",
+}: Pick<IndexDashboardModel, "selectedCurrency" | "setCurrency"> & { className?: string }) {
+  return (
+    <div
+      className={`nei-currency-toggle${className ? ` ${className}` : ""}`}
+      role="group"
+      aria-label="Display currency"
+    >
+      {(["inr", "usd"] as const).map((c) => (
+        <button
+          key={c}
+          type="button"
+          className={`nei-currency-btn${selectedCurrency === c ? " is-active" : ""}`}
+          aria-pressed={selectedCurrency === c}
+          onClick={() => setCurrency(c)}
+        >
+          {c.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function HeroNav({
+  selectedCurrency,
+  setCurrency,
+}: Pick<IndexDashboardModel, "selectedCurrency" | "setCurrency">) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -87,38 +116,45 @@ function HeroNav() {
           />
         </Link>
       </div>
-      <button
-        type="button"
-        className="nei-mobile-menu-button"
-        aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-        aria-controls="nei-primary-navigation"
-        aria-expanded={isMenuOpen}
-        onClick={() => setIsMenuOpen((open) => !open)}
-      >
-        <span />
-        <span />
-        <span />
-      </button>
-      <nav
-        id="nei-primary-navigation"
-        className={`nei-v2-links ${isMenuOpen ? "is-open" : ""}`}
-        aria-label="Primary navigation"
-      >
-        {NAV_LINKS.map(([label, href]) => (
-          <a key={label} href={href} onClick={closeMenu}>
-            {label}
-          </a>
-        ))}
-        <a
-          href="https://trifectacapital.in"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="nei-v2-nav-cta"
-          onClick={closeMenu}
+      <div className="nei-v2-nav-right">
+        <nav
+          id="nei-primary-navigation"
+          className={`nei-v2-links ${isMenuOpen ? "is-open" : ""}`}
+          aria-label="Primary navigation"
         >
-          trifectacapital.in ↗
-        </a>
-      </nav>
+          {NAV_LINKS.map(([label, href]) => (
+            <a key={label} href={href} onClick={closeMenu}>
+              {label}
+            </a>
+          ))}
+          <a
+            href="https://trifectacapital.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nei-v2-nav-cta"
+            onClick={closeMenu}
+          >
+            trifectacapital.in ↗
+          </a>
+        </nav>
+        <CurrencyToggle
+          selectedCurrency={selectedCurrency}
+          setCurrency={setCurrency}
+          className="nei-nav-currency-toggle"
+        />
+        <button
+          type="button"
+          className="nei-mobile-menu-button"
+          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-controls="nei-primary-navigation"
+          aria-expanded={isMenuOpen}
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
     </header>
   );
 }
@@ -199,19 +235,6 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
             <span className="nei-fx-ticker-label">USD/INR</span>
             <strong className="nei-fx-ticker-value nei-mono">{usdInrDisplay}</strong>
             <span className="nei-fx-ticker-meta">live FX</span>
-          </div>
-          <div className="nei-currency-toggle" role="group" aria-label="Display currency">
-            {(["inr", "usd"] as const).map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={`nei-currency-btn${model.selectedCurrency === c ? " is-active" : ""}`}
-                aria-pressed={model.selectedCurrency === c}
-                onClick={() => model.setCurrency(c)}
-              >
-                {c.toUpperCase()}
-              </button>
-            ))}
           </div>
           {model.changePct !== null && (
             <span
@@ -297,7 +320,7 @@ export function HeroSection({ model }: { model: IndexDashboardModel }) {
     <section data-screen-label="01 Hero" className="nei-hero-section">
       <KineticBackdrop />
       <div className="nei-hero-layer">
-        <HeroNav />
+        <HeroNav selectedCurrency={model.selectedCurrency} setCurrency={model.setCurrency} />
         <div className="nei-hero-inner">
           <div className="nei-hero-grid">
             <HeroIntro numCompanies={model.numCompanies} />
