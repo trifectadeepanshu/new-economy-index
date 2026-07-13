@@ -120,6 +120,13 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
               })}
             </div>
           )}
+
+          {showTrifecta && hasTrifecta && (
+            <p className="nei-chart-note">
+              Trifecta portfolio is indexed from each holding&apos;s IPO price, so it
+              includes listing-day performance.
+            </p>
+          )}
         </>
       )}
     </div>
