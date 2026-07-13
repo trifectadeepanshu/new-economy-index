@@ -1,4 +1,4 @@
-import { COMPANIES } from "@/lib/companies";
+import { COMPANIES, PORTFOLIO_TICKERS } from "@/lib/companies";
 import type { Currency, StockData } from "@/lib/index-api";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import {
@@ -22,13 +22,28 @@ function CompanyCard({
 }) {
   const listedYear = LISTED_YEAR_BY_TICKER.get(row.ticker);
   const isUp = (row.changePct ?? 0) >= 0;
+  const isPortfolio = PORTFOLIO_TICKERS.has(row.ticker);
 
   return (
-    <article className="nei-company-card nei-company-card-clickable" onClick={() => onSelect?.(row)}>
+    <article
+      className={`nei-company-card nei-company-card-clickable${isPortfolio ? " is-portfolio" : ""}`}
+      onClick={() => onSelect?.(row)}
+    >
       <div className="nei-company-card-header">
         <CompanyLogo ticker={row.ticker} name={row.name} />
         <div className="nei-company-card-title">
-          <h3 className="nei-heading">{row.displayName}</h3>
+          <h3 className="nei-heading">
+            {row.displayName}
+            {isPortfolio && (
+              <span
+                className="nei-portfolio-badge"
+                title="Trifecta Capital portfolio company"
+                aria-label="Trifecta Capital portfolio company"
+              >
+                P
+              </span>
+            )}
+          </h3>
           <p className="nei-mono">
             {row.sector}
             {listedYear && <span> · {listedYear}</span>}

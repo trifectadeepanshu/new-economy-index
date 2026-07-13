@@ -105,7 +105,11 @@ function CompanyCell({
         <strong>
           {row.displayName}
           {PORTFOLIO_TICKERS.has(row.ticker) && (
-            <span className="nei-portfolio-badge" title="Trifecta Capital portfolio company">
+            <span
+              className="nei-portfolio-badge"
+              title="Trifecta Capital portfolio company"
+              aria-label="Trifecta Capital portfolio company"
+            >
               P
             </span>
           )}
@@ -139,43 +143,47 @@ export function ConstituentTable({
         <table className="nei-constituent-table">
           <TableHeader sort={sort} onSort={onSort} />
           <tbody>
-            {rows.map((row, index) => (
-              <tr
-                key={row.ticker}
-                className="nei-constituent-row"
-                onClick={() => onSelect?.(row)}
-                title={`View ${row.displayName}`}
-              >
-                <td className="nei-row-number">
-                  {String(index + 1).padStart(2, "0")}
-                </td>
-                <td>
-                  <CompanyCell row={row} showLogo={!isTerminal} />
-                </td>
-                <td>
-                  <span className="nei-sector-name">{row.sector}</span>
-                </td>
-                <td className="is-right nei-mono">{formatPrice(row.price, currency)}</td>
-                <td className="is-right nei-mono">{formatMarketCap(row.marketCap, currency)}</td>
-                <td
-                  className={`is-right nei-mono ${
-                    (row.changePct ?? 0) >= 0 ? "is-positive" : "is-negative"
-                  }`}
+            {rows.map((row, index) => {
+              const isPortfolio = PORTFOLIO_TICKERS.has(row.ticker);
+
+              return (
+                <tr
+                  key={row.ticker}
+                  className={`nei-constituent-row${isPortfolio ? " is-portfolio" : ""}`}
+                  onClick={() => onSelect?.(row)}
+                  title={`View ${row.displayName}`}
                 >
-                  {formatSignedPercent(row.changePct)}
-                </td>
-                <td
-                  className={`is-right nei-mono ${
-                    (row.sinceBase ?? 0) >= 0 ? "is-positive" : "is-negative"
-                  }`}
-                >
-                  {formatSignedPercent(row.sinceBase, 1)}
-                </td>
-                <td className="is-right">
-                  <RowSparkline row={row} />
-                </td>
-              </tr>
-            ))}
+                  <td className="nei-row-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </td>
+                  <td>
+                    <CompanyCell row={row} showLogo={!isTerminal} />
+                  </td>
+                  <td>
+                    <span className="nei-sector-name">{row.sector}</span>
+                  </td>
+                  <td className="is-right nei-mono">{formatPrice(row.price, currency)}</td>
+                  <td className="is-right nei-mono">{formatMarketCap(row.marketCap, currency)}</td>
+                  <td
+                    className={`is-right nei-mono ${
+                      (row.changePct ?? 0) >= 0 ? "is-positive" : "is-negative"
+                    }`}
+                  >
+                    {formatSignedPercent(row.changePct)}
+                  </td>
+                  <td
+                    className={`is-right nei-mono ${
+                      (row.sinceBase ?? 0) >= 0 ? "is-positive" : "is-negative"
+                    }`}
+                  >
+                    {formatSignedPercent(row.sinceBase, 1)}
+                  </td>
+                  <td className="is-right">
+                    <RowSparkline row={row} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
