@@ -1,0 +1,65 @@
+name: Cron Monitor
+
+on:
+  schedule:
+    - cron: "20 11 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  cron-run-recorded:
+    name: Confirm snapshot cron recorded
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://new-economy-index.vercel.app' }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check latest cron run
+        run: |
+          node <<'NODE'
+          function getISTDate(date = new Date()) {
+            const parts = new Intl.DateTimeFormat("en-GB", {
+              timeZone: "Asia/Kolkata",
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }).formatToParts(date);
+            const byType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+            return `${byType.year}-${byType.month}-${byType.day}`;
+          }
+
+          const siteUrl = process.env.SITE_URL?.replace(/\/+$/, "");
+          const secret = process.env.CRON_SECRET;
+          if (!siteUrl) throw new Error("SITE_URL is not set");
+          if (!secret) throw new Error("CRON_SECRET is not set");
+
+          const today = getISTDate();
+          const response = await fetch(`${siteUrl}/api/admin/cron-runs?limit=10`, {
+            headers: { Authorization: `Bearer ${secret}` },
+          });
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error ?? `HTTP ${response.status}`);
+          }
+
+          const runs = Array.isArray(payload.runs) ? payload.runs : [];
+          const run = runs.find((item) => item.job === "snapshot" && item.date === today);
+          if (!run) {
+            throw new Error(`No snapshot cron_run row found for ${today}`);
+          }
+          if (run.status !== "success") {
+            throw new Error(`Snapshot cron for ${today} ended with status ${run.status}`);
+          }
+          if (!(run.stockRows > 0)) {
+            throw new Error(`Snapshot cron for ${today} wrote ${run.stockRows ?? 0} stock rows`);
+          }
+          if (Array.isArray(run.missingTickers) && run.missingTickers.length > 0) {
+            throw new Error(`Snapshot cron for ${today} missed ${run.missingTickers.join(", ")}`);
+          }
+
+          console.log(`Snapshot cron recorded cleanly for ${today}: ${run.stockRows} rows.`);
+          NODE

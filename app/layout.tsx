@@ -7,6 +7,7 @@ import "./styles/nei-chart.css";
 import "./styles/nei-reference.css";
 import "./styles/nei-constituents.css";
 import "./styles/nei-methodology.css";
+import "./styles/nei-admin.css";
 import "./styles/nei-responsive.css";
 import "./styles/nei-motion.css";
 

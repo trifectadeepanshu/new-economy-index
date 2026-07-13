@@ -1,0 +1,244 @@
+@layer components {
+  .nei-admin-page {
+    min-height: 100vh;
+    background: var(--nei-bg);
+    color: var(--nei-fg);
+    padding: 32px;
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  .nei-admin-shell {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+  }
+
+  .nei-admin-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--nei-grid-strong);
+  }
+
+  .nei-admin-header h1 {
+    font-size: 32px;
+    line-height: 1.1;
+    font-weight: 650;
+    margin: 6px 0 0;
+  }
+
+  .nei-admin-auth {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) 112px;
+    align-items: end;
+    gap: 10px;
+  }
+
+  .nei-admin-auth label {
+    grid-column: 1 / -1;
+    color: var(--nei-muted);
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  .nei-admin-auth input,
+  .nei-admin-auth button {
+    min-height: 44px;
+    border-radius: var(--nei-radius-sm);
+    border: 1px solid var(--nei-grid-strong);
+    font-size: 14px;
+  }
+
+  .nei-admin-auth input {
+    background: var(--nei-surface);
+    color: var(--nei-fg);
+    padding: 0 12px;
+    outline: none;
+  }
+
+  .nei-admin-auth input:focus {
+    border-color: var(--nei-accent);
+    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.14);
+  }
+
+  .nei-admin-auth button {
+    background: var(--nei-deep);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .nei-admin-auth button:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  .nei-admin-auth button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .nei-admin-auth button:disabled {
+    opacity: 0.46;
+    cursor: not-allowed;
+  }
+
+  .nei-admin-status-row {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 12px 0 0;
+  }
+
+  .nei-admin-alert {
+    margin: 0;
+    color: var(--nei-neg);
+    font-weight: 650;
+  }
+
+  .nei-admin-loaded {
+    margin: 0;
+    color: var(--nei-muted);
+    font-size: 12px;
+  }
+
+  .nei-admin-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0 12px;
+  }
+
+  .nei-admin-stat {
+    min-height: 104px;
+    border-radius: var(--nei-radius);
+    border: 1px solid var(--nei-grid-strong);
+    background: var(--nei-surface);
+    padding: 16px;
+    box-shadow: var(--nei-card-shadow);
+  }
+
+  .nei-admin-stat span {
+    display: block;
+    color: var(--nei-muted);
+    font-size: 12px;
+    font-weight: 650;
+    margin-bottom: 12px;
+  }
+
+  .nei-admin-stat strong {
+    display: block;
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .nei-admin-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .nei-admin-pill,
+  .nei-admin-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 28px;
+    border-radius: 999px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid var(--nei-grid-strong);
+    background: var(--nei-chip);
+  }
+
+  .nei-admin-status.is-success,
+  .nei-admin-pill.is-success {
+    color: var(--nei-pos);
+  }
+
+  .nei-admin-status.is-failed,
+  .nei-admin-pill.is-failed {
+    color: var(--nei-neg);
+  }
+
+  .nei-admin-status.is-running,
+  .nei-admin-pill.is-running {
+    color: var(--nei-accent);
+  }
+
+  .nei-admin-status.is-skipped,
+  .nei-admin-pill.is-skipped {
+    color: var(--nei-muted);
+  }
+
+  .nei-admin-status.is-empty {
+    color: var(--nei-muted);
+  }
+
+  .nei-admin-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: var(--nei-radius);
+    background: var(--nei-surface);
+    box-shadow: var(--nei-card-shadow);
+  }
+
+  .nei-admin-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: collapse;
+  }
+
+  .nei-admin-table th,
+  .nei-admin-table td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--nei-grid);
+    vertical-align: top;
+    font-size: 13px;
+  }
+
+  .nei-admin-table th {
+    color: var(--nei-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 750;
+    background: rgba(16, 24, 38, 0.035);
+  }
+
+  .nei-admin-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .nei-admin-table tbody tr.is-problem {
+    background: rgba(180, 90, 46, 0.055);
+  }
+
+  .nei-admin-empty {
+    text-align: center !important;
+    color: var(--nei-muted);
+    height: 120px;
+    vertical-align: middle !important;
+  }
+
+  @media (max-width: 760px) {
+    .nei-admin-page {
+      padding: 20px 14px;
+    }
+
+    .nei-admin-header {
+      display: block;
+    }
+
+    .nei-admin-auth {
+      grid-template-columns: 1fr;
+      margin-top: 22px;
+    }
+
+    .nei-admin-summary-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

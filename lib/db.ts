@@ -98,6 +98,19 @@ export type CronRunFinishInput = {
   error?: string | null;
 };
 
+export type CronRunRecord = {
+  id: string;
+  job: string;
+  date: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+  status: CronRunStatus;
+  stockRows: number | null;
+  missingTickers: string[];
+  indexValue: number | null;
+  error: string | null;
+};
+
 function getSql() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL env var is not set");
@@ -114,6 +127,19 @@ function toNullableNumber(value: unknown) {
 
 function toTicker(value: unknown) {
   return String(value);
+}
+
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      return Array.isArray(parsed) ? parsed.map(String) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -274,6 +300,40 @@ export async function finishCronRun(id: number, input: CronRunFinishInput) {
         error = ${input.error ?? null}
     WHERE id = ${id}
   `;
+}
+
+export async function getRecentCronRuns(limit = 25): Promise<CronRunRecord[]> {
+  const sql = getSql();
+  const safeLimit = Math.max(1, Math.min(100, Math.trunc(limit)));
+  const rows = (await sql`
+    SELECT
+      id::text,
+      job,
+      date::text,
+      started_at::text,
+      finished_at::text,
+      status,
+      stock_rows,
+      missing_tickers,
+      index_value::float,
+      error
+    FROM cron_runs
+    ORDER BY started_at DESC
+    LIMIT ${safeLimit}
+  `) as DbRow[];
+
+  return rows.map((row) => ({
+    id: String(row.id),
+    job: String(row.job),
+    date: row.date == null ? null : String(row.date),
+    startedAt: String(row.started_at),
+    finishedAt: row.finished_at == null ? null : String(row.finished_at),
+    status: String(row.status) as CronRunStatus,
+    stockRows: row.stock_rows == null ? null : Number(row.stock_rows),
+    missingTickers: toStringArray(row.missing_tickers),
+    indexValue: toNullableNumber(row.index_value),
+    error: row.error == null ? null : String(row.error),
+  }));
 }
 
 // ---------------------------------------------------------------------------

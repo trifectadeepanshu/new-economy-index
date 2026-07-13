@@ -40,6 +40,15 @@ curl -H "Authorization: Bearer $CRON_SECRET" "https://your-domain.com/api/cron/s
 
 Vercel runs `/api/cron/snapshot` on market weekdays via `vercel.json`.
 
+## Operations
+
+Cron run history is available at `/admin/cron-runs`. Enter `CRON_SECRET` to
+load the protected `cron_runs` feed from `/api/admin/cron-runs`.
+
+GitHub Actions runs `npm test`, lint, typecheck, and build on every push to
+`main` and every pull request. A separate weekday monitor runs after the Vercel
+cron window and checks that today's snapshot row was recorded cleanly.
+
 ## Checks
 
 ```bash
