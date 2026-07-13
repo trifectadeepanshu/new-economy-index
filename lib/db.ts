@@ -553,6 +553,23 @@ export async function getLatestIndexSnapshot(): Promise<LatestIndexSnapshot | nu
   };
 }
 
+/**
+ * The index close on the latest trading day strictly before `beforeDate` — the
+ * correct reference for an intraday day-change (the previous session's close),
+ * so the change doesn't collapse to ~0 once the cron persists today's row.
+ */
+export async function getReferenceIndexClose(beforeDate: string): Promise<number | null> {
+  const sql = getSql();
+  const rows = await sql`
+    SELECT value::float AS value
+    FROM index_snapshots
+    WHERE date < ${beforeDate}::date
+    ORDER BY date DESC
+    LIMIT 1
+  `;
+  return rows.length ? toNumber(rows[0].value) : null;
+}
+
 export async function getIndexRangeStats(
   fromDate: string,
   toDate: string

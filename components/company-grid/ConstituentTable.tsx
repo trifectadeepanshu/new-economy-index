@@ -18,13 +18,20 @@ const COLUMNS: Array<{
   key: SortKey;
   label: string;
   align: "left" | "right";
+  title?: string;
 }> = [
   { key: "name", label: "Company", align: "left" },
   { key: "sector", label: "Sector", align: "left" },
   { key: "price", label: "Price", align: "right" },
   { key: "marketCap", label: "Market Cap", align: "right" },
   { key: "changePct", label: "Day %", align: "right" },
-  { key: "ratio", label: "Since Base", align: "right" },
+  {
+    key: "ratio",
+    label: "Since Base",
+    align: "right",
+    title:
+      "Return since the constituent's index-entry price — the index base (31 Dec 2020) for names already listed then, or the IPO price for later listings.",
+  },
 ];
 
 function SortButton({
@@ -73,6 +80,7 @@ function TableHeader({
                 : "none"
             }
             className={column.align === "right" ? "is-right" : undefined}
+            title={column.title}
           >
             <SortButton column={column} sort={sort} onSort={onSort} />
           </th>

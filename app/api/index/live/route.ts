@@ -8,6 +8,7 @@ import {
   getLatestIndexSnapshot,
   getLatestStockSnapshots,
   getLiveIndexState,
+  getReferenceIndexClose,
   getSharesMap,
   type LatestStockSnapshot,
 } from "@/lib/db";
@@ -172,7 +173,7 @@ export async function GET(req: NextRequest) {
       basePrices,
       shares,
       liveState,
-      snapshot,
+      prevClose,
       latestClose,
       fx,
       rangeStats,
@@ -181,7 +182,7 @@ export async function GET(req: NextRequest) {
       getEarliestPricesPerTicker(),
       getSharesMap(),
       getLiveIndexState(),
-      getLatestIndexSnapshot(),
+      getReferenceIndexClose(today),
       getLatestStockSnapshots(),
       getFxRates(),
       getIndexRangeStats(trailingYearFromDate, today),
@@ -235,8 +236,10 @@ export async function GET(req: NextRequest) {
       : null;
     const portfolioValue = portfolioInr !== null ? round(portfolioInr, 4) : null;
 
+    // Day-change is vs the previous session's close, not the latest stored row
+    // (which becomes today once the cron runs — that would read ~0 all evening).
     const indexChangePct =
-      snapshot && snapshot.value > 0 ? round((indexValue / snapshot.value - 1) * 100) : null;
+      prevClose && prevClose > 0 ? round((indexValue / prevClose - 1) * 100) : null;
     const marketStats = buildMarketStats(stocks, rangeStats, indexValue);
     const sectorComposition = buildSectorComposition(stocks);
 

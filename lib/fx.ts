@@ -1,12 +1,11 @@
 /**
  * USD/INR foreign-exchange helpers.
  *
- * The index and all monetary values are computed in INR and converted to USD at
- * read time. Because the FX rate is the same across every company on a given
- * day, the USD index is simply:
- *     index_usd(t) = index_inr(t) × baseRate / rate(t)
- * where baseRate is USD/INR on the index base date. Market caps and prices are
- * converted by dividing INR by the (live or daily) rate.
+ * The index LEVEL is a unitless number (like Nifty) — the same value in any
+ * currency — so it is never FX-converted. Only monetary quantities convert:
+ * prices and market caps are shown in USD by dividing the INR value by the
+ * (live or daily) USD/INR rate. `baseRate` (USD/INR on the index base date) is
+ * kept only as a sensible fallback when the live rate is unavailable.
  */
 
 import { neon } from "@neondatabase/serverless";
@@ -54,11 +53,6 @@ export function rateAsOf(points: { date: string; rate: number }[], date: string)
     else break;
   }
   return val ?? (points.length ? points[0].rate : null);
-}
-
-/** Convert an INR index level to USD: inr × baseRate / rate(date). */
-export function toUsdIndex(inr: number, rateForDate: number, baseRate: number): number {
-  return rateForDate > 0 ? (inr * baseRate) / rateForDate : inr;
 }
 
 let liveCache: { rate: number; at: number } | null = null;
