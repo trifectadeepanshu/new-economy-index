@@ -1,9 +1,10 @@
 /**
  * Backfill per-company detail — run: npx tsx scripts/backfill-company-detail.ts
- * Populates three tables from Yahoo for every constituent:
- *   company_financials  — annual revenue / EBITDA / PAT / total assets
- *   company_profiles    — business description
- *   analyst_ratings     — Buy/Hold/Sell consensus
+ * Populates four tables from Yahoo for every constituent:
+ *   company_financials            — annual revenue / EBITDA / PAT / total assets
+ *   company_financials_quarterly  — quarterly revenue / EBITDA / PAT / total assets
+ *   company_profiles              — business description
+ *   analyst_ratings               — Buy/Hold/Sell consensus
  */
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -28,18 +29,36 @@ import { COMPANIES } from "../lib/companies";
 
 const sql = neon(process.env.DATABASE_URL!);
 
-const FIN_TYPES = "annualTotalRevenue,annualEBITDA,annualNetIncome,annualTotalAssets";
+const ANNUAL_FIN_TYPES = [
+  "annualTotalRevenue",
+  "annualEBITDA",
+  "annualNetIncome",
+  "annualTotalAssets",
+];
+const QUARTERLY_FIN_TYPES = [
+  "quarterlyTotalRevenue",
+  "quarterlyEBITDA",
+  "quarterlyNetIncome",
+  "quarterlyTotalAssets",
+];
 
-type FinRow = { year: string; revenue: number | null; ebitda: number | null; pat: number | null; assets: number | null };
+type FinRow = {
+  period: string;
+  revenue: number | null;
+  ebitda: number | null;
+  pat: number | null;
+  assets: number | null;
+};
 
-async function fetchFinancials(yfTicker: string): Promise<FinRow[]> {
+async function fetchFinancials(yfTicker: string, types: string[]): Promise<FinRow[]> {
+  const typeList = types.join(",");
   const url =
     `https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/${yfTicker}` +
-    `?symbol=${yfTicker}&type=${FIN_TYPES}&period1=1420070400&period2=1790000000`;
+    `?symbol=${yfTicker}&type=${typeList}&period1=1420070400&period2=1790000000`;
   const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const json = (await res.json()) as { timeseries?: { result?: Array<Record<string, unknown>> } };
-  const byYear = new Map<string, FinRow>();
+  const byPeriod = new Map<string, FinRow>();
   const key = (metric: string): "revenue" | "ebitda" | "pat" | "assets" =>
     metric.includes("Revenue") ? "revenue" : metric.includes("EBITDA") ? "ebitda" : metric.includes("NetIncome") ? "pat" : "assets";
   for (const r of json.timeseries?.result ?? []) {
@@ -48,15 +67,21 @@ async function fetchFinancials(yfTicker: string): Promise<FinRow[]> {
     if (!type) continue;
     for (const pt of (r[type] as Array<Record<string, unknown>> | undefined) ?? []) {
       if (!pt) continue;
-      const year = pt.asOfDate as string | undefined;
+      const period = pt.asOfDate as string | undefined;
       const raw = (pt.reportedValue as { raw?: number } | undefined)?.raw;
-      if (!year || typeof raw !== "number") continue;
-      const row = byYear.get(year) ?? { year, revenue: null, ebitda: null, pat: null, assets: null };
+      if (!period || typeof raw !== "number") continue;
+      const row = byPeriod.get(period) ?? {
+        period,
+        revenue: null,
+        ebitda: null,
+        pat: null,
+        assets: null,
+      };
       row[key(type)] = raw;
-      byYear.set(year, row);
+      byPeriod.set(period, row);
     }
   }
-  return [...byYear.values()].sort((a, b) => a.year.localeCompare(b.year));
+  return [...byPeriod.values()].sort((a, b) => a.period.localeCompare(b.period));
 }
 
 async function main() {
@@ -69,6 +94,17 @@ async function main() {
       pat          NUMERIC(20, 0),
       total_assets NUMERIC(20, 0),
       PRIMARY KEY (ticker, fiscal_year)
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS company_financials_quarterly (
+      ticker       VARCHAR(30) NOT NULL,
+      quarter_end  DATE NOT NULL,
+      revenue      NUMERIC(20, 0),
+      ebitda       NUMERIC(20, 0),
+      pat          NUMERIC(20, 0),
+      total_assets NUMERIC(20, 0),
+      PRIMARY KEY (ticker, quarter_end)
     )
   `;
   await sql`
@@ -96,23 +132,40 @@ async function main() {
   for (let i = 0; i < COMPANIES.length; i++) {
     const c = COMPANIES[i];
     process.stdout.write(`  [${i + 1}/${COMPANIES.length}] ${c.ticker.padEnd(12)} `);
-    let finN = 0;
+    let annualN = 0;
+    let quarterlyN = 0;
     const notes: string[] = [];
 
     try {
-      const fins = await fetchFinancials(c.yfTicker);
+      const fins = await fetchFinancials(c.yfTicker, ANNUAL_FIN_TYPES);
       for (const f of fins) {
         await sql`
           INSERT INTO company_financials (ticker, fiscal_year, revenue, ebitda, pat, total_assets)
-          VALUES (${c.ticker}, ${f.year}, ${f.revenue}, ${f.ebitda}, ${f.pat}, ${f.assets})
+          VALUES (${c.ticker}, ${f.period}, ${f.revenue}, ${f.ebitda}, ${f.pat}, ${f.assets})
           ON CONFLICT (ticker, fiscal_year) DO UPDATE
             SET revenue = EXCLUDED.revenue, ebitda = EXCLUDED.ebitda,
                 pat = EXCLUDED.pat, total_assets = EXCLUDED.total_assets
         `;
       }
-      finN = fins.length;
+      annualN = fins.length;
     } catch {
-      notes.push("no-fin");
+      notes.push("no-annual-fin");
+    }
+
+    try {
+      const fins = await fetchFinancials(c.yfTicker, QUARTERLY_FIN_TYPES);
+      for (const f of fins) {
+        await sql`
+          INSERT INTO company_financials_quarterly (ticker, quarter_end, revenue, ebitda, pat, total_assets)
+          VALUES (${c.ticker}, ${f.period}, ${f.revenue}, ${f.ebitda}, ${f.pat}, ${f.assets})
+          ON CONFLICT (ticker, quarter_end) DO UPDATE
+            SET revenue = EXCLUDED.revenue, ebitda = EXCLUDED.ebitda,
+                pat = EXCLUDED.pat, total_assets = EXCLUDED.total_assets
+        `;
+      }
+      quarterlyN = fins.length;
+    } catch {
+      notes.push("no-quarterly-fin");
     }
 
     try {
@@ -147,7 +200,9 @@ async function main() {
     }
 
     if (notes.length) gaps.push(`${c.ticker}(${notes.join(",")})`);
-    console.log(`fin=${finN} ${notes.length ? "⚠ " + notes.join(",") : "✓"}`);
+    console.log(
+      `annual=${annualN} quarterly=${quarterlyN} ${notes.length ? "⚠ " + notes.join(",") : "✓"}`
+    );
     await new Promise((r) => setTimeout(r, 150));
   }
 

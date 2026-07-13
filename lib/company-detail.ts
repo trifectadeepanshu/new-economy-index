@@ -1,14 +1,15 @@
 /**
- * Company detail for the constituent modal: description, annual financials with
- * derived metrics, analyst consensus, and share-price history. Monetary values
- * are converted to the requested currency (financials reported in INR by Yahoo).
+ * Company detail for the constituent modal: description, quarterly financials
+ * with derived metrics, analyst consensus, and share-price history. Monetary
+ * values are converted to the requested currency (financials reported in INR by
+ * Yahoo).
  */
 import { neon } from "@neondatabase/serverless";
 import { getFxRates, fetchLiveUsdInr } from "@/lib/fx";
 import type {
   AnalystConsensus,
   CompanyDetail,
-  CompanyFinancialYear,
+  CompanyFinancialPeriod,
   Currency,
 } from "@/lib/index-api";
 
@@ -18,21 +19,88 @@ function getSql() {
   return neon(url);
 }
 
-function fyLabel(fiscalYear: string): string {
-  // Indian FY ends in March; label by the ending year (2026-03-31 -> FY26).
-  const [y, m] = fiscalYear.split("-").map(Number);
-  const endYear = m <= 3 ? y : y + 1;
-  return `FY${String(endYear).slice(2)}`;
-}
+type FinancialRawRow = {
+  period: string;
+  revenue: number | null;
+  ebitda: number | null;
+  pat: number | null;
+  total_assets: number | null;
+};
 
 const pct = (num: number | null, den: number | null): number | null =>
   num != null && den != null && den !== 0 ? Math.round((num / den) * 1000) / 10 : null;
 
+const round1 = (value: number): number => Math.round(value * 10) / 10;
+const round2 = (value: number): number => Math.round(value * 100) / 100;
+
+export function quarterLabel(quarterEnd: string): string {
+  const [year, month] = quarterEnd.split("-").map(Number);
+  const quarterByMonth: Record<number, number> = { 3: 4, 6: 1, 9: 2, 12: 3 };
+  const quarter = quarterByMonth[month] ?? Math.ceil(month / 3);
+  const fiscalYear = month <= 3 ? year : year + 1;
+  return `Q${quarter} FY${String(fiscalYear).slice(2)}`;
+}
+
+function sameQuarterPreviousYear(period: string): string {
+  const year = Number(period.slice(0, 4));
+  return `${year - 1}${period.slice(4)}`;
+}
+
+function ttmRevenue(rows: FinancialRawRow[], index: number): number | null {
+  const trailing = rows.slice(Math.max(0, index - 3), index + 1);
+  if (trailing.length < 4) return null;
+  let total = 0;
+  for (const row of trailing) {
+    if (row.revenue == null) return null;
+    total += row.revenue;
+  }
+  return total;
+}
+
+function assetsAsOf(rows: FinancialRawRow[], index: number): number | null {
+  for (let i = index; i >= 0; i--) {
+    const assets = rows[i].total_assets;
+    if (assets != null) return assets;
+  }
+  return null;
+}
+
+export function buildQuarterlyFinancials(
+  rows: FinancialRawRow[],
+  money: (value: number | null) => number | null = (value) => value
+): CompanyFinancialPeriod[] {
+  const sorted = [...rows].sort((a, b) => a.period.localeCompare(b.period));
+  const byPeriod = new Map(sorted.map((row) => [row.period, row]));
+
+  return sorted.map((row, index) => {
+    const prevYear = byPeriod.get(sameQuarterPreviousYear(row.period));
+    const trailingRevenue = ttmRevenue(sorted, index);
+    const assets = assetsAsOf(sorted, index);
+
+    return {
+      period: row.period,
+      label: quarterLabel(row.period),
+      revenue: money(row.revenue),
+      pat: money(row.pat),
+      ebitdaMargin: pct(row.ebitda, row.revenue),
+      patMargin: pct(row.pat, row.revenue),
+      revenueGrowth:
+        prevYear?.revenue && row.revenue
+          ? round1((row.revenue / prevYear.revenue - 1) * 100)
+          : null,
+      assetIntensity:
+        assets != null && trailingRevenue != null && trailingRevenue !== 0
+          ? round2(assets / trailingRevenue)
+          : null,
+    };
+  });
+}
+
 export async function getCompanyDetail(ticker: string, currency: Currency): Promise<CompanyDetail> {
   const sql = getSql();
   const [finRaw, profRaw, ratingRaw, priceRaw, fx] = await Promise.all([
-    sql`SELECT fiscal_year::text AS fy, revenue::float, ebitda::float, pat::float, total_assets::float
-        FROM company_financials WHERE ticker = ${ticker} ORDER BY fiscal_year ASC`,
+    sql`SELECT quarter_end::text AS period, revenue::float, ebitda::float, pat::float, total_assets::float
+        FROM company_financials_quarterly WHERE ticker = ${ticker} ORDER BY quarter_end ASC`,
     sql`SELECT description FROM company_profiles WHERE ticker = ${ticker}`,
     sql`SELECT strong_buy, buy, hold, sell, strong_sell, rating_key, num_analysts
         FROM analyst_ratings WHERE ticker = ${ticker}`,
@@ -40,7 +108,7 @@ export async function getCompanyDetail(ticker: string, currency: Currency): Prom
         FROM stock_snapshots WHERE ticker = ${ticker} ORDER BY date ASC`,
     getFxRates(),
   ]);
-  const finRows = finRaw as { fy: string; revenue: number | null; ebitda: number | null; pat: number | null; total_assets: number | null }[];
+  const finRows = finRaw as FinancialRawRow[];
   const profRows = profRaw as { description: string | null }[];
   const ratingRows = ratingRaw as { strong_buy: number; buy: number; hold: number; sell: number; strong_sell: number; rating_key: string | null; num_analysts: number | null }[];
   const priceRows = priceRaw as { date: string; close: number }[];
@@ -49,20 +117,7 @@ export async function getCompanyDetail(ticker: string, currency: Currency): Prom
   const rate = usd ? await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate) : 1;
   const money = (v: number | null): number | null => (v == null ? null : usd ? Math.round((v / rate) * 100) / 100 : v);
 
-  const financials: CompanyFinancialYear[] = finRows.map((r, i) => {
-    const prev = i > 0 ? finRows[i - 1] : null;
-    return {
-      fy: fyLabel(r.fy),
-      revenue: money(r.revenue),
-      pat: money(r.pat),
-      ebitdaMargin: pct(r.ebitda, r.revenue),
-      patMargin: pct(r.pat, r.revenue),
-      revenueGrowth:
-        prev && prev.revenue && r.revenue ? Math.round((r.revenue / prev.revenue - 1) * 1000) / 10 : null,
-      assetIntensity:
-        r.total_assets && r.revenue ? Math.round((r.total_assets / r.revenue) * 100) / 100 : null,
-    };
-  });
+  const financials = buildQuarterlyFinancials(finRows, money);
 
   const rt = ratingRows[0];
   const analyst: AnalystConsensus | null =

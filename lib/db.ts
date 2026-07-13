@@ -265,6 +265,17 @@ export async function ensureSchema() {
     )
   `;
   await sql`
+    CREATE TABLE IF NOT EXISTS company_financials_quarterly (
+      ticker       VARCHAR(30) NOT NULL,
+      quarter_end  DATE NOT NULL,
+      revenue      NUMERIC(20, 0),
+      ebitda       NUMERIC(20, 0),
+      pat          NUMERIC(20, 0),
+      total_assets NUMERIC(20, 0),
+      PRIMARY KEY (ticker, quarter_end)
+    )
+  `;
+  await sql`
     CREATE TABLE IF NOT EXISTS company_profiles (
       ticker      VARCHAR(30) PRIMARY KEY,
       description TEXT,

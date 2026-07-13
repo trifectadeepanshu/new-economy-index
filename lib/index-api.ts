@@ -98,14 +98,15 @@ export function isHistoryRange(value: string): value is HistoryRange {
 
 // --- Company detail (modal) ---------------------------------------------------
 
-export type CompanyFinancialYear = {
-  fy: string; // "FY24"
+export type CompanyFinancialPeriod = {
+  period: string; // ISO quarter-end date
+  label: string; // e.g. "Q4 FY26"
   revenue: number | null; // in `currency`
   pat: number | null; // in `currency`, as reported
   ebitdaMargin: number | null; // %
   patMargin: number | null; // %
-  revenueGrowth: number | null; // % YoY
-  assetIntensity: number | null; // total assets / revenue (x)
+  revenueGrowth: number | null; // % YoY vs same quarter last year
+  assetIntensity: number | null; // total assets / TTM revenue (x)
 };
 
 export type AnalystConsensus = {
@@ -122,7 +123,7 @@ export type CompanyDetail = {
   ticker: string;
   currency: Currency;
   description: string | null;
-  financials: CompanyFinancialYear[];
+  financials: CompanyFinancialPeriod[];
   analyst: AnalystConsensus | null;
   priceSeries: { date: string; close: number }[]; // in `currency`
 };

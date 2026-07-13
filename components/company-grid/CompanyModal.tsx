@@ -8,22 +8,39 @@ import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 import { formatMarketCap, formatPrice, formatSignedPercent } from "@/components/company-grid/format";
 import { Sparkline } from "@/components/index-dashboard/DashboardChrome";
 
-/** Tiny bar sparkline for a financial metric's yearly trajectory. */
-function MiniBars({ values }: { values: (number | null)[] }) {
-  const nums = values.filter((v): v is number => v != null);
+type BarPoint = {
+  label: string;
+  value: number | null;
+};
+
+function shortPeriodLabel(label: string) {
+  return label.split(" ")[0] || label;
+}
+
+/** Tiny bar sparkline for a financial metric's quarterly trajectory. */
+function MiniBars({ label, points }: { label: string; points: BarPoint[] }) {
+  const nums = points.map((point) => point.value).filter((v): v is number => v != null);
   if (!nums.length) return null;
   const max = Math.max(...nums, 0);
   const min = Math.min(...nums, 0);
   const range = max - min || 1;
   return (
-    <div className="nei-cm-bars">
-      {values.map((v, i) => (
-        <span
-          key={i}
-          className={`nei-cm-bar${i === values.length - 1 ? " is-latest" : ""}`}
-          style={{ height: `${v == null ? 4 : 8 + ((v - min) / range) * 30}px` }}
-        />
-      ))}
+    <div className="nei-cm-bars" role="img" aria-label={`${label} quarterly trend`}>
+      <div className="nei-cm-bar-row">
+        {points.map((point, i) => (
+          <span
+            key={`${point.label}-${i}`}
+            className={`nei-cm-bar${i === points.length - 1 ? " is-latest" : ""}`}
+            style={{ height: `${point.value == null ? 4 : 8 + ((point.value - min) / range) * 30}px` }}
+            title={`${point.label}: ${point.value ?? "No data"}`}
+          />
+        ))}
+      </div>
+      <div className="nei-cm-bar-labels" aria-hidden="true">
+        {points.map((point, i) => (
+          <span key={`${point.label}-label-${i}`}>{shortPeriodLabel(point.label)}</span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -84,8 +101,10 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
 
   if (!stock) return null;
   const isPortfolio = PORTFOLIO_TICKERS.has(stock.ticker);
-  const fins = detail?.financials ?? [];
+  const fins = (detail?.financials ?? []).slice(-5);
   const latest = fins.at(-1);
+  const bars = (selector: (point: (typeof fins)[number]) => number | null): BarPoint[] =>
+    fins.map((point) => ({ label: point.label, value: selector(point) }));
   const up = (stock.changePct ?? 0) >= 0;
 
   return (
@@ -116,35 +135,35 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
 
         <div className="nei-cm-cards">
           <div className="nei-cm-card">
-            <span className="nei-cm-card-label">Revenue{latest?.fy ? ` · ${latest.fy}` : ""}</span>
+            <span className="nei-cm-card-label">Revenue{latest?.label ? ` · ${latest.label}` : ""}</span>
             <strong className="nei-mono">{formatMarketCap(latest?.revenue ?? null, detail?.currency ?? currency)}</strong>
             {latest?.revenueGrowth != null && (
               <span className={`nei-cm-card-sub ${latest.revenueGrowth >= 0 ? "is-pos" : "is-neg"}`}>
-                {formatSignedPercent(latest.revenueGrowth, 1)} YoY
+                {formatSignedPercent(latest.revenueGrowth, 1)} same qtr YoY
               </span>
             )}
-            <MiniBars values={fins.map((f) => f.revenue)} />
+            <MiniBars label="Revenue" points={bars((f) => f.revenue)} />
           </div>
 
           <div className="nei-cm-card">
             <span className="nei-cm-card-label">EBITDA margin</span>
             <strong className="nei-mono">{latest?.ebitdaMargin != null ? `${latest.ebitdaMargin.toFixed(1)}%` : "—"}</strong>
-            <span className="nei-cm-card-sub">latest FY</span>
-            <MiniBars values={fins.map((f) => f.ebitdaMargin)} />
+            <span className="nei-cm-card-sub">{latest?.label ?? "latest quarter"}</span>
+            <MiniBars label="EBITDA margin" points={bars((f) => f.ebitdaMargin)} />
           </div>
 
           <div className="nei-cm-card">
-            <span className="nei-cm-card-label">PAT (as reported)</span>
+            <span className="nei-cm-card-label">PAT{latest?.label ? ` · ${latest.label}` : ""}</span>
             <strong className="nei-mono">{formatMarketCap(latest?.pat ?? null, detail?.currency ?? currency)}</strong>
             {latest?.patMargin != null && <span className="nei-cm-card-sub">{latest.patMargin.toFixed(1)}% margin</span>}
-            <MiniBars values={fins.map((f) => f.pat)} />
+            <MiniBars label="PAT" points={bars((f) => f.pat)} />
           </div>
 
           <div className="nei-cm-card">
-            <span className="nei-cm-card-label">Asset intensity</span>
+            <span className="nei-cm-card-label">TTM asset intensity</span>
             <strong className="nei-mono">{latest?.assetIntensity != null ? `${latest.assetIntensity.toFixed(2)}x` : "—"}</strong>
-            <span className="nei-cm-card-sub">assets / revenue</span>
-            <MiniBars values={fins.map((f) => f.assetIntensity)} />
+            <span className="nei-cm-card-sub">assets / TTM revenue</span>
+            <MiniBars label="TTM asset intensity" points={bars((f) => f.assetIntensity)} />
           </div>
         </div>
 

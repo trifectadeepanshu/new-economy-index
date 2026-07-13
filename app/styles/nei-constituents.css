@@ -628,9 +628,24 @@
   .nei-cm-card-sub.is-pos { color: #7DD89B; }
   .nei-cm-card-sub.is-neg { color: #E89175; }
 
-  .nei-cm-bars { display: flex; align-items: flex-end; gap: 3px; height: 40px; margin-top: 10px; }
+  .nei-cm-bars { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+  .nei-cm-bar-row { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
   .nei-cm-bar { flex: 1; border-radius: 2px; background: rgba(169,192,255,0.28); min-height: 3px; }
   .nei-cm-bar.is-latest { background: var(--nei-accent, #E07A38); }
+  .nei-cm-bar-labels {
+    display: flex;
+    gap: 3px;
+    color: rgba(232,235,240,0.36);
+    font: 600 8px var(--font-jetbrains), ui-monospace, monospace;
+    line-height: 1.2;
+  }
+  .nei-cm-bar-labels span {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+  }
 
   .nei-cm-section { margin-top: 22px; }
   .nei-cm-chart { margin-top: 8px; }
