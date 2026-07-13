@@ -28,6 +28,9 @@ type ChartCanvasProps = {
   selectedSector: Sector;
   visibleBenchmarks?: Set<BenchmarkKey>;
   showTrifecta?: boolean;
+  /** Draw the "Base 1,000" reference line — only meaningful when the range
+   * starts at the index base (the NEI line shows its true level otherwise). */
+  showBaseLine?: boolean;
 };
 
 export function ChartCanvas({
@@ -41,6 +44,7 @@ export function ChartCanvas({
   selectedSector,
   visibleBenchmarks,
   showTrifecta,
+  showBaseLine,
 }: ChartCanvasProps) {
   return (
     <div className="nei-chart-canvas">
@@ -89,18 +93,20 @@ export function ChartCanvas({
             width={54}
           />
           <Tooltip content={<ChartTooltip />} />
-          <ReferenceLine
-            y={INDEX_BASE_VALUE}
-            stroke="var(--nei-grid-strong)"
-            strokeDasharray="4 4"
-            label={{
-              value: "Base 1,000",
-              position: "insideTopLeft",
-              fill: "var(--nei-muted)",
-              fontSize: 10,
-              fontFamily: "var(--font-inter), system-ui",
-            }}
-          />
+          {showBaseLine && (
+            <ReferenceLine
+              y={INDEX_BASE_VALUE}
+              stroke="var(--nei-grid-strong)"
+              strokeDasharray="4 4"
+              label={{
+                value: "Base 1,000",
+                position: "insideTopLeft",
+                fill: "var(--nei-muted)",
+                fontSize: 10,
+                fontFamily: "var(--font-inter), system-ui",
+              }}
+            />
+          )}
 
           {activeMode === "compare" ? (
             <SectorLines

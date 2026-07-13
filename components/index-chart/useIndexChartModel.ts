@@ -42,17 +42,18 @@ export function useIndexChartModel({
   selectedSector,
 }: ChartModelInput) {
   const indexData = useMemo<ChartPoint[]>(() => {
-    // Index every line to 1,000 at the first visible point of the range, so all
-    // lines start together at 1,000 and the chart reads as relative performance.
+    // The NEI line keeps its true index level (so the chart headline matches the
+    // index value shown elsewhere). Benchmarks and the Trifecta portfolio are
+    // rebased to meet the NEI at the range start, so every line starts together
+    // at that level and the chart reads as relative performance from there.
     const round2 = (v: number) => Math.round(v * 100) / 100;
     const neiFirst = historyData[0]?.value ?? null;
-    const neiFactor = neiFirst ? 1000 / neiFirst : 1;
 
     const overlayByDate = new Map<string, Partial<Record<BenchmarkKey | "TRIFECTA", number>>>();
     const addOverlay = (key: BenchmarkKey | "TRIFECTA", pts: { date: string; value: number }[]) => {
       const first = pts[0];
-      if (!first || !first.value) return;
-      const factor = 1000 / first.value;
+      if (!first || !first.value || !neiFirst) return;
+      const factor = neiFirst / first.value;
       for (const pt of pts) {
         const entry = overlayByDate.get(pt.date) ?? {};
         entry[key] = round2(pt.value * factor);
@@ -64,10 +65,10 @@ export function useIndexChartModel({
 
     const points = historyData.map((point) => {
       const cp = toChartPoint(point, range);
-      return { ...cp, value: round2(cp.value * neiFactor), ...overlayByDate.get(point.date) };
+      return { ...cp, value: round2(cp.value), ...overlayByDate.get(point.date) };
     });
     return liveValue !== null && points.length
-      ? [...points, { date: "now", label: "Now", value: round2(liveValue * neiFactor) }]
+      ? [...points, { date: "now", label: "Now", value: round2(liveValue) }]
       : points;
   }, [historyData, portfolioData, benchmarks, liveValue, range]);
 

@@ -77,6 +77,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
             selectedSector="Platforms"
             visibleBenchmarks={visibleBenchmarks}
             showTrifecta={showTrifecta && hasTrifecta}
+            showBaseLine={range === "ALL"}
           />
 
           {(availableBenchmarks.length > 0 || hasTrifecta) && (
