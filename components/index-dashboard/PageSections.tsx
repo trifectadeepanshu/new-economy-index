@@ -2,7 +2,7 @@ import Image from "next/image";
 import { type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
-import type { Currency, StockData } from "@/lib/index-api";
+import type { Currency, SectorCompositionPoint, StockData } from "@/lib/index-api";
 import { SECTORS } from "@/lib/companies";
 import {
   SectionEyebrow,
@@ -142,11 +142,11 @@ export function ConstituentsSection({
 }
 
 export function SectorSection({
-  stocks,
-  numCompanies,
+  sectorComposition,
+  currency,
 }: {
-  stocks: StockData[];
-  numCompanies: number;
+  sectorComposition: SectorCompositionPoint[];
+  currency: Currency;
 }) {
   return (
     <ReferenceShell
@@ -155,7 +155,7 @@ export function SectorSection({
       title="What is India's new economy actually made of?"
       copy="Deeper than fintech. Broader than consumer. See for yourself."
     >
-      <SectorComposition stocks={stocks} totalListings={numCompanies} />
+      <SectorComposition sectors={sectorComposition} currency={currency} />
       <SectorCharts />
     </ReferenceShell>
   );

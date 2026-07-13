@@ -44,6 +44,14 @@ function normalizeLiveData(json: LiveIndexPayload): LiveIndexData {
     currency: json.currency ?? "inr",
     usdInr: json.usdInr ?? null,
     trifectaWeightPct: json.trifectaWeightPct ?? null,
+    staleConstituents: json.staleConstituents ?? [],
+    marketStats: json.marketStats ?? {
+      high52w: null,
+      low52w: null,
+      advancers: 0,
+      decliners: 0,
+    },
+    sectorComposition: json.sectorComposition ?? [],
     stocks: json.stocks ?? [],
   };
 }

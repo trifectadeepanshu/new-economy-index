@@ -16,6 +16,12 @@ export type HeroStat = {
 };
 
 const EMPTY_STOCKS: StockData[] = [];
+const EMPTY_MARKET_STATS = {
+  high52w: null,
+  low52w: null,
+  advancers: 0,
+  decliners: 0,
+};
 
 function useCountUp(target: number | null) {
   const [displayed, setDisplayed] = useState<number | null>(null);
@@ -134,18 +140,6 @@ function buildHeroSeries(sparkSeries: number[], indexValue: number | null) {
   return Math.abs(last - indexValue) < 0.01 ? sparkSeries : [...sparkSeries, indexValue];
 }
 
-function getBreadth(stocks: StockData[]) {
-  return stocks.reduce(
-    (breadth, stock) => {
-      const change = stock.changePct ?? 0;
-      if (change > 0) breadth.advancers += 1;
-      if (change < 0) breadth.decliners += 1;
-      return breadth;
-    },
-    { advancers: 0, decliners: 0 }
-  );
-}
-
 export function useIndexDashboardModel() {
   const { currency, setCurrency } = useCurrency();
   const { data, isLoading, error, refresh } = useIndexData(currency);
@@ -161,16 +155,7 @@ export function useIndexDashboardModel() {
     () => buildHeroSeries(sparkSeries, indexValue),
     [indexValue, sparkSeries]
   );
-  const { advancers, decliners } = useMemo(() => getBreadth(stocks), [stocks]);
-
-  const high52w = useMemo(
-    () => (heroSeries.length ? Math.max(...heroSeries) : null),
-    [heroSeries]
-  );
-  const low52w = useMemo(
-    () => (heroSeries.length ? Math.min(...heroSeries) : null),
-    [heroSeries]
-  );
+  const marketStats = data?.marketStats ?? EMPTY_MARKET_STATS;
   const dataLoaded = stocks.length > 0;
   const sinceInception =
     indexValue === null
@@ -179,12 +164,12 @@ export function useIndexDashboardModel() {
 
   const heroStats = useMemo<HeroStat[]>(
     () => [
-      { label: "52W High", value: formatNumber(high52w, 0) },
-      { label: "52W Low", value: formatNumber(low52w, 0) },
-      { label: "Adv", value: dataLoaded ? advancers : "—", tone: "positive" },
-      { label: "Dec", value: dataLoaded ? decliners : "—", tone: "negative" },
+      { label: "52W High", value: formatNumber(marketStats.high52w, 0) },
+      { label: "52W Low", value: formatNumber(marketStats.low52w, 0) },
+      { label: "Adv", value: dataLoaded ? marketStats.advancers : "—", tone: "positive" },
+      { label: "Dec", value: dataLoaded ? marketStats.decliners : "—", tone: "negative" },
     ],
-    [advancers, dataLoaded, decliners, high52w, low52w]
+    [dataLoaded, marketStats]
   );
 
   return {
@@ -193,6 +178,7 @@ export function useIndexDashboardModel() {
     dataError: error,
     refreshData: refresh,
     isStale: Boolean(data?.isStale),
+    staleConstituents: data?.staleConstituents ?? [],
     marketOpen,
     nowIST,
     indexValue,
@@ -205,6 +191,7 @@ export function useIndexDashboardModel() {
     totalMarketCap: data?.totalMarketCap ?? null,
     usdInr: data?.usdInr ?? null,
     trifectaWeightPct: data?.trifectaWeightPct ?? null,
+    sectorComposition: data?.sectorComposition ?? [],
     // `currency` matches the fetched values (for formatting); `selectedCurrency`
     // is the toggle state (for immediate button feedback before the refetch).
     currency: data?.currency ?? currency,

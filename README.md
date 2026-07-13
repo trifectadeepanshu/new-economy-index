@@ -22,17 +22,20 @@ CRON_SECRET=your-secret-here
 
 ## Data Jobs
 
-Backfill historical snapshots:
-
-```bash
-npx tsx scripts/backfill.ts
-```
+The old Yahoo-based `scripts/backfill.ts` and `scripts/backfill-shares.ts`
+are intentionally retired; they exit before touching data.
 
 Import the canonical CapIQ workbook cache and recompute the index:
 
 ```bash
-npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_v2 (1).xlsx"
-npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_v2 (1).xlsx" --apply
+npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_v2.xlsx"
+npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_v2.xlsx" --apply
+```
+
+Daily forward snapshots are handled by the cron route:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" "https://your-domain.com/api/cron/snapshot"
 ```
 
 Vercel runs `/api/cron/snapshot` on market weekdays via `vercel.json`.
@@ -40,6 +43,7 @@ Vercel runs `/api/cron/snapshot` on market weekdays via `vercel.json`.
 ## Checks
 
 ```bash
+npm test
 npm run lint
 npm run build
 ```

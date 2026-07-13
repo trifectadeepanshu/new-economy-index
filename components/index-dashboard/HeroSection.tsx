@@ -165,7 +165,9 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
   const valueFlashClass = model.valueFlash ? ` nei-value-flash-${model.valueFlash}` : "";
   const statusBanner = model.dataError
     ? "Live data unavailable. Showing the latest values we have."
-    : model.isStale
+    : model.staleConstituents.length
+      ? `Some constituent prices are stale: ${model.staleConstituents.join(", ")}.`
+      : model.isStale
       ? "Showing last market close. Live prices unavailable."
       : null;
 

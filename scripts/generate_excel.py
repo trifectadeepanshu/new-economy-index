@@ -507,7 +507,7 @@ def main():
     conn.close()
 
     if not shares:
-        raise SystemExit("share_counts is empty — run scripts/backfill-shares.ts first.")
+        raise SystemExit("share_counts is empty — use scripts/import-capiq-workbook.ts.")
     print(f"  {len(prices_by_date)} trading days · {len(shares)} tickers with shares")
 
     print("Computing divisor index…")

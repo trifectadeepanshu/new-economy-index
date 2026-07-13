@@ -1,20 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { COMPANIES, PORTFOLIO_TICKERS, type Company } from "@/lib/companies";
-import { fetchAllQuotes as fetchUpstoxQuotes, type QuoteResult } from "@/lib/upstox";
+import { fetchAllQuotes, type QuoteResult } from "@/lib/yahoo-finance";
 import {
   ensureSchema,
   getEarliestPricesPerTicker,
+  getIndexRangeStats,
   getLatestIndexSnapshot,
-  getLatestStockPrices,
+  getLatestStockSnapshots,
   getLiveIndexState,
   getSharesMap,
-  type LatestStockPrice,
+  type LatestStockSnapshot,
 } from "@/lib/db";
-import type { Currency, LiveIndexPayload, StockData } from "@/lib/index-api";
+import type {
+  Currency,
+  LiveIndexPayload,
+  MarketStats,
+  SectorCompositionPoint,
+  StockData,
+} from "@/lib/index-api";
 import { priceRatio, round } from "@/lib/index-math";
 import { liveIndexValue, type QuarterlySharesMap } from "@/lib/index-engine";
 import { getFxRates, fetchLiveUsdInr } from "@/lib/fx";
 import { getISTDate } from "@/lib/market-hours";
+import {
+  buildMarketStats,
+  buildSectorComposition,
+  getTrailingYearFromDate,
+  staleTickersFor,
+  stockSnapshotsToPricePoints,
+  type PricePoint,
+} from "@/lib/live-payload-metrics";
 
 /** Latest known point-in-time share count per ticker (for market-cap display). */
 function latestShares(shares: QuarterlySharesMap): Map<string, number> {
@@ -34,11 +49,6 @@ function ensureSchemaOnce() {
   schemaReady ??= ensureSchema();
   return schemaReady;
 }
-
-type PricePoint = {
-  price: number | null;
-  changePct: number | null;
-};
 
 // usdInr === null → return native INR values; a number → convert to USD.
 function buildStocks(
@@ -67,6 +77,8 @@ function buildStocks(
       marketCap: conv(marketCapInr),
       basePrice: conv(basePriceInr),
       ratio: priceRatio(priceInr, basePriceInr), // unitless — FX cancels
+      asOfDate: current?.asOfDate ?? null,
+      isStale: Boolean(current?.isStale),
     };
   });
 }
@@ -104,6 +116,9 @@ function toPayload({
   usdInr,
   lastUpdated,
   isStale,
+  staleConstituents,
+  marketStats,
+  sectorComposition,
 }: {
   stocks: StockData[];
   indexValue: number | null;
@@ -114,6 +129,9 @@ function toPayload({
   usdInr: number | null;
   lastUpdated: string | null;
   isStale: boolean;
+  staleConstituents: string[];
+  marketStats: MarketStats;
+  sectorComposition: SectorCompositionPoint[];
 }): LiveIndexPayload {
   return {
     indexValue,
@@ -126,6 +144,9 @@ function toPayload({
     currency,
     usdInr,
     trifectaWeightPct: trifectaWeight(stocks),
+    staleConstituents,
+    marketStats,
+    sectorComposition,
     stocks,
   };
 }
@@ -140,24 +161,46 @@ export async function GET(req: NextRequest) {
   const currency = parseCurrency(req);
   const usd = currency === "usd";
   const today = getISTDate();
+  const trailingYearFromDate = getTrailingYearFromDate(today);
   const active = COMPANIES.filter((c) => c.listedDate <= today);
 
-  // Try live Upstox data first
+  // Try live Yahoo quotes first. If any current index/portfolio member is
+  // missing, fall back to the stored snapshot and mark stale rows explicitly.
   try {
-    const [quotes, basePrices, shares, liveState, snapshot, latestClose, fx] = await Promise.all([
-      fetchUpstoxQuotes(active.map((c) => c.ticker)),
+    const [
+      quotes,
+      basePrices,
+      shares,
+      liveState,
+      snapshot,
+      latestClose,
+      fx,
+      rangeStats,
+    ] = await Promise.all([
+      fetchAllQuotes(active.map((c) => c.yfTicker)),
       getEarliestPricesPerTicker(),
       getSharesMap(),
       getLiveIndexState(),
       getLatestIndexSnapshot(),
-      getLatestStockPrices(),
+      getLatestStockSnapshots(),
       getFxRates(),
+      getIndexRangeStats(trailingYearFromDate, today),
     ]);
     const usdInr = await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate);
+    if (!liveState) throw new Error("Live divisor state unavailable");
 
-    // Overlay live Upstox quotes on the latest stored closes so every company
-    // (including those without an Upstox instrument key) shows price data.
     const livePrices = quotePricesByTicker(quotes);
+    const requiredTickers = new Set([
+      ...liveState.members.map((m) => m.ticker),
+      ...(liveState.portfolio?.members.map((m) => m.ticker) ?? []),
+    ]);
+    const missingQuotes = [...requiredTickers].filter(
+      (ticker) => livePrices[ticker]?.price == null
+    );
+    if (missingQuotes.length) {
+      throw new Error(`Missing live quotes: ${missingQuotes.join(", ")}`);
+    }
+
     const merged: Record<string, PricePoint> = {};
     for (const c of active) {
       const live = livePrices[c.ticker];
@@ -165,38 +208,37 @@ export async function GET(req: NextRequest) {
       merged[c.ticker] = {
         price: live?.price ?? close?.price ?? null,
         changePct: live?.changePct ?? close?.changePct ?? null,
+        asOfDate: live?.price != null ? today : close?.date ?? null,
+        isStale: live?.price == null,
       };
     }
     // Show only the index constituents (current top-50), not the full universe.
-    const indexTickers = new Set(liveState?.members.map((m) => m.ticker) ?? active.map((c) => c.ticker));
+    const indexTickers = new Set(liveState.members.map((m) => m.ticker));
     const constituents = active.filter((c) => indexTickers.has(c.ticker));
     const stocks = buildStocks(constituents, merged, basePrices, latestShares(shares), usd ? usdInr : null);
 
-    // Extend the divisor chain with live prices, carrying forward last close.
+    // Extend the divisor chain with live prices. Quote completeness is checked
+    // above, so missing prices cannot silently carry forward inside the index.
     const livePriceMap = new Map<string, number>();
     for (const q of quotes) if (q.ticker && q.price != null) livePriceMap.set(q.ticker, q.price);
-    const carryForward = new Map<string, number>(
-      Object.entries(latestClose).map(([t, p]: [string, LatestStockPrice]) => [t, p.price])
-    );
 
-    const indexInr =
-      liveState != null
-        ? liveIndexValue(livePriceMap, carryForward, liveState.members, liveState.divisor)
-        : null;
+    const indexInr = liveIndexValue(livePriceMap, new Map(), liveState.members, liveState.divisor);
 
     if (indexInr === null) {
-      throw new Error("Live divisor state unavailable");
+      throw new Error("Live index value unavailable");
     }
 
     // The index level is a single unitless number (same in any currency).
     const indexValue = round(indexInr, 4);
     const portfolioInr = liveState?.portfolio
-      ? liveIndexValue(livePriceMap, carryForward, liveState.portfolio.members, liveState.portfolio.divisor)
+      ? liveIndexValue(livePriceMap, new Map(), liveState.portfolio.members, liveState.portfolio.divisor)
       : null;
     const portfolioValue = portfolioInr !== null ? round(portfolioInr, 4) : null;
 
     const indexChangePct =
       snapshot && snapshot.value > 0 ? round((indexValue / snapshot.value - 1) * 100) : null;
+    const marketStats = buildMarketStats(stocks, rangeStats, indexValue);
+    const sectorComposition = buildSectorComposition(stocks);
 
     return NextResponse.json(
       toPayload({
@@ -209,6 +251,9 @@ export async function GET(req: NextRequest) {
         usdInr: round(usdInr, 4),
         lastUpdated: new Date().toISOString(),
         isStale: false,
+        staleConstituents: [],
+        marketStats,
+        sectorComposition,
       }),
       { headers: LIVE_CACHE_HEADERS }
     );
@@ -218,15 +263,19 @@ export async function GET(req: NextRequest) {
 
   // Fallback: serve last known data from DB
   try {
-    const [snapshot, latestPrices, basePrices, shares, liveState, fx] = await Promise.all([
-      getLatestIndexSnapshot(),
-      getLatestStockPrices(),
-      getEarliestPricesPerTicker(),
-      getSharesMap(),
-      getLiveIndexState(),
-      getFxRates(),
-    ]);
+    const [snapshot, latestClose, basePrices, shares, liveState, fx, rangeStats] =
+      await Promise.all([
+        getLatestIndexSnapshot(),
+        getLatestStockSnapshots(),
+        getEarliestPricesPerTicker(),
+        getSharesMap(),
+        getLiveIndexState(),
+        getFxRates(),
+        getIndexRangeStats(trailingYearFromDate, today),
+      ]);
     const usdInr = await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate);
+    const snapshotDate = snapshot?.date ?? null;
+    const latestPrices = stockSnapshotsToPricePoints(latestClose, snapshotDate);
 
     // Show only the index constituents (current top-50), not the full universe.
     const indexTickers = new Set(liveState?.members.map((m) => m.ticker) ?? active.map((c) => c.ticker));
@@ -234,21 +283,32 @@ export async function GET(req: NextRequest) {
     const stocks = buildStocks(constituents, latestPrices, basePrices, latestShares(shares), usd ? usdInr : null);
 
     const closes = new Map<string, number>(
-      Object.entries(latestPrices).map(([t, p]: [string, LatestStockPrice]) => [t, p.price])
+      Object.entries(latestClose).map(([t, p]: [string, LatestStockSnapshot]) => [t, p.price])
     );
     const portfolioInr = liveState?.portfolio
       ? liveIndexValue(closes, closes, liveState.portfolio.members, liveState.portfolio.divisor)
       : null;
     const portfolioValue = portfolioInr !== null ? round(portfolioInr, 4) : null;
+    const staleConstituents = staleTickersFor(
+      constituents.map((c) => c.ticker),
+      latestClose,
+      snapshotDate
+    );
+    if (staleConstituents.length) {
+      console.warn("[/api/index/live] Serving snapshot with stale constituents:", staleConstituents);
+    }
 
     const lastUpdated = snapshot?.date
       ? new Date(`${snapshot.date}T15:30:00+05:30`).toISOString()
       : null;
+    const indexValue = snapshot ? round(snapshot.value, 4) : null;
+    const marketStats = buildMarketStats(stocks, rangeStats, indexValue);
+    const sectorComposition = buildSectorComposition(stocks);
 
     return NextResponse.json(
       toPayload({
         stocks,
-        indexValue: snapshot ? round(snapshot.value, 4) : null,
+        indexValue,
         indexChangePct: snapshot?.changePct ?? null,
         portfolioValue,
         numCompanies: liveState?.members.length ?? stocks.length,
@@ -256,6 +316,9 @@ export async function GET(req: NextRequest) {
         usdInr: round(usdInr, 4),
         lastUpdated,
         isStale: true,
+        staleConstituents,
+        marketStats,
+        sectorComposition,
       }),
       { headers: LIVE_CACHE_HEADERS }
     );

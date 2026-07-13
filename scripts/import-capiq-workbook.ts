@@ -18,6 +18,7 @@ import { resolve } from "node:path";
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 import { COMPANIES } from "../lib/companies";
 import { ensureSchema, recomputeAndPersistIndex } from "../lib/db";
+import { STOCK_SOURCE_CAPIQ } from "../lib/quote-snapshots";
 
 const DEFAULT_WORKBOOK =
   "/Users/deepanshu/Downloads/TLF New Economy Index Data_new version_2.xlsx";
@@ -38,6 +39,7 @@ type PriceRow = {
   ticker: string;
   close: number;
   changePct: number | null;
+  providerSymbol: string;
 };
 
 type ShareRow = {
@@ -336,7 +338,10 @@ function parseWorkbook(workbook: string): ParsedWorkbook {
   }
 
   const priceRows: PriceRow[] = [];
-  const pricesByTicker = new Map<string, Array<{ date: string; close: number }>>();
+  const pricesByTicker = new Map<
+    string,
+    { providerSymbol: string; rows: Array<{ date: string; close: number }> }
+  >();
   for (let row = 3; row <= 10_000; row++) {
     const date = excelDate(getCell(daily, row, 1));
     if (!date) continue;
@@ -345,12 +350,17 @@ function parseWorkbook(workbook: string): ParsedWorkbook {
       const close = finiteNumber(getCell(daily, row, header.col));
       if (close === null || close <= 0) continue;
       let tickerPrices = pricesByTicker.get(header.ticker);
-      if (!tickerPrices) pricesByTicker.set(header.ticker, (tickerPrices = []));
-      tickerPrices.push({ date, close });
+      if (!tickerPrices) {
+        pricesByTicker.set(
+          header.ticker,
+          (tickerPrices = { providerSymbol: header.rawTicker, rows: [] })
+        );
+      }
+      tickerPrices.rows.push({ date, close });
     }
   }
 
-  for (const [ticker, rows] of pricesByTicker) {
+  for (const [ticker, { providerSymbol, rows }] of pricesByTicker) {
     rows.sort((a, b) => a.date.localeCompare(b.date));
     let previousClose: number | null = null;
     for (const row of rows) {
@@ -362,6 +372,7 @@ function parseWorkbook(workbook: string): ParsedWorkbook {
           previousClose !== null && previousClose !== 0
             ? roundChangePct((row.close / previousClose - 1) * 100)
             : null,
+        providerSymbol,
       });
       previousClose = row.close;
     }
@@ -430,16 +441,30 @@ async function insertPriceRows(sql: SqlClient, rows: PriceRow[]) {
   for (let i = 0; i < rows.length; i += STOCK_CHUNK_SIZE) {
     const chunk = rows.slice(i, i + STOCK_CHUNK_SIZE);
     await sql`
-      INSERT INTO stock_snapshots (date, ticker, close_price, change_pct)
+      INSERT INTO stock_snapshots (
+        date,
+        ticker,
+        close_price,
+        change_pct,
+        source,
+        provider_symbol,
+        observed_at
+      )
       SELECT * FROM unnest(
         ${chunk.map((row) => row.date)}::date[],
         ${chunk.map((row) => row.ticker)}::varchar[],
         ${chunk.map((row) => row.close)}::decimal[],
-        ${chunk.map((row) => row.changePct)}::decimal[]
-      ) AS t(date, ticker, close_price, change_pct)
+        ${chunk.map((row) => row.changePct)}::decimal[],
+        ${chunk.map(() => STOCK_SOURCE_CAPIQ)}::varchar[],
+        ${chunk.map((row) => row.providerSymbol)}::varchar[],
+        ${chunk.map(() => new Date().toISOString())}::timestamptz[]
+      ) AS t(date, ticker, close_price, change_pct, source, provider_symbol, observed_at)
       ON CONFLICT (date, ticker) DO UPDATE
         SET close_price = EXCLUDED.close_price,
-            change_pct = EXCLUDED.change_pct
+            change_pct = EXCLUDED.change_pct,
+            source = EXCLUDED.source,
+            provider_symbol = EXCLUDED.provider_symbol,
+            observed_at = EXCLUDED.observed_at
     `;
   }
 }

@@ -51,16 +51,30 @@ export type LatestIndexSnapshot = {
   changePct: number | null;
 };
 
+export type IndexRangeStats = {
+  fromDate: string;
+  toDate: string;
+  high: number | null;
+  low: number | null;
+};
+
 export type StockSnapshotInput = {
   date: string;
   ticker: string;
   closePrice: number;
   changePct: number | null;
+  source?: string;
+  providerSymbol?: string | null;
+  observedAt?: string;
 };
 
 export type LatestStockPrice = {
   price: number;
   changePct: number | null;
+};
+
+export type LatestStockSnapshot = LatestStockPrice & {
+  date: string;
 };
 
 export type DivisorState = {
@@ -71,6 +85,17 @@ export type DivisorState = {
 export type LiveIndexState = DivisorState & {
   /** Portfolio sub-index divisor state, for a consistent live portfolio value. */
   portfolio?: DivisorState;
+};
+
+export type CronRunStatus = "running" | "success" | "failed" | "skipped";
+
+export type CronRunFinishInput = {
+  status: Exclude<CronRunStatus, "running">;
+  date?: string | null;
+  stockRows?: number | null;
+  missingTickers?: string[];
+  indexValue?: number | null;
+  error?: string | null;
 };
 
 function getSql() {
@@ -107,16 +132,35 @@ export async function ensureSchema() {
   `;
   await sql`
     CREATE TABLE IF NOT EXISTS stock_snapshots (
-      date        DATE NOT NULL,
-      ticker      VARCHAR(30) NOT NULL,
-      close_price DECIMAL(12, 4) NOT NULL,
-      change_pct  DECIMAL(8, 4),
+      date            DATE NOT NULL,
+      ticker          VARCHAR(30) NOT NULL,
+      close_price     DECIMAL(12, 4) NOT NULL,
+      change_pct      DECIMAL(8, 4),
+      source          VARCHAR(24) NOT NULL DEFAULT 'unknown',
+      provider_symbol VARCHAR(64),
+      observed_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
       PRIMARY KEY (date, ticker)
     )
   `;
   await sql`
+    ALTER TABLE stock_snapshots
+      ADD COLUMN IF NOT EXISTS source VARCHAR(24) NOT NULL DEFAULT 'unknown'
+  `;
+  await sql`
+    ALTER TABLE stock_snapshots
+      ADD COLUMN IF NOT EXISTS provider_symbol VARCHAR(64)
+  `;
+  await sql`
+    ALTER TABLE stock_snapshots
+      ADD COLUMN IF NOT EXISTS observed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  `;
+  await sql`
     CREATE INDEX IF NOT EXISTS idx_stock_ticker_date
       ON stock_snapshots(ticker, date DESC)
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_stock_source_date
+      ON stock_snapshots(source, date DESC)
   `;
   await sql`
     CREATE TABLE IF NOT EXISTS share_counts (
@@ -149,6 +193,28 @@ export async function ensureSchema() {
     )
   `;
   await sql`
+    CREATE TABLE IF NOT EXISTS cron_runs (
+      id              BIGSERIAL PRIMARY KEY,
+      job             VARCHAR(64) NOT NULL DEFAULT 'snapshot',
+      date            DATE,
+      started_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+      finished_at     TIMESTAMPTZ,
+      status          VARCHAR(24) NOT NULL,
+      stock_rows      INTEGER,
+      missing_tickers JSONB NOT NULL DEFAULT '[]'::jsonb,
+      index_value     DECIMAL(12, 4),
+      error           TEXT
+    )
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_cron_runs_started_at
+      ON cron_runs(started_at DESC)
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_cron_runs_status_date
+      ON cron_runs(status, date DESC)
+  `;
+  await sql`
     CREATE TABLE IF NOT EXISTS company_financials (
       ticker       VARCHAR(30) NOT NULL,
       fiscal_year  DATE NOT NULL,
@@ -178,6 +244,35 @@ export async function ensureSchema() {
       num_analysts INTEGER,
       updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
     )
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Cron observability
+// ---------------------------------------------------------------------------
+
+export async function startCronRun(job: string, date: string | null): Promise<number> {
+  const sql = getSql();
+  const rows = (await sql`
+    INSERT INTO cron_runs (job, date, status, stock_rows, missing_tickers)
+    VALUES (${job}, ${date}::date, 'running', 0, '[]'::jsonb)
+    RETURNING id
+  `) as DbRow[];
+  return toNumber(rows[0].id);
+}
+
+export async function finishCronRun(id: number, input: CronRunFinishInput) {
+  const sql = getSql();
+  await sql`
+    UPDATE cron_runs
+    SET finished_at = now(),
+        status = ${input.status},
+        date = ${input.date ?? null}::date,
+        stock_rows = ${input.stockRows ?? null},
+        missing_tickers = ${JSON.stringify(input.missingTickers ?? [])}::jsonb,
+        index_value = ${input.indexValue ?? null},
+        error = ${input.error ?? null}
+    WHERE id = ${id}
   `;
 }
 
@@ -379,6 +474,26 @@ export async function getLatestIndexSnapshot(): Promise<LatestIndexSnapshot | nu
   };
 }
 
+export async function getIndexRangeStats(
+  fromDate: string,
+  toDate: string
+): Promise<IndexRangeStats> {
+  const sql = getSql();
+  const rows = await sql`
+    SELECT max(value)::float AS high, min(value)::float AS low
+    FROM index_snapshots
+    WHERE date >= ${fromDate}::date
+      AND date <= ${toDate}::date
+  `;
+  const row = rows[0] ?? {};
+  return {
+    fromDate,
+    toDate,
+    high: toNullableNumber(row.high),
+    low: toNullableNumber(row.low),
+  };
+}
+
 export async function upsertStockSnapshotsBatch(rows: StockSnapshotInput[]) {
   if (!rows.length) return;
   const sql = getSql();
@@ -386,31 +501,56 @@ export async function upsertStockSnapshotsBatch(rows: StockSnapshotInput[]) {
   for (let i = 0; i < rows.length; i += STOCK_BATCH_SIZE) {
     const chunk = rows.slice(i, i + STOCK_BATCH_SIZE);
     await sql`
-      INSERT INTO stock_snapshots (date, ticker, close_price, change_pct)
+      INSERT INTO stock_snapshots (
+        date,
+        ticker,
+        close_price,
+        change_pct,
+        source,
+        provider_symbol,
+        observed_at
+      )
       SELECT * FROM unnest(
         ${chunk.map((r) => r.date)}::date[],
         ${chunk.map((r) => r.ticker)}::varchar[],
         ${chunk.map((r) => r.closePrice)}::decimal[],
-        ${chunk.map((r) => r.changePct)}::decimal[]
-      ) AS t(date, ticker, close_price, change_pct)
+        ${chunk.map((r) => r.changePct)}::decimal[],
+        ${chunk.map((r) => r.source ?? "unknown")}::varchar[],
+        ${chunk.map((r) => r.providerSymbol ?? null)}::varchar[],
+        ${chunk.map((r) => r.observedAt ?? new Date().toISOString())}::timestamptz[]
+      ) AS t(date, ticker, close_price, change_pct, source, provider_symbol, observed_at)
       ON CONFLICT (date, ticker) DO UPDATE
         SET close_price = EXCLUDED.close_price,
-            change_pct = EXCLUDED.change_pct
+            change_pct = EXCLUDED.change_pct,
+            source = EXCLUDED.source,
+            provider_symbol = EXCLUDED.provider_symbol,
+            observed_at = EXCLUDED.observed_at
     `;
   }
 }
 
 export async function getLatestStockPrices(): Promise<Record<string, LatestStockPrice>> {
+  const snapshots = await getLatestStockSnapshots();
+  return Object.fromEntries(
+    Object.entries(snapshots).map(([ticker, { price, changePct }]) => [
+      ticker,
+      { price, changePct },
+    ])
+  );
+}
+
+export async function getLatestStockSnapshots(): Promise<Record<string, LatestStockSnapshot>> {
   const sql = getSql();
   const rows = await sql`
-    SELECT DISTINCT ON (ticker) ticker, close_price::float, change_pct::float
+    SELECT DISTINCT ON (ticker) ticker, date::text, close_price::float, change_pct::float
     FROM stock_snapshots
     ORDER BY ticker, date DESC
   `;
 
-  const prices: Record<string, LatestStockPrice> = {};
+  const prices: Record<string, LatestStockSnapshot> = {};
   for (const row of rows) {
     prices[toTicker(row.ticker)] = {
+      date: String(row.date),
       price: toNumber(row.close_price),
       changePct: toNullableNumber(row.change_pct),
     };

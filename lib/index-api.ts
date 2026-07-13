@@ -14,11 +14,32 @@ export type LiveStockPayload = {
   marketCap: number | null;
   basePrice: number | null;
   ratio: number | null;
+  /** Latest close date behind this displayed row, when known. */
+  asOfDate: string | null;
+  /** True when this row is older than the index snapshot backing the payload. */
+  isStale: boolean;
 };
 
 export type StockData = LiveStockPayload;
 
 export type Currency = "inr" | "usd";
+
+export type MarketStats = {
+  high52w: number | null;
+  low52w: number | null;
+  advancers: number;
+  decliners: number;
+};
+
+export type SectorCompositionPoint = {
+  sector: Sector;
+  numCompanies: number;
+  marketCap: number | null;
+  weightPct: number | null;
+  changePct: number | null;
+  advancers: number;
+  decliners: number;
+};
 
 export type LiveIndexPayload = {
   indexValue: number | null;
@@ -34,6 +55,12 @@ export type LiveIndexPayload = {
   usdInr: number | null;
   /** Trifecta portfolio companies' combined market cap as % of the index total. */
   trifectaWeightPct: number | null;
+  /** Constituent tickers whose displayed close is older than the index snapshot. */
+  staleConstituents: string[];
+  /** Server-computed headline market stats from validated live/snapshot data. */
+  marketStats: MarketStats;
+  /** Market-cap composition of the current index constituents. */
+  sectorComposition: SectorCompositionPoint[];
   stocks: LiveStockPayload[];
 };
 
