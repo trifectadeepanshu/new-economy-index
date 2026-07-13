@@ -37,9 +37,22 @@ export function SectorCharts() {
     () =>
       points
         .filter((p) => p.sector === selected)
-        .map((p) => ({ date: p.date, label: monthLabel(p.date), value: p.value })),
+        .map((p) => ({ date: p.date, value: p.value })),
     [points, selected]
   );
+  const monthTicks = useMemo(() => {
+    const ticks: string[] = [];
+    const seen = new Set<string>();
+
+    for (const point of series) {
+      const month = point.date.slice(0, 7);
+      if (seen.has(month)) continue;
+      seen.add(month);
+      ticks.push(point.date);
+    }
+
+    return ticks;
+  }, [series]);
 
   const latest = series.at(-1)?.value;
   const first = series[0]?.value;
@@ -85,7 +98,9 @@ export function SectorCharts() {
             <LineChart data={series} margin={{ top: 10, right: 18, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,15,25,0.06)" vertical={false} />
               <XAxis
-                dataKey="label"
+                dataKey="date"
+                tickFormatter={monthLabel}
+                ticks={monthTicks}
                 tick={{ fontSize: 11, fill: "rgba(11,15,25,0.45)", fontFamily: "var(--font-inter), system-ui" }}
                 axisLine={false}
                 tickLine={false}
