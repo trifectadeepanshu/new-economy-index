@@ -163,6 +163,7 @@ function MarketStatus({ marketOpen, nowIST }: { marketOpen: boolean; nowIST: str
 function HeroCard({ model }: { model: IndexDashboardModel }) {
   const sinceInceptionValue = model.sinceInception ?? 0;
   const valueFlashClass = model.valueFlash ? ` nei-value-flash-${model.valueFlash}` : "";
+  const usdInrDisplay = model.usdInr !== null ? `₹${model.usdInr.toFixed(2)}` : "—";
   const statusBanner = model.dataError
     ? "Live data unavailable. Showing the latest values we have."
     : model.staleConstituents.length
@@ -187,6 +188,18 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
       <div className="nei-hero-card-header">
         <MarketStatus marketOpen={model.marketOpen} nowIST={model.nowIST} />
         <div className="nei-hero-header-right">
+          <div
+            className="nei-fx-ticker"
+            aria-label={
+              model.usdInr !== null
+                ? `Live USD to INR exchange rate ${usdInrDisplay}`
+                : "Live USD to INR exchange rate unavailable"
+            }
+          >
+            <span className="nei-fx-ticker-label">USD/INR</span>
+            <strong className="nei-fx-ticker-value nei-mono">{usdInrDisplay}</strong>
+            <span className="nei-fx-ticker-meta">live FX</span>
+          </div>
           <div className="nei-currency-toggle" role="group" aria-label="Display currency">
             {(["inr", "usd"] as const).map((c) => (
               <button
@@ -248,13 +261,6 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
         <span className="nei-hero-stat-label">New Economy · Total Market Cap</span>
         <span className="nei-mono nei-mktcap-value">
           {model.totalMarketCap !== null ? formatMarketCap(model.totalMarketCap, model.currency) : "—"}
-        </span>
-      </div>
-
-      <div className="nei-mktcap-row">
-        <span className="nei-hero-stat-label">USD / INR · live</span>
-        <span className="nei-mono nei-mktcap-value">
-          {model.usdInr !== null ? `₹${model.usdInr.toFixed(2)}` : "—"}
         </span>
       </div>
 
