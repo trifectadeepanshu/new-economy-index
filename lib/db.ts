@@ -14,6 +14,7 @@ import {
   computeIndexSeries,
   type DailyPrices,
   type EngineMember,
+  type EngineOptions,
   type IndexPoint,
   type LiveMember,
   type QuarterlySharesMap,
@@ -25,6 +26,18 @@ const LIVE_STATE_KEY = "live_index_state";
 // Index includes the top 50 by market cap each quarter; sub-indices use all members.
 const INDEX_TOP_N = 50;
 const SUBINDEX_TOP_N = Number.POSITIVE_INFINITY;
+const INDEX_ENGINE_OPTIONS: EngineOptions = {
+  baseValue: INDEX_BASE_VALUE,
+  baseDate: INDEX_BASE_DATE,
+  topN: INDEX_TOP_N,
+  anchorDate: INDEX_ANCHOR_DATE,
+};
+const SUBINDEX_ENGINE_OPTIONS: EngineOptions = {
+  baseValue: INDEX_BASE_VALUE,
+  baseDate: INDEX_BASE_DATE,
+  topN: SUBINDEX_TOP_N,
+  anchorDate: INDEX_ANCHOR_DATE,
+};
 
 const ALL_MEMBERS: EngineMember[] = COMPANIES.map((c) => ({
   ticker: c.ticker,
@@ -400,17 +413,15 @@ export async function getIndexHistoryBundle(
   opts: { sectors: boolean; portfolio: boolean }
 ): Promise<IndexHistoryBundle> {
   const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
-  const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N, anchorDate: INDEX_ANCHOR_DATE };
-  const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N, anchorDate: INDEX_ANCHOR_DATE };
 
-  const main = computeIndexSeries(prices, shares, ALL_MEMBERS, indexOpts);
+  const main = computeIndexSeries(prices, shares, ALL_MEMBERS, INDEX_ENGINE_OPTIONS);
   const data = slice(main.points, fromDate, toDate);
 
   const sectorData: SectorHistoryPoint[] = [];
   if (opts.sectors) {
     for (const sector of SECTORS) {
       const members = MEMBERS_BY_SECTOR.get(sector) ?? [];
-      const result = computeIndexSeries(prices, shares, members, subOpts);
+      const result = computeIndexSeries(prices, shares, members, SUBINDEX_ENGINE_OPTIONS);
       for (const p of result.points) {
         if (p.date < fromDate || p.date > toDate) continue;
         sectorData.push({ date: p.date, sector, value: round(p.value, 4), numCompanies: p.numCompanies });
@@ -420,7 +431,7 @@ export async function getIndexHistoryBundle(
 
   let portfolioData: IndexHistoryPoint[] = [];
   if (opts.portfolio) {
-    const result = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, subOpts);
+    const result = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, SUBINDEX_ENGINE_OPTIONS);
     portfolioData = slice(result.points, fromDate, toDate);
   }
 
@@ -443,10 +454,18 @@ export async function recomputeAndPersistIndex(): Promise<{
 }> {
   const sql = getSql();
   const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
-  const indexOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: INDEX_TOP_N, anchorDate: INDEX_ANCHOR_DATE };
-  const subOpts = { baseValue: INDEX_BASE_VALUE, baseDate: INDEX_BASE_DATE, topN: SUBINDEX_TOP_N, anchorDate: INDEX_ANCHOR_DATE };
-  const { points, divisor, members } = computeIndexSeries(prices, shares, ALL_MEMBERS, indexOpts);
-  const portfolio = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, subOpts);
+  const { points, divisor, members } = computeIndexSeries(
+    prices,
+    shares,
+    ALL_MEMBERS,
+    INDEX_ENGINE_OPTIONS
+  );
+  const portfolio = computeIndexSeries(
+    prices,
+    shares,
+    PORTFOLIO_MEMBERS,
+    SUBINDEX_ENGINE_OPTIONS
+  );
 
   if (!points.length) {
     return { latestDate: null, latestValue: null, numCompanies: 0 };

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureSchema, getRecentCronRuns } from "@/lib/db";
+import { isBearerAuthorized } from "@/lib/http-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -7,13 +8,8 @@ const ADMIN_CACHE_HEADERS = {
   "Cache-Control": "no-store",
 };
 
-function isAuthorized(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  return Boolean(secret && req.headers.get("authorization") === `Bearer ${secret}`);
-}
-
 export async function GET(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401, headers: ADMIN_CACHE_HEADERS }

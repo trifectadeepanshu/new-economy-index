@@ -14,17 +14,13 @@ import {
   quotesByTicker,
   toYahooStockSnapshotInput,
 } from "@/lib/quote-snapshots";
+import { isBearerAuthorized } from "@/lib/http-auth";
 import { round } from "@/lib/index-math";
 import { getISTDate } from "@/lib/market-hours";
 
 export const dynamic = "force-dynamic";
 
 const CRON_JOB = "snapshot";
-
-function isAuthorized(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  return Boolean(secret && req.headers.get("authorization") === `Bearer ${secret}`);
-}
 
 function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -46,14 +42,14 @@ async function finishSnapshotRun(
 }
 
 export async function GET(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) {
     return unauthorized();
   }
   return runSnapshot();
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) {
     return unauthorized();
   }
   return runSnapshot();

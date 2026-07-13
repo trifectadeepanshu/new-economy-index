@@ -8,12 +8,23 @@ type ApiPayload = {
   error?: string;
 };
 
+const STATUS_VALUES: CronRunStatus[] = ["running", "success", "failed", "skipped"];
+
 const STATUS_LABELS: Record<CronRunStatus, string> = {
   running: "Running",
   success: "Success",
   failed: "Failed",
   skipped: "Skipped",
 };
+
+function emptySummary(): Record<CronRunStatus, number> {
+  return {
+    running: 0,
+    success: 0,
+    failed: 0,
+    skipped: 0,
+  };
+}
 
 function formatDateTime(value: string | null) {
   if (!value) return "-";
@@ -76,24 +87,22 @@ export function CronRunsAdmin() {
 
   const latest = runs[0] ?? null;
   const summary = useMemo(() => {
-    const counts: Record<CronRunStatus, number> = {
-      running: 0,
-      success: 0,
-      failed: 0,
-      skipped: 0,
-    };
+    const counts = emptySummary();
     for (const run of runs) counts[run.status] += 1;
     return counts;
   }, [runs]);
 
   async function loadRuns() {
+    const token = secret.trim();
+    if (!token) return;
+
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch("/api/admin/cron-runs?limit=50", {
         headers: {
-          Authorization: `Bearer ${secret}`,
+          Authorization: `Bearer ${token}`,
         },
         cache: "no-store",
       });
@@ -168,9 +177,9 @@ export function CronRunsAdmin() {
         </div>
 
         <div className="nei-admin-counts" aria-label="Cron run status counts">
-          {Object.entries(summary).map(([status, count]) => (
+          {STATUS_VALUES.map((status) => (
             <span className={`nei-admin-pill is-${status}`} key={status}>
-              {STATUS_LABELS[status as CronRunStatus]} <b className="nei-mono">{count}</b>
+              {STATUS_LABELS[status]} <b className="nei-mono">{summary[status]}</b>
             </span>
           ))}
         </div>
