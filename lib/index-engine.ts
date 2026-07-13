@@ -1,18 +1,20 @@
 /**
- * Market-cap-weighted, quarterly-reconstituted divisor index engine.
+ * Market-cap-weighted, reconstituted divisor index engine.
  *
  * Mirrors the canonical CapIQ model:
  *   index(t) = Σ(close_i(t) × shares_i(Q) × flag_i(Q)) / divisor(Q)
- *   where Q = the most recent quarter-end on/before t.
+ *   where Q = the most recent rebalance date on/before t.
  *
- * Each quarter-end (rebalance):
+ * Rebalance dates are the calendar quarter-ends AND every constituent's listing
+ * day — matching the workbook, where a new company enters the index on the day
+ * it lists rather than waiting for the next quarter-end. At each rebalance:
  *   - market cap_i = point-in-time shares_i(Q) × price_i(Q)
  *   - companies are ranked by market cap; the top `topN` get flag = 1
  *   - divisor is chain-linked so the level is continuous across the rebalance:
  *       divisor(Q) = divisor(Q-1) × newCompCap(Q) / oldCompCap(Q)
  *     valuing both compositions at Q's prices.
  *
- * Within a quarter, shares/flags/divisor are frozen and only daily prices move.
+ * Between rebalances, shares/flags/divisor are frozen and only daily prices move.
  * The same engine drives the full index (topN = 50) and the portfolio sub-index
  * (topN = ∞ — all members included).
  */
@@ -76,6 +78,20 @@ function quarterEnds(baseDate: string, lastDate: string): string[] {
   return out;
 }
 
+/**
+ * Rebalance dates: calendar quarter-ends plus each company's first priced day.
+ * The workbook seeds a new company at its IPO price on the trading day before
+ * listing, so it joins the index there and the listing-day move counts as index
+ * performance. First-price days on/before the base date collapse into the base.
+ */
+function rebalanceDates(baseDate: string, lastDate: string, joinDates: string[]): string[] {
+  const set = new Set(quarterEnds(baseDate, lastDate));
+  for (const d of joinDates) {
+    if (d > baseDate && d <= lastDate) set.add(d);
+  }
+  return [...set].sort();
+}
+
 /** Point-in-time shares for `q`: latest point on/before q, else earliest (held back). */
 function sharesAt(points: SharePoint[] | undefined, q: string): number | null {
   if (!points || !points.length) return null;
@@ -108,10 +124,8 @@ export function computeIndexSeries(
   if (!dates.length) return { points: [], divisor: 0, members: [] };
 
   const tickers = members.map((m) => m.ticker);
-  const quarters = quarterEnds(baseDate, dates[dates.length - 1]);
-  if (!quarters.length) return { points: [], divisor: 0, members: [] };
 
-  // Per-ticker sorted [date, close] for as-of lookups at quarter-ends.
+  // Per-ticker sorted [date, close] for as-of lookups at rebalances.
   const sortedPrices = new Map<string, [string, number][]>();
   for (const t of tickers) {
     const arr: [string, number][] = [];
@@ -121,6 +135,14 @@ export function computeIndexSeries(
     }
     sortedPrices.set(t, arr);
   }
+
+  // Companies join on their first priced day (IPO-price seed); rebalance there
+  // and at each calendar quarter-end.
+  const firstPriceDates = tickers
+    .map((t) => sortedPrices.get(t)?.[0]?.[0])
+    .filter((d): d is string => d != null);
+  const quarters = rebalanceDates(baseDate, dates[dates.length - 1], firstPriceDates);
+  if (!quarters.length) return { points: [], divisor: 0, members: [] };
 
   // Quarter-level frozen state: shares, price, market cap, inclusion flag.
   const qShares = new Map<string, Map<string, number>>(); // q -> ticker -> shares
@@ -133,7 +155,7 @@ export function computeIndexSeries(
     const mc: { ticker: string; cap: number }[] = [];
     for (const m of members) {
       const s = sharesAt(shares.get(m.ticker), q);
-      const p = m.listedDate <= q ? priceAsOf(sortedPrices.get(m.ticker) ?? [], q) : null;
+      const p = priceAsOf(sortedPrices.get(m.ticker) ?? [], q);
       if (s != null) sh.set(m.ticker, s);
       if (p != null) px.set(m.ticker, p);
       if (s != null && p != null && s * p > 0) mc.push({ ticker: m.ticker, cap: s * p });

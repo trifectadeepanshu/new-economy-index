@@ -18,7 +18,7 @@ export const CHART_MODES = [
 
 export const SECTOR_CHART_COLORS: Record<Sector, string> = {
   Platforms: "#1E3A5F",
-  Consumer: "#B45A2E",
+  "Consumer Brands": "#B45A2E",
   Fintech: "#2C6E3C",
   B2B: "#346C8C",
   SaaS: "#5E5A8A",

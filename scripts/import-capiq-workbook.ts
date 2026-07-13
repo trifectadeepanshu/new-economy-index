@@ -20,7 +20,7 @@ import { COMPANIES } from "../lib/companies";
 import { ensureSchema, recomputeAndPersistIndex } from "../lib/db";
 
 const DEFAULT_WORKBOOK =
-  "/Users/deepanshu/Downloads/TLF New Economy Index Data_v2 (1).xlsx";
+  "/Users/deepanshu/Downloads/TLF New Economy Index Data_new version_2.xlsx";
 const STOCK_CHUNK_SIZE = 5_000;
 const SHARE_CHUNK_SIZE = 500;
 const STOCK_SOURCE_CHANGE_PCT_DIGITS = 6;

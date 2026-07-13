@@ -322,6 +322,13 @@ export async function recomputeAndPersistIndex(): Promise<{
     `;
   }
 
+  // Drop stale rows for dates the engine no longer produces (e.g. a non-trading
+  // day that briefly had partial live prices), so history stays in sync.
+  await sql`
+    DELETE FROM index_snapshots
+    WHERE date <> ALL(${rows.map((r) => r.date)}::date[])
+  `;
+
   const state: LiveIndexState = {
     divisor,
     members,
