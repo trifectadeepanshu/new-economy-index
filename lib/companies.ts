@@ -133,3 +133,6 @@ export const COMPANIES: Company[] = [
 export const INDEX_BASE_DATE = "2020-12-31";
 export const INDEX_ANCHOR_DATE = "2020-12-31";
 export const INDEX_BASE_VALUE = 1000;
+// The index holds the top 50 by market cap (of the 53-name universe). Used as the
+// copy fallback for the live constituent count so headings never flash "53".
+export const INDEX_SIZE = 50;

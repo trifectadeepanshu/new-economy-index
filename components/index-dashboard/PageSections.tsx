@@ -15,17 +15,17 @@ const METHOD_CARDS = [
   {
     number: "01",
     title: "Market-cap weighted, by design",
-    body: "Each company's weight reflects its size in the public market. The index moves with the value of the cohort, not just its headcount.",
+    body: "Each company's weight reflects its size in the public market. The index moves with the value of the cohort.",
   },
   {
     number: "03",
     title: "Built by insiders",
-    body: "Trifecta Capital has backed this asset class since before it had a name. The NEI is not an external observer's take. It is the scorecard of the firm that helped build the cohort.",
+    body: "Trifecta Capital has backed this ecosystem for over a decade, long before many of these companies became household names. The NEI is not an external observer's take. It's built by a firm that's been involved with many of these businesses and sees the need to objectively measure the role of the New Economy.",
   },
   {
     number: "04",
     title: "Free, public, shareable",
-    body: "No paywall, no login. Use it for decks, MIS, research, or just to check the level. Built to be shared.",
+    body: "No paywall, no login. Use it for decks, MIS, research, or just to get a pulse check on the New Economy.",
   },
 ] as const;
 
@@ -85,7 +85,6 @@ export function PerformanceSection({
       id="performance"
       eyebrow={{ number: "02", label: "Performance" }}
       title="The NEI since day one."
-      mutedTitle="One line, no filter."
       copy={`Market-cap weighted across the top ${numCompanies} constituents. Base 1,000 set in January 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
@@ -153,7 +152,7 @@ export function SectorSection({
       id="sectors"
       eyebrow={{ number: "04", label: "Sector Composition" }}
       title="What is India's new economy actually made of?"
-      copy="Deeper than fintech. Broader than consumer. See for yourself."
+      copy="Deeper than fintech. Broader than consumer. Constantly evolving."
     >
       <SectorComposition sectors={sectorComposition} currency={currency} />
       <SectorCharts />

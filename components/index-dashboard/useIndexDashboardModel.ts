@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useIndexData } from "@/hooks/useIndexData";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 import type { IndexHistoryPayload, StockData } from "@/lib/index-api";
-import { COMPANIES, INDEX_BASE_VALUE } from "@/lib/companies";
+import { INDEX_BASE_VALUE, INDEX_SIZE } from "@/lib/companies";
 import { isMarketOpen } from "@/lib/market-hours";
 import { formatNumber } from "@/components/index-dashboard/format";
 
@@ -187,7 +187,7 @@ export function useIndexDashboardModel() {
     valueFlash,
     changePct: data?.indexChangePct ?? null,
     dayChange: data?.indexChangePct ?? 0,
-    numCompanies: data?.numCompanies ?? COMPANIES.length,
+    numCompanies: data?.numCompanies ?? INDEX_SIZE,
     totalMarketCap: data?.totalMarketCap ?? null,
     usdInr: data?.usdInr ?? null,
     trifectaWeightPct: data?.trifectaWeightPct ?? null,
