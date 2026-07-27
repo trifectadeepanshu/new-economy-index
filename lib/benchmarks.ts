@@ -7,8 +7,7 @@ import { INDEX_ANCHOR_DATE, INDEX_BASE_VALUE } from "@/lib/companies";
 import type { BenchmarkKey, BenchmarkSeries } from "@/lib/index-api";
 
 export const BENCHMARKS: { symbol: BenchmarkKey; label: string; yf: string }[] = [
-  { symbol: "NIFTY50", label: "Nifty 50", yf: "^NSEI" },
-  { symbol: "NIFTYMIDCAP", label: "Nifty Midcap", yf: "^NSEMDCP50" },
+  { symbol: "NIFTY500", label: "Nifty 500", yf: "^CRSLDX" },
 ];
 
 function getSql() {

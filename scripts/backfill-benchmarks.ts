@@ -1,7 +1,7 @@
 /**
  * Backfill daily benchmark index history — run: npx tsx scripts/backfill-benchmarks.ts
- * Populates benchmark_prices from Yahoo for Nifty 50 and Nifty Midcap, from the
- * index base through today. Rebasing to 1,000 happens at read time.
+ * Populates benchmark_prices from Yahoo for the configured benchmarks (Nifty
+ * 500), from the index base through today. Rebasing happens at read time.
  */
 import { readFileSync } from "fs";
 import { resolve } from "path";
