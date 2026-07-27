@@ -10,6 +10,7 @@ import {
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorComposition } from "@/components/index-dashboard/SectorComposition";
 import { SectorCharts } from "@/components/index-dashboard/SectorCharts";
+import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 
 const METHOD_CARDS = [
   {
@@ -123,7 +124,7 @@ export function ConstituentsSection({
               <span> Filter, sort, explore.</span>
             </h2>
             <p className="nei-index-copy">
-              {numCompanies} companies across {SECTORS.length} sectors. The complete public-market picture of India&apos;s new economy. Names marked <span className="nei-portfolio-badge">P</span> are Trifecta Capital portfolio companies.
+              {numCompanies} companies across {SECTORS.length} sectors. The complete public-market picture of India&apos;s new economy. Names marked with the <PortfolioMark /> are Trifecta Capital portfolio companies.
             </p>
           </div>
           <div className="nei-index-panel">

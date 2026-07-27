@@ -6,6 +6,7 @@ import type { CompanyDetail, StockData } from "@/lib/index-api";
 import { PORTFOLIO_TICKERS } from "@/lib/companies";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 import { formatMarketCap, formatPrice, formatSignedPercent } from "@/components/company-grid/format";
+import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 import { Sparkline } from "@/components/index-dashboard/DashboardChrome";
 
 type BarPoint = {
@@ -117,8 +118,8 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
         <div className="nei-cm-head">
           <div>
             <h2 className="nei-heading">
+              {isPortfolio && <PortfolioMark />}
               {stock.displayName}
-              {isPortfolio && <span className="nei-portfolio-badge">P</span>}
             </h2>
             <p className="nei-cm-sub">
               {stock.name} · {stock.sector}
