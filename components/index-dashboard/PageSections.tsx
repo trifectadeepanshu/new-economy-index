@@ -248,9 +248,10 @@ export function DashboardFooter() {
                 />
               </div>
               <p>
-                Data via NSE, live during market hours.
-                The New Economy Index is for informational purposes only and
-                does not constitute investment advice. © 2026 Trifecta Capital.
+                Market data for NSE-listed companies, sourced from public feeds
+                and updated during market hours. The New Economy Index is for
+                informational purposes only and does not constitute investment
+                advice. © 2026 Trifecta Capital.
               </p>
             </div>
             <div className="nei-footer-links">

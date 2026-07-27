@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://new-economy-index.vercel.app"),
   title: "India's New Economy Index | Trifecta Capital",
   description:
-    "Track the performance of the top 50 listed, VC-backed companies by market capitalisation, India's New Economy captured as a single market-cap weighted index.",
+    "Track the performance of the top 50 listed, VC-backed companies by market capitalisation — India's New Economy, captured as a single market-cap weighted index.",
   icons: {
     icon: "/trifecta-mark.png",
     shortcut: "/trifecta-mark.png",
