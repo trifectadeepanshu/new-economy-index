@@ -89,8 +89,8 @@ export function buildQuarterlyFinancials(
           ? round1((row.revenue / prevYear.revenue - 1) * 100)
           : null,
       assetIntensity:
-        assets != null && trailingRevenue != null && trailingRevenue !== 0
-          ? round2(assets / trailingRevenue)
+        assets != null && assets !== 0 && trailingRevenue != null
+          ? round2(trailingRevenue / assets)
           : null,
     };
   });

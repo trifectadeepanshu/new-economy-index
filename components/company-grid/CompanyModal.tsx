@@ -163,7 +163,7 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
           <div className="nei-cm-card">
             <span className="nei-cm-card-label">TTM asset intensity</span>
             <strong className="nei-mono">{latest?.assetIntensity != null ? `${latest.assetIntensity.toFixed(2)}x` : "—"}</strong>
-            <span className="nei-cm-card-sub">assets / TTM revenue</span>
+            <span className="nei-cm-card-sub">TTM revenue / assets</span>
             <MiniBars label="TTM asset intensity" points={bars((f) => f.assetIntensity)} />
           </div>
         </div>
