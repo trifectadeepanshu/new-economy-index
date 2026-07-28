@@ -151,19 +151,26 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
   return (
     <div>
       <h1 className="nei-heading nei-hero-title">
-        India&apos;s listed new economy,
+        India&apos;s new <br className="nei-hero-mobile-break" />economy,{" "}
         <br />
-        <span>in one live view.</span>
+        <span>
+          tracked as a <br className="nei-hero-mobile-break" />single index.
+        </span>
       </h1>
       <p className="nei-hero-copy">
-        A market-cap weighted view of {numCompanies} public, technology-driven
-        companies from India&apos;s venture ecosystem, updated live across INR and
-        USD.
+        Trifecta Capital backed many of India&apos;s next generation of
+        businesses before they had a track record. Our New Economy Index tracks
+        the top 50 institutionally backed technology-driven companies that have
+        now gone public so that you can see how the ecosystem is doing both on an
+        absolute and relative basis.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">
           See performance
           <span>→</span>
+        </a>
+        <a className="nei-hero-secondary" href="#constituents">
+          Meet the {numCompanies} companies
         </a>
       </div>
     </div>
@@ -182,6 +189,7 @@ function MarketStatus({ marketOpen, nowIST }: { marketOpen: boolean; nowIST: str
 function HeroCard({ model }: { model: IndexDashboardModel }) {
   const sinceInceptionValue = model.sinceInception ?? 0;
   const valueFlashClass = model.valueFlash ? ` nei-value-flash-${model.valueFlash}` : "";
+  const usdInrDisplay = model.usdInr !== null ? `₹${model.usdInr.toFixed(2)}` : "—";
   const statusBanner = model.dataError
     ? "Live data unavailable. Showing the latest values we have."
     : model.staleConstituents.length
@@ -205,6 +213,29 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
 
       <div className="nei-hero-card-header">
         <MarketStatus marketOpen={model.marketOpen} nowIST={model.nowIST} />
+        <div className="nei-hero-header-right">
+          <div
+            className="nei-fx-ticker"
+            aria-label={
+              model.usdInr !== null
+                ? `Live USD to INR exchange rate ${usdInrDisplay}`
+                : "Live USD to INR exchange rate unavailable"
+            }
+          >
+            <span className="nei-fx-ticker-label">USD/INR</span>
+            <strong className="nei-fx-ticker-value nei-mono">{usdInrDisplay}</strong>
+            <span className="nei-fx-ticker-meta">live FX</span>
+          </div>
+          {model.changePct !== null && (
+            <span
+              className={`nei-day-change-pill ${
+                model.dayChange >= 0 ? "is-positive" : "is-negative"
+              }`}
+            >
+              {formatPercent(model.dayChange)}
+            </span>
+          )}
+        </div>
       </div>
 
       {model.isLoading && model.indexValue === null ? (
@@ -238,58 +269,39 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
           <Skeleton height={82} radius={6} />
         )}
       </div>
-    </div>
-  );
-}
 
-function getHeroMetricLabel(label: string) {
-  if (label === "Adv") return "Advancers";
-  if (label === "Dec") return "Decliners";
-  return label;
-}
+      <div className="nei-mktcap-row">
+        <span className="nei-hero-stat-label">New Economy · Total Market Cap</span>
+        <span className="nei-mono nei-mktcap-value">
+          {model.totalMarketCap !== null ? formatMarketCap(model.totalMarketCap, model.currency) : "—"}
+        </span>
+      </div>
 
-type HeroMetric = {
-  label: string;
-  value: string | number;
-  tone?: IndexDashboardModel["heroStats"][number]["tone"];
-};
+      <div className="nei-mktcap-row">
+        <span className="nei-hero-stat-label">Trifecta portfolio · share of index</span>
+        <span className="nei-mono nei-mktcap-value">
+          {model.trifectaWeightPct !== null ? `${model.trifectaWeightPct.toFixed(1)}%` : "—"}
+        </span>
+      </div>
 
-function HeroMetricStrip({ model }: { model: IndexDashboardModel }) {
-  const metrics: HeroMetric[] = [
-    {
-      label: "New Economy Market Cap",
-      value:
-        model.totalMarketCap !== null
-          ? formatMarketCap(model.totalMarketCap, model.currency)
-          : "—",
-    },
-    {
-      label: "Trifecta Portfolio Share",
-      value:
-        model.trifectaWeightPct !== null ? `${model.trifectaWeightPct.toFixed(1)}%` : "—",
-    },
-    ...model.heroStats.map((stat) => ({
-      label: getHeroMetricLabel(stat.label),
-      value: stat.value,
-      tone: stat.tone,
-    })),
-  ];
-
-  return (
-    <dl className="nei-hero-metric-strip" aria-label="New Economy market summary">
-      {metrics.map((metric) => (
-        <div className="nei-hero-metric" key={metric.label}>
-          <dt className="nei-hero-metric-label">{metric.label}</dt>
-          <dd
-            className={`nei-hero-metric-value nei-mono ${
-              metric.tone ? `is-${metric.tone}` : ""
-            }`}
+      <div className="nei-hero-card-stats">
+        {model.heroStats.map((stat, index) => (
+          <div
+            key={stat.label}
+            style={
+              model.dataLoaded
+                ? { animation: `nei-stat-reveal 0.4s ease-out ${index * 90}ms both` }
+                : { opacity: 0 }
+            }
           >
-            {metric.value}
-          </dd>
-        </div>
-      ))}
-    </dl>
+            <div className="nei-hero-stat-label">{stat.label}</div>
+            <div className={`nei-hero-stat-value nei-mono ${stat.tone ? `is-${stat.tone}` : ""}`}>
+              {stat.value}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -315,7 +327,6 @@ export function HeroSection({ model }: { model: IndexDashboardModel }) {
               </TickFrame>
             </div>
           </div>
-          <HeroMetricStrip model={model} />
         </div>
       </div>
     </section>
