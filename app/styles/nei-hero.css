@@ -168,12 +168,12 @@
   }
 
   .nei-hero-title {
-    max-width: 720px;
-    margin: 0 0 28px;
+    max-width: 760px;
+    margin: 0 0 22px;
     color: #F2F4F8;
-    font-size: clamp(40px, 5.6vw, 76px);
+    font-size: clamp(42px, 5.1vw, 72px);
     font-weight: 500;
-    line-height: 0.98;
+    line-height: 1.02;
     letter-spacing: 0;
   }
 
@@ -181,15 +181,11 @@
     color: rgba(232,235,240,0.55);
   }
 
-  .nei-hero-mobile-break {
-    display: none;
-  }
-
   .nei-hero-copy {
-    max-width: 540px;
+    max-width: 500px;
     margin: 0;
     color: rgba(232,235,240,0.72);
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.55;
   }
 
@@ -197,7 +193,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 36px;
+    margin-top: 30px;
   }
 
   .nei-hero-actions .nei-hero-primary span {
@@ -209,7 +205,7 @@
   }
 
   .nei-hero-card {
-    padding: 32px 36px 30px;
+    padding: 30px 36px 28px;
     background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
     border: 1px solid rgba(232,235,240,0.14);
     backdrop-filter: blur(18px);
@@ -252,8 +248,7 @@
   .nei-hero-card-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    justify-content: flex-start;
     gap: 12px;
     margin-bottom: 16px;
   }
@@ -282,94 +277,11 @@
     animation: nei-live-pulse 2.2s ease-out infinite;
   }
 
-  .nei-day-change-pill {
-    flex-shrink: 0;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
-  }
-
-  .nei-day-change-pill.is-positive {
-    border: 1px solid rgba(95,190,126,0.28);
-    background: rgba(95,190,126,0.10);
-    color: #7DD89B;
-  }
-
-  .nei-day-change-pill.is-negative {
-    border: 1px solid rgba(221,122,78,0.28);
-    background: rgba(221,122,78,0.10);
-    color: #E89175;
-  }
-
-  .nei-hero-header-right {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    flex: 1 1 360px;
-    flex-wrap: wrap;
-    gap: 10px;
-    min-width: 0;
-    margin-left: auto;
-  }
-
-  .nei-fx-ticker {
-    display: grid;
-    grid-template-columns: minmax(62px, auto) auto;
-    align-items: center;
-    column-gap: 11px;
-    row-gap: 2px;
-    min-height: 48px;
-    padding: 7px 12px 7px 13px;
-    border: 1px solid rgba(232,145,117,0.34);
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(224,122,56,0.18), rgba(232,235,240,0.045));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 28px rgba(3,6,14,0.18);
-  }
-
-  .nei-fx-ticker-label {
-    color: rgba(232,235,240,0.66);
-    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
-    letter-spacing: 0;
-    line-height: 1;
-  }
-
-  .nei-fx-ticker-value {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    color: #F3B191;
-    font-size: 22px;
-    font-weight: 650;
-    letter-spacing: 0;
-    line-height: 1;
-    white-space: nowrap;
-  }
-
-  .nei-fx-ticker-meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: rgba(232,235,240,0.46);
-    font: 650 9px var(--font-jetbrains), ui-monospace, monospace;
-    letter-spacing: 0;
-    line-height: 1;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .nei-fx-ticker-meta::before {
-    content: "";
-    width: 5px;
-    height: 5px;
-    border-radius: 999px;
-    background: #5FBE7E;
-    box-shadow: 0 0 0 3px rgba(95,190,126,0.13);
-  }
-
   .nei-currency-toggle {
     display: inline-flex;
     align-items: center;
     border: 1px solid rgba(232,235,240,0.14);
-    border-radius: 999px;
+    border-radius: 8px;
     overflow: hidden;
   }
 
@@ -384,22 +296,26 @@
     transition: background 0.15s ease, color 0.15s ease;
   }
 
+  .nei-currency-btn + .nei-currency-btn {
+    border-left: 1px solid rgba(232,235,240,0.12);
+  }
+
   .nei-currency-btn:hover {
     color: rgba(232,235,240,0.8);
   }
 
   .nei-currency-btn.is-active {
     background: rgba(224,122,56,0.16);
-    color: #E89175;
+    color: #F3B191;
   }
 
   .nei-nav-currency-toggle {
     flex-shrink: 0;
     min-height: 44px;
     padding: 3px;
-    border-color: rgba(232,145,117,0.42);
-    background: rgba(8,11,18,0.44);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 14px 32px rgba(3,6,14,0.20);
+    border-color: rgba(232,235,240,0.18);
+    background: rgba(8,11,18,0.38);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
@@ -408,7 +324,7 @@
     min-width: 54px;
     min-height: 38px;
     padding: 0 13px;
-    border-radius: 999px;
+    border-radius: 6px;
     color: rgba(232,235,240,0.76);
     font-size: 12px;
   }
@@ -419,8 +335,9 @@
   }
 
   .nei-nav-currency-toggle .nei-currency-btn.is-active {
-    background: #E89175;
-    color: #0A0E16;
+    background: rgba(232,145,117,0.18);
+    color: #F3B191;
+    box-shadow: inset 0 0 0 1px rgba(232,145,117,0.25);
   }
 
   .nei-index-value-skeleton {
@@ -450,46 +367,35 @@
   }
 
   .nei-since-inception-value.is-positive,
-  .nei-hero-stat-value.is-positive {
+  .nei-hero-metric-value.is-positive {
     color: #7DD89B;
   }
 
   .nei-since-inception-value.is-negative,
-  .nei-hero-stat-value.is-negative {
+  .nei-hero-metric-value.is-negative {
     color: #E89175;
   }
 
   .nei-hero-spark {
     height: 82px;
-    margin: 0 -8px 18px;
+    margin: 0 -8px;
   }
 
-  .nei-mktcap-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    padding: 14px 0 14px;
-    border-top: 1px solid rgba(232,235,240,0.10);
-    border-bottom: 1px solid rgba(232,235,240,0.06);
-    margin-bottom: 16px;
-  }
-
-  .nei-mktcap-value {
-    font-size: 22px;
-    font-weight: 500;
-    color: #A9C0FF;
-    letter-spacing: 0;
-    white-space: nowrap;
-  }
-
-  .nei-hero-card-stats {
+  .nei-hero-metric-strip {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 20px;
+    margin: 38px 0 0;
+    padding: 18px 0;
+    border-top: 1px solid rgba(232,235,240,0.12);
+    border-bottom: 1px solid rgba(232,235,240,0.08);
   }
 
-  .nei-hero-stat-label {
+  .nei-hero-metric {
+    min-width: 0;
+  }
+
+  .nei-hero-metric-label {
     font-family: var(--font-jetbrains), ui-monospace, monospace;
     font-size: 10px;
     letter-spacing: 0.12em;
@@ -499,48 +405,34 @@
     font-weight: 600;
   }
 
-  .nei-hero-stat-value {
+  .nei-hero-metric-value {
+    margin: 0;
     color: #E8EBF0;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 500;
     letter-spacing: 0;
+    white-space: nowrap;
   }
 
-  .nei-hero-primary,
-  .nei-hero-secondary {
+  .nei-hero-primary {
     display: inline-flex;
     align-items: center;
     gap: 10px;
     min-height: 44px;
     padding: 13px 18px;
+    padding-left: 20px;
     border-radius: 8px;
+    border: 1px solid #F2F4F8;
+    background: #F2F4F8;
+    color: #0A0E16;
     font-size: 14px;
+    font-weight: 600;
     text-decoration: none;
     transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
   }
 
-  .nei-hero-primary {
-    padding-left: 20px;
-    background: #F2F4F8;
-    color: #0A0E16;
-    font-weight: 600;
-    border: 1px solid #F2F4F8;
-  }
-
-  .nei-hero-secondary {
-    background: transparent;
-    color: #E8EBF0;
-    border: 1px solid rgba(232,235,240,0.22);
-    font-weight: 500;
-  }
-
   .nei-hero-primary:hover {
     transform: translateY(-1px);
-  }
-
-  .nei-hero-secondary:hover {
-    border-color: rgba(232,235,240,0.5);
-    background: rgba(232,235,240,0.04);
   }
 
   .nei-ticker-drift {

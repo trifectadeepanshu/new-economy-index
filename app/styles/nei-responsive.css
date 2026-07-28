@@ -139,6 +139,11 @@
     padding: 26px 22px 24px;
   }
 
+  .nei-hero-metric-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 32px;
+  }
+
   .nei-hero-frame-wrap {
     max-width: 640px;
   }
@@ -392,10 +397,6 @@
     display: block;
   }
 
-  .nei-hero-title .nei-hero-mobile-break {
-    display: block;
-  }
-
   .nei-hero-copy {
     max-width: 100%;
     font-size: 15px;
@@ -409,8 +410,7 @@
     margin-top: 24px;
   }
 
-  .nei-hero-primary,
-  .nei-hero-secondary {
+  .nei-hero-primary {
     width: 100%;
     justify-content: center;
     min-height: 46px;
@@ -437,23 +437,6 @@
     margin-bottom: 14px;
   }
 
-  .nei-hero-header-right {
-    width: 100%;
-    justify-content: flex-start;
-    margin-left: 0;
-  }
-
-  .nei-fx-ticker {
-    grid-template-columns: minmax(0, 1fr) auto;
-    width: 100%;
-    min-height: 50px;
-    padding: 9px 12px;
-  }
-
-  .nei-fx-ticker-value {
-    font-size: 24px;
-  }
-
   .nei-market-status {
     font-size: 10px;
     letter-spacing: 0.08em;
@@ -471,31 +454,25 @@
 
   .nei-hero-spark {
     height: 64px;
-    margin-bottom: 14px;
   }
 
   .nei-hero-spark svg {
     height: 64px;
   }
 
-  .nei-mktcap-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    padding: 12px 0;
-    margin-bottom: 14px;
+  .nei-hero-metric-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 18px;
+    margin-top: 24px;
+    padding: 16px 0;
   }
 
-  .nei-mktcap-value {
-    font-size: 20px;
-  }
-
-  .nei-hero-stat-label {
+  .nei-hero-metric-label {
     font-size: 9px;
     letter-spacing: 0.1em;
   }
 
-  .nei-hero-stat-value {
+  .nei-hero-metric-value {
     font-size: 16px;
   }
 
@@ -716,8 +693,8 @@
     width: 100%;
   }
 
-  .nei-hero-card-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .nei-hero-metric-strip {
+    grid-template-columns: 1fr;
   }
 
   .nei-method-stats {
