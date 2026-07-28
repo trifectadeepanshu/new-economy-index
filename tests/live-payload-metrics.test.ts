@@ -15,6 +15,8 @@ function stock(input: Partial<StockData> & Pick<StockData, "ticker" | "sector">)
     name: input.name ?? input.ticker,
     displayName: input.displayName ?? input.ticker,
     sector: input.sector,
+    isPortfolio: input.isPortfolio ?? false,
+    listedDate: input.listedDate ?? "2021-01-01",
     price: input.price ?? 100,
     changePct: input.changePct ?? null,
     marketCap: input.marketCap ?? null,
