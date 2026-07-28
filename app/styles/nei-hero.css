@@ -369,7 +369,7 @@
     display: inline-flex;
     align-items: center;
     border: 1px solid rgba(232,235,240,0.14);
-    border-radius: 999px;
+    border-radius: 8px;
     overflow: hidden;
   }
 
@@ -408,7 +408,7 @@
     min-width: 54px;
     min-height: 38px;
     padding: 0 13px;
-    border-radius: 999px;
+    border-radius: 6px;
     color: rgba(232,235,240,0.76);
     font-size: 12px;
   }
