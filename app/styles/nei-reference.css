@@ -315,4 +315,278 @@
     outline: 3px solid rgba(199,74,46,0.24);
     outline-offset: 3px;
   }
+
+  /* ── Sector bento: expandable tiles ─────────────────────────────────── */
+  .nei-sb {
+    margin-top: 30px;
+  }
+
+  .nei-sb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+    gap: 12px;
+  }
+
+  .nei-sb-tile {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 18px 18px 14px;
+    border: 1px solid rgba(11,15,25,0.10);
+    border-radius: 12px;
+    background: #FFFFFF;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+
+  .nei-sb-tile:hover {
+    border-color: rgba(224,122,56,0.55);
+    box-shadow: 0 8px 24px rgba(11,15,25,0.08);
+    transform: translateY(-2px);
+  }
+
+  .nei-sb-tile:focus-visible {
+    outline: 3px solid rgba(224,122,56,0.28);
+    outline-offset: 2px;
+  }
+
+  .nei-sb-tile-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .nei-sb-dot {
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    border-radius: 999px;
+  }
+
+  .nei-sb-tile-head strong {
+    color: #0B0F19;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .nei-sb-expand {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid rgba(11,15,25,0.14);
+    color: rgba(11,15,25,0.45);
+    font-size: 13px;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .nei-sb-tile:hover .nei-sb-expand {
+    color: #E07A38;
+    border-color: rgba(224,122,56,0.55);
+    background: rgba(224,122,56,0.08);
+  }
+
+  .nei-sb-tile-weight {
+    color: #0B0F19;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+
+  .nei-sb-tile-weight span {
+    margin-left: 4px;
+    color: rgba(11,15,25,0.4);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .nei-sb-tile-bar {
+    position: relative;
+    height: 3px;
+    margin: 12px 0 10px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(11,15,25,0.07);
+  }
+
+  .nei-sb-tile-bar span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 8px;
+    opacity: 0.85;
+  }
+
+  .nei-sb-tile-foot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .nei-sb-tile-count {
+    color: rgba(11,15,25,0.45);
+    font-size: 12px;
+  }
+
+  .nei-sb-tile-chg {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .nei-sb-tile-chg.is-pos,
+  .nei-sb-panel-meta .is-pos,
+  .nei-sb-co-chg.is-pos { color: #1B8A55; }
+  .nei-sb-tile-chg.is-neg,
+  .nei-sb-panel-meta .is-neg,
+  .nei-sb-co-chg.is-neg { color: #C74A2E; }
+
+  .nei-sb-tile-spark {
+    height: 40px;
+    margin: 12px -4px -2px;
+    opacity: 0.9;
+  }
+
+  /* ── Sector panel (expanded modal) ──────────────────────────────────── */
+  .nei-sb-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(11,15,25,0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: nei-sb-fade 0.16s ease-out;
+  }
+
+  @keyframes nei-sb-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .nei-sb-panel {
+    position: relative;
+    width: min(100%, 720px);
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 30px 30px 26px;
+    border-radius: 14px;
+    background: #FFFFFF;
+    box-shadow: 0 30px 80px rgba(11,15,25,0.32);
+    animation: nei-sb-rise 0.18s ease-out;
+  }
+
+  @keyframes nei-sb-rise {
+    from { opacity: 0; transform: translateY(10px) scale(0.99); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .nei-sb-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(11,15,25,0.14);
+    background: transparent;
+    color: rgba(11,15,25,0.55);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .nei-sb-close:hover {
+    color: #0B0F19;
+    border-color: rgba(11,15,25,0.3);
+    background: rgba(11,15,25,0.04);
+  }
+
+  .nei-sb-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0 40px 18px 0;
+  }
+
+  .nei-sb-panel-head h3 {
+    margin: 0;
+    color: #0B0F19;
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .nei-sb-panel-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(11,15,25,0.5);
+    font-size: 12px;
+  }
+
+  .nei-sb-panel-chart {
+    height: 280px;
+    margin-bottom: 20px;
+  }
+
+  .nei-sb-companies-label {
+    display: block;
+    margin-bottom: 8px;
+    color: rgba(11,15,25,0.5);
+    font: 700 11px var(--font-jetbrains), ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .nei-sb-companies ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nei-sb-companies li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(11,15,25,0.07);
+  }
+
+  .nei-sb-co-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .nei-sb-co-name span {
+    color: #0B0F19;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nei-sb-co-mcap { color: rgba(11,15,25,0.5); font-size: 13px; }
+  .nei-sb-co-price { color: #0B0F19; font-size: 13px; }
+  .nei-sb-co-chg { font-size: 13px; font-weight: 700; min-width: 56px; text-align: right; }
+
+  @media (max-width: 560px) {
+    .nei-sb-companies li {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px 12px;
+    }
+    .nei-sb-co-mcap { display: none; }
+  }
 }

@@ -8,8 +8,7 @@ import {
   SectionEyebrow,
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
-import { SectorComposition } from "@/components/index-dashboard/SectorComposition";
-import { SectorCharts } from "@/components/index-dashboard/SectorCharts";
+import { SectorBento } from "@/components/index-dashboard/SectorBento";
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 
 const METHOD_CARDS = [
@@ -143,9 +142,11 @@ export function ConstituentsSection({
 
 export function SectorSection({
   sectorComposition,
+  stocks,
   currency,
 }: {
   sectorComposition: SectorCompositionPoint[];
+  stocks: StockData[];
   currency: Currency;
 }) {
   return (
@@ -153,10 +154,9 @@ export function SectorSection({
       id="sectors"
       eyebrow={{ number: "04", label: "Sector Composition" }}
       title="What is India's new economy actually made of?"
-      copy="Deeper than fintech. Broader than consumer. Constantly evolving."
+      copy="Deeper than fintech. Broader than consumer. Constantly evolving. Open any sector for its trend and holdings."
     >
-      <SectorComposition sectors={sectorComposition} currency={currency} />
-      <SectorCharts />
+      <SectorBento sectors={sectorComposition} stocks={stocks} currency={currency} />
     </ReferenceShell>
   );
 }
