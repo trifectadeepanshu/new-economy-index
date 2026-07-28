@@ -1,4 +1,3 @@
-import { COMPANIES, PORTFOLIO_TICKERS } from "@/lib/companies";
 import type { Currency, StockData } from "@/lib/index-api";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
@@ -7,10 +6,6 @@ import {
   formatPrice,
   formatSignedPercent,
 } from "@/components/company-grid/format";
-
-const LISTED_YEAR_BY_TICKER = new Map(
-  COMPANIES.map((company) => [company.ticker, company.listedDate.slice(0, 4)])
-);
 
 function CompanyCard({
   row,
@@ -21,9 +16,9 @@ function CompanyCard({
   currency: Currency;
   onSelect?: (row: StockData) => void;
 }) {
-  const listedYear = LISTED_YEAR_BY_TICKER.get(row.ticker);
+  const listedYear = row.listedDate?.slice(0, 4);
   const isUp = (row.changePct ?? 0) >= 0;
-  const isPortfolio = PORTFOLIO_TICKERS.has(row.ticker);
+  const isPortfolio = row.isPortfolio;
 
   return (
     <article

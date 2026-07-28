@@ -9,6 +9,10 @@ export type LiveStockPayload = {
   name: string;
   displayName: string;
   sector: Sector;
+  /** Trifecta Capital portfolio company (from the DB constituent flag). */
+  isPortfolio: boolean;
+  /** Listing date (yyyy-mm-dd) — used for the "· year" label on cards. */
+  listedDate: string;
   price: number | null;
   changePct: number | null;
   marketCap: number | null;

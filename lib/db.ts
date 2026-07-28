@@ -1,13 +1,12 @@
 import { neon } from "@neondatabase/serverless";
 import {
-  COMPANIES,
   INDEX_ANCHOR_DATE,
   INDEX_BASE_DATE,
   INDEX_BASE_VALUE,
-  PORTFOLIO_TICKERS,
   SECTORS,
   type Sector,
 } from "@/lib/companies";
+import { getUniverse, invalidateUniverse } from "@/lib/universe";
 import type { IndexHistoryPoint, SectorHistoryPoint } from "@/lib/index-api";
 import { round } from "@/lib/index-math";
 import {
@@ -39,22 +38,30 @@ const SUBINDEX_ENGINE_OPTIONS: EngineOptions = {
   anchorDate: INDEX_ANCHOR_DATE,
 };
 
-const ALL_MEMBERS: EngineMember[] = COMPANIES.map((c) => ({
-  ticker: c.ticker,
-  listedDate: c.listedDate,
-}));
-const MEMBERS_BY_SECTOR = new Map<Sector, EngineMember[]>(
-  SECTORS.map((sector) => [
-    sector,
-    COMPANIES.filter((c) => c.sector === sector).map((c) => ({
-      ticker: c.ticker,
-      listedDate: c.listedDate,
-    })),
-  ])
-);
-const PORTFOLIO_MEMBERS: EngineMember[] = COMPANIES.filter((c) =>
-  PORTFOLIO_TICKERS.has(c.ticker)
-).map((c) => ({ ticker: c.ticker, listedDate: c.listedDate }));
+type EngineMemberSets = {
+  allMembers: EngineMember[];
+  membersBySector: Map<Sector, EngineMember[]>;
+  portfolioMembers: EngineMember[];
+};
+
+/** Build the engine member lists from the current (DB-backed) universe. */
+async function loadEngineMembers(): Promise<EngineMemberSets> {
+  const universe = await getUniverse();
+  const toMember = (c: { ticker: string; listedDate: string }): EngineMember => ({
+    ticker: c.ticker,
+    listedDate: c.listedDate,
+  });
+  return {
+    allMembers: universe.map(toMember),
+    membersBySector: new Map<Sector, EngineMember[]>(
+      SECTORS.map((sector) => [
+        sector,
+        universe.filter((c) => c.sector === sector).map(toMember),
+      ])
+    ),
+    portfolioMembers: universe.filter((c) => c.isPortfolio).map(toMember),
+  };
+}
 
 type DbRow = Record<string, unknown>;
 
@@ -295,6 +302,21 @@ export async function ensureSchema() {
       updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS constituents (
+      ticker       VARCHAR(30) PRIMARY KEY,
+      name         TEXT NOT NULL,
+      display_name TEXT NOT NULL,
+      yf_ticker    VARCHAR(40) NOT NULL,
+      sector       VARCHAR(40) NOT NULL,
+      listed_date  DATE NOT NULL,
+      ipo_price    NUMERIC(14, 4),
+      is_trifecta  BOOLEAN NOT NULL DEFAULT false,
+      is_active    BOOLEAN NOT NULL DEFAULT true,
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
 }
 
 // ---------------------------------------------------------------------------
@@ -361,6 +383,61 @@ export async function getRecentCronRuns(limit = 25): Promise<CronRunRecord[]> {
 }
 
 // ---------------------------------------------------------------------------
+// Constituents (universe CMS)
+// ---------------------------------------------------------------------------
+
+export type ConstituentInput = {
+  ticker: string;
+  name: string;
+  displayName: string;
+  yfTicker: string;
+  sector: string;
+  listedDate: string;
+  ipoPrice: number | null;
+  isPortfolio: boolean;
+  isActive: boolean;
+};
+
+export type ConstituentRecord = ConstituentInput & { updatedAt: string };
+
+export async function listConstituents(): Promise<ConstituentRecord[]> {
+  const sql = getSql();
+  const rows = (await sql`
+    SELECT ticker, name, display_name, yf_ticker, sector,
+           listed_date::text AS listed_date, ipo_price::float AS ipo_price,
+           is_trifecta, is_active, updated_at::text AS updated_at
+    FROM constituents
+    ORDER BY listed_date DESC, ticker ASC
+  `) as DbRow[];
+  return rows.map((r) => ({
+    ticker: toTicker(r.ticker),
+    name: String(r.name),
+    displayName: String(r.display_name),
+    yfTicker: String(r.yf_ticker),
+    sector: String(r.sector),
+    listedDate: String(r.listed_date),
+    ipoPrice: toNullableNumber(r.ipo_price),
+    isPortfolio: Boolean(r.is_trifecta),
+    isActive: Boolean(r.is_active),
+    updatedAt: String(r.updated_at),
+  }));
+}
+
+/** Insert or update a constituent, then clear the universe cache. */
+export async function upsertConstituent(c: ConstituentInput): Promise<void> {
+  const sql = getSql();
+  await sql`
+    INSERT INTO constituents (ticker, name, display_name, yf_ticker, sector, listed_date, ipo_price, is_trifecta, is_active, updated_at)
+    VALUES (${c.ticker}, ${c.name}, ${c.displayName}, ${c.yfTicker}, ${c.sector}, ${c.listedDate}, ${c.ipoPrice}, ${c.isPortfolio}, ${c.isActive}, now())
+    ON CONFLICT (ticker) DO UPDATE
+      SET name = EXCLUDED.name, display_name = EXCLUDED.display_name, yf_ticker = EXCLUDED.yf_ticker,
+          sector = EXCLUDED.sector, listed_date = EXCLUDED.listed_date, ipo_price = EXCLUDED.ipo_price,
+          is_trifecta = EXCLUDED.is_trifecta, is_active = EXCLUDED.is_active, updated_at = now()
+  `;
+  invalidateUniverse();
+}
+
+// ---------------------------------------------------------------------------
 // Engine inputs
 // ---------------------------------------------------------------------------
 
@@ -423,16 +500,21 @@ export async function getIndexHistoryBundle(
   toDate: string,
   opts: { sectors: boolean; portfolio: boolean }
 ): Promise<IndexHistoryBundle> {
-  const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
+  const [prices, shares, members] = await Promise.all([
+    loadAllPrices(),
+    getSharesMap(),
+    loadEngineMembers(),
+  ]);
+  const { allMembers, membersBySector, portfolioMembers } = members;
 
-  const main = computeIndexSeries(prices, shares, ALL_MEMBERS, INDEX_ENGINE_OPTIONS);
+  const main = computeIndexSeries(prices, shares, allMembers, INDEX_ENGINE_OPTIONS);
   const data = slice(main.points, fromDate, toDate);
 
   const sectorData: SectorHistoryPoint[] = [];
   if (opts.sectors) {
     for (const sector of SECTORS) {
-      const members = MEMBERS_BY_SECTOR.get(sector) ?? [];
-      const result = computeIndexSeries(prices, shares, members, SUBINDEX_ENGINE_OPTIONS);
+      const sectorMembers = membersBySector.get(sector) ?? [];
+      const result = computeIndexSeries(prices, shares, sectorMembers, SUBINDEX_ENGINE_OPTIONS);
       for (const p of result.points) {
         if (p.date < fromDate || p.date > toDate) continue;
         sectorData.push({ date: p.date, sector, value: round(p.value, 4), numCompanies: p.numCompanies });
@@ -442,7 +524,7 @@ export async function getIndexHistoryBundle(
 
   let portfolioData: IndexHistoryPoint[] = [];
   if (opts.portfolio) {
-    const result = computeIndexSeries(prices, shares, PORTFOLIO_MEMBERS, SUBINDEX_ENGINE_OPTIONS);
+    const result = computeIndexSeries(prices, shares, portfolioMembers, SUBINDEX_ENGINE_OPTIONS);
     portfolioData = slice(result.points, fromDate, toDate);
   }
 
@@ -464,17 +546,21 @@ export async function recomputeAndPersistIndex(): Promise<{
   numCompanies: number;
 }> {
   const sql = getSql();
-  const [prices, shares] = await Promise.all([loadAllPrices(), getSharesMap()]);
+  const [prices, shares, engineMembers] = await Promise.all([
+    loadAllPrices(),
+    getSharesMap(),
+    loadEngineMembers(),
+  ]);
   const { points, divisor, members } = computeIndexSeries(
     prices,
     shares,
-    ALL_MEMBERS,
+    engineMembers.allMembers,
     INDEX_ENGINE_OPTIONS
   );
   const portfolio = computeIndexSeries(
     prices,
     shares,
-    PORTFOLIO_MEMBERS,
+    engineMembers.portfolioMembers,
     SUBINDEX_ENGINE_OPTIONS
   );
 

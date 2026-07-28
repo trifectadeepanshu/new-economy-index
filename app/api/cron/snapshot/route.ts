@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COMPANIES } from "@/lib/companies";
+import { getUniverse } from "@/lib/universe";
 import { fetchAllQuotes, type QuoteResult } from "@/lib/yahoo-finance";
 import {
   ensureSchema,
@@ -60,7 +60,7 @@ async function runSnapshot() {
 
   const today = getISTDate();
   const runId = await startCronRun(CRON_JOB, today);
-  const active = COMPANIES.filter((c) => c.listedDate <= today);
+  const active = (await getUniverse()).filter((c) => c.listedDate <= today);
   let stockRowsWritten = 0;
 
   let quotes: QuoteResult[];

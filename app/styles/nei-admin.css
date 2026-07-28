@@ -241,4 +241,93 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* Constituents CMS form */
+  .nei-admin-form {
+    margin: 20px 0 28px;
+    padding: 20px;
+    border: 1px solid var(--nei-border, rgba(255,255,255,0.12));
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .nei-admin-form h2 {
+    font-size: 15px;
+    margin: 0 0 14px;
+  }
+
+  .nei-admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 20px;
+  }
+
+  .nei-admin-form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--nei-muted);
+  }
+
+  .nei-admin-form-grid input,
+  .nei-admin-form-grid select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--nei-border, rgba(255,255,255,0.16));
+    background: rgba(0,0,0,0.25);
+    color: var(--nei-fg);
+    font-size: 13px;
+  }
+
+  .nei-admin-check {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px !important;
+    color: var(--nei-fg) !important;
+  }
+
+  .nei-admin-check input {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  .nei-admin-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .nei-admin-form-actions button,
+  .nei-admin-ghost {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--nei-border, rgba(255,255,255,0.16));
+    background: var(--nei-accent, #E07A38);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .nei-admin-ghost {
+    background: transparent;
+    color: var(--nei-muted);
+  }
+
+  .nei-admin-form-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .nei-admin-table tr.is-inactive {
+    opacity: 0.45;
+  }
+
+  @media (max-width: 640px) {
+    .nei-admin-form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 }

@@ -11,7 +11,6 @@ import type {
   SortKey,
   SortState,
 } from "@/components/company-grid/types";
-import { PORTFOLIO_TICKERS } from "@/lib/companies";
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 import type { Currency } from "@/lib/index-api";
 
@@ -104,7 +103,7 @@ function CompanyCell({
       {showLogo && <CompanyLogo ticker={row.ticker} name={row.name} size={30} />}
       <div>
         <strong>
-          {PORTFOLIO_TICKERS.has(row.ticker) && <PortfolioMark />}
+          {row.isPortfolio && <PortfolioMark />}
           {row.displayName}
         </strong>
         <span>{row.name}</span>
@@ -137,7 +136,7 @@ export function ConstituentTable({
           <TableHeader sort={sort} onSort={onSort} />
           <tbody>
             {rows.map((row, index) => {
-              const isPortfolio = PORTFOLIO_TICKERS.has(row.ticker);
+              const isPortfolio = row.isPortfolio;
 
               return (
                 <tr

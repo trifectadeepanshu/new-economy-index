@@ -3,7 +3,6 @@
 
 import { useEffect, useState } from "react";
 import type { CompanyDetail, StockData } from "@/lib/index-api";
-import { PORTFOLIO_TICKERS } from "@/lib/companies";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 import { formatMarketCap, formatPrice, formatSignedPercent } from "@/components/company-grid/format";
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
@@ -101,7 +100,7 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
   }, [stock, currency]);
 
   if (!stock) return null;
-  const isPortfolio = PORTFOLIO_TICKERS.has(stock.ticker);
+  const isPortfolio = stock.isPortfolio;
   const fins = (detail?.financials ?? []).slice(-5);
   const latest = fins.at(-1);
   const bars = (selector: (point: (typeof fins)[number]) => number | null): BarPoint[] =>

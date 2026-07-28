@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COMPANIES, PORTFOLIO_TICKERS, type Company } from "@/lib/companies";
+import { type Company } from "@/lib/companies";
+import { getUniverse } from "@/lib/universe";
 import { fetchAllQuotes, type QuoteResult } from "@/lib/yahoo-finance";
 import {
   ensureSchema,
@@ -61,7 +62,7 @@ function buildStocks(
 ): StockData[] {
   const conv = (v: number | null) =>
     v == null ? null : usdInr && usdInr > 0 ? v / usdInr : v;
-  return companies.map(({ ticker, name, displayName, sector }) => {
+  return companies.map(({ ticker, name, displayName, sector, isPortfolio, listedDate }) => {
     const current = prices[ticker];
     const basePriceInr = basePrices[ticker] ?? null;
     const priceInr = current?.price ?? null;
@@ -73,6 +74,8 @@ function buildStocks(
       name,
       displayName,
       sector,
+      isPortfolio,
+      listedDate,
       price: conv(priceInr),
       changePct: current?.changePct ?? null,
       marketCap: conv(marketCapInr),
@@ -102,7 +105,7 @@ function trifectaWeight(stocks: StockData[]): number | null {
   const total = stocks.reduce((sum, s) => sum + (s.marketCap ?? 0), 0);
   if (total <= 0) return null;
   const pf = stocks
-    .filter((s) => PORTFOLIO_TICKERS.has(s.ticker))
+    .filter((s) => s.isPortfolio)
     .reduce((sum, s) => sum + (s.marketCap ?? 0), 0);
   return Math.round((pf / total) * 10000) / 100;
 }
@@ -163,7 +166,7 @@ export async function GET(req: NextRequest) {
   const usd = currency === "usd";
   const today = getISTDate();
   const trailingYearFromDate = getTrailingYearFromDate(today);
-  const active = COMPANIES.filter((c) => c.listedDate <= today);
+  const active = (await getUniverse()).filter((c) => c.listedDate <= today);
 
   // Try live Yahoo quotes first. If any current index/portfolio member is
   // missing, fall back to the stored snapshot and mark stale rows explicitly.
