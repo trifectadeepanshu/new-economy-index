@@ -463,6 +463,31 @@ export async function upsertShareCounts(
   `;
 }
 
+/**
+ * Refresh Yahoo share counts without mutating canonical CapIQ history rows.
+ * Existing Yahoo rows may be revised; `excel-capiq` rows are left untouched.
+ */
+export async function upsertYahooShareCounts(
+  ticker: string,
+  points: ShareCountInput[]
+): Promise<number> {
+  if (!points.length) return 0;
+  const sql = getSql();
+  const rows = (await sql`
+    INSERT INTO share_counts (ticker, as_of, shares, source)
+    SELECT ${ticker}, * FROM unnest(
+      ${points.map((p) => p.asOf)}::date[],
+      ${points.map((p) => Math.round(p.shares))}::numeric[],
+      ${points.map(() => "yahoo")}::varchar[]
+    ) AS t(as_of, shares, source)
+    ON CONFLICT (ticker, as_of) DO UPDATE
+      SET shares = EXCLUDED.shares, source = EXCLUDED.source
+      WHERE share_counts.source <> 'excel-capiq'
+    RETURNING as_of
+  `) as DbRow[];
+  return rows.length;
+}
+
 export type QuarterlyFinancialInput = {
   period: string;
   revenue: number | null;

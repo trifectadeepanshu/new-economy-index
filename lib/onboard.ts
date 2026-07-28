@@ -9,10 +9,10 @@
  */
 import {
   upsertStockSnapshotsBatch,
-  upsertShareCounts,
   upsertQuarterlyFinancials,
   upsertCompanyProfile,
   upsertAnalystRating,
+  upsertYahooShareCounts,
   type StockSnapshotInput,
 } from "@/lib/db";
 import { STOCK_SOURCE_YAHOO } from "@/lib/quote-snapshots";
@@ -102,7 +102,7 @@ export async function onboardConstituent(c: OnboardInput): Promise<OnboardSummar
   if (!shares.length && meta?.currentShares) {
     shares = [{ asOf: c.listedDate, shares: meta.currentShares }];
   }
-  await upsertShareCounts(c.ticker, shares);
+  await upsertYahooShareCounts(c.ticker, shares);
 
   let financials = 0;
   try {
