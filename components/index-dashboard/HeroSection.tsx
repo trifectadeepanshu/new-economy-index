@@ -93,7 +93,7 @@ function HeroNav({
   return (
     <header className="nei-v2-nav">
       <div className="nei-brand-lockup">
-        <Link href="/" className="nei-brand-link" aria-label="New Economy Index home">
+        <Link href="/" className="nei-brand-link" aria-label="NEI home">
           <Image
             src="/trifecta-capital-logo.png"
             alt="Trifecta Capital"
@@ -154,13 +154,13 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
         India&apos;s new <br className="nei-hero-mobile-break" />economy,{" "}
         <br />
         <span>
-          tracked as a <br className="nei-hero-mobile-break" />single index.
+          tracked in one <br className="nei-hero-mobile-break" />live view.
         </span>
       </h1>
       <p className="nei-hero-copy">
         Trifecta Capital backed many of India&apos;s next generation of
-        businesses before they had a track record. Our New Economy Index tracks
-        the top 50 institutionally backed technology-driven companies that have
+        businesses before they had a track record. NEI follows the top 50
+        institutionally backed technology-driven companies that have
         now gone public so that you can see how the ecosystem is doing both on an
         absolute and relative basis.
       </p>

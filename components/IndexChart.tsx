@@ -84,7 +84,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
             <div className="nei-benchmark-legend" role="group" aria-label="Benchmarks">
               <span className="nei-benchmark-chip is-nei">
                 <span className="nei-benchmark-dot" style={{ background: "var(--nei-accent)" }} />
-                India&apos;s New Economy Index
+                NEI
               </span>
               {hasTrifecta && (
                 <button
@@ -123,7 +123,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
 
           {showTrifecta && hasTrifecta && (
             <p className="nei-chart-note">
-              Trifecta portfolio is indexed from each holding&apos;s IPO price, so it
+              Trifecta portfolio is rebased from each holding&apos;s IPO price, so it
               includes listing-day performance.
             </p>
           )}

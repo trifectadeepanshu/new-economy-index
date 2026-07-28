@@ -22,7 +22,7 @@ test("quarterly financials calculate same-quarter YoY growth", () => {
   assert.equal(financials.at(-1)?.revenueGrowth, 50);
 });
 
-test("asset intensity is TTM revenue over latest available assets", () => {
+test("asset turnover is TTM revenue over latest available assets", () => {
   const financials = buildQuarterlyFinancials([
     { period: "2025-03-31", revenue: 100, ebitda: null, pat: null, total_assets: 1000 },
     { period: "2025-06-30", revenue: 110, ebitda: null, pat: null, total_assets: null },
@@ -32,7 +32,7 @@ test("asset intensity is TTM revenue over latest available assets", () => {
   ]);
 
   // Q3 FY26: TTM revenue 100+110+120+130 = 460 over assets 1000 = 0.46
-  assert.equal(financials[3].assetIntensity, 0.46);
+  assert.equal(financials[3].assetTurnover, 0.46);
   // Q4 FY26: TTM revenue 110+120+130+150 = 510 over assets 1600 = 0.32
-  assert.equal(financials[4].assetIntensity, 0.32);
+  assert.equal(financials[4].assetTurnover, 0.32);
 });

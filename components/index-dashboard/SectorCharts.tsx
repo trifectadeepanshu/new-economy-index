@@ -23,15 +23,30 @@ function monthLabel(date: string): string {
 export function SectorCharts() {
   const [points, setPoints] = useState<SectorHistoryPoint[]>([]);
   const [selected, setSelected] = useState<Sector>("Platforms");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
+
     fetch("/api/index/history?range=1Y&includeSectors=1", { signal: controller.signal })
-      .then((r) => (r.ok ? (r.json() as Promise<IndexHistoryPayload>) : Promise.reject()))
+      .then(async (r) => {
+        if (r.ok) return (await r.json()) as IndexHistoryPayload;
+        throw new Error(`HTTP ${r.status}`);
+      })
       .then((json) => setPoints(json.sectorData ?? []))
-      .catch(() => {});
+      .catch((err: unknown) => {
+        if (!(err instanceof DOMException && err.name === "AbortError")) {
+          setError("Could not load sector history.");
+          setPoints([]);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
-  }, []);
+  }, [retryKey]);
 
   const series = useMemo(
     () =>
@@ -93,7 +108,23 @@ export function SectorCharts() {
       </div>
 
       <div className="nei-sector-single-chart">
-        {series.length > 1 ? (
+        {loading ? (
+          <p className="nei-cm-nodata" role="status">Loading…</p>
+        ) : error ? (
+          <div className="nei-sector-chart-state is-error" role="alert">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={() => {
+                setLoading(true);
+                setError(null);
+                setRetryKey((key) => key + 1);
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : series.length > 1 ? (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={series} margin={{ top: 10, right: 18, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,15,25,0.06)" vertical={false} />
@@ -137,7 +168,7 @@ export function SectorCharts() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="nei-cm-nodata">Loading…</p>
+          <p className="nei-cm-nodata">No sector history available.</p>
         )}
       </div>
     </div>

@@ -20,11 +20,18 @@ function CompanyCard({
   const isUp = (row.changePct ?? 0) >= 0;
   const isPortfolio = row.isPortfolio;
 
+  const clickableClass = onSelect ? " nei-company-card-clickable" : "";
+
   return (
-    <article
-      className={`nei-company-card nei-company-card-clickable${isPortfolio ? " is-portfolio" : ""}`}
-      onClick={() => onSelect?.(row)}
-    >
+    <article className={`nei-company-card${clickableClass}${isPortfolio ? " is-portfolio" : ""}`}>
+      {onSelect && (
+        <button
+          type="button"
+          className="nei-company-card-hit"
+          onClick={() => onSelect(row)}
+          aria-label={`View ${row.displayName} details`}
+        />
+      )}
       <div className="nei-company-card-header">
         <CompanyLogo ticker={row.ticker} name={row.name} />
         <div className="nei-company-card-title">

@@ -117,7 +117,7 @@ export type CompanyFinancialPeriod = {
   ebitdaMargin: number | null; // %
   patMargin: number | null; // %
   revenueGrowth: number | null; // % YoY vs same quarter last year
-  assetIntensity: number | null; // total assets / TTM revenue (x)
+  assetTurnover: number | null; // TTM revenue / total assets (x)
 };
 
 export type AnalystConsensus = {

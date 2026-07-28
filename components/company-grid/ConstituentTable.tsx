@@ -94,18 +94,32 @@ function TableHeader({
 function CompanyCell({
   row,
   showLogo,
+  onSelect,
 }: {
   row: ConstituentRow;
   showLogo: boolean;
+  onSelect?: (row: ConstituentRow) => void;
 }) {
   return (
     <div className="nei-company-cell">
       {showLogo && <CompanyLogo ticker={row.ticker} name={row.name} size={30} />}
       <div>
-        <strong>
-          {row.isPortfolio && <PortfolioMark />}
-          {row.displayName}
-        </strong>
+        {onSelect ? (
+          <button
+            type="button"
+            className="nei-company-cell-button"
+            onClick={() => onSelect(row)}
+            aria-label={`View ${row.displayName} details`}
+          >
+            {row.isPortfolio && <PortfolioMark />}
+            {row.displayName}
+          </button>
+        ) : (
+          <strong>
+            {row.isPortfolio && <PortfolioMark />}
+            {row.displayName}
+          </strong>
+        )}
         <span>{row.name}</span>
       </div>
     </div>
@@ -142,14 +156,12 @@ export function ConstituentTable({
                 <tr
                   key={row.ticker}
                   className={`nei-constituent-row${isPortfolio ? " is-portfolio" : ""}`}
-                  onClick={() => onSelect?.(row)}
-                  title={`View ${row.displayName}`}
                 >
                   <td className="nei-row-number">
                     {String(index + 1).padStart(2, "0")}
                   </td>
                   <td>
-                    <CompanyCell row={row} showLogo={!isTerminal} />
+                    <CompanyCell row={row} showLogo={!isTerminal} onSelect={onSelect} />
                   </td>
                   <td>
                     <span className="nei-sector-name">{row.sector}</span>

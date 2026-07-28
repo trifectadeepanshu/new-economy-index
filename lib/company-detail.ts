@@ -88,7 +88,7 @@ export function buildQuarterlyFinancials(
         prevYear?.revenue && row.revenue
           ? round1((row.revenue / prevYear.revenue - 1) * 100)
           : null,
-      assetIntensity:
+      assetTurnover:
         assets != null && assets !== 0 && trailingRevenue != null
           ? round2(trailingRevenue / assets)
           : null,

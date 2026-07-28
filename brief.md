@@ -65,12 +65,12 @@ and refreshing shares meant re-importing the CapIQ workbook by hand. Goal:
 - Fixed day-change reference (was collapsing to ~0 after the daily cron).
 - Chart: NEI shows its **true level**; benchmarks + Trifecta rebased to meet the
   NEI at the range start; "Base 1,000" reference line only on the ALL range.
-- Asset intensity flipped to **TTM revenue / assets** (`lib/company-detail.ts`).
-- Copy update per RK review (title dropped "Top 50"; hero "single index"; count
+- Asset turnover uses **TTM revenue / assets** (`lib/company-detail.ts`).
+- Copy update per RK review (title dropped "Top 50"; hero "live view"; count
   reads 50 everywhere via `INDEX_SIZE`).
 - Portfolio companies flagged with the **Trifecta mark** (`/trifecta-mark.png`),
   not a "P" badge.
-- **Fixed CI** (was red): stale asset-intensity test + test mocks missing new
+- **Fixed CI** (was red): stale asset-turnover test + test mocks missing new
   payload fields.
 
 ### Phase 1 — DB-backed universe + CMS  ✅ (on `main`)
@@ -224,7 +224,7 @@ npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_new vers
 | Yahoo data provider | `lib/yahoo-provider.ts` |
 | Onboarding orchestrator | `lib/onboard.ts` |
 | Ongoing Yahoo refresh orchestrator | `lib/data-refresh.ts` |
-| Company modal detail (quarterly, asset intensity) | `lib/company-detail.ts` |
+| Company modal detail (quarterly, asset turnover) | `lib/company-detail.ts` |
 | Constants (SECTORS, INDEX_*, INDEX_SIZE, seed) | `lib/companies.ts` |
 | Live / history / cron routes | `app/api/index/live/route.ts`, `.../history/route.ts`, `app/api/cron/snapshot/route.ts`, `app/api/cron/refresh/route.ts` |
 | CMS | `app/admin/constituents/*`, `app/api/admin/constituents/route.ts` |

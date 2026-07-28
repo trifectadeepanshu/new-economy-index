@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/set-state-in-effect -- effect resets + fetches on stock change */
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { CompanyDetail, StockData } from "@/lib/index-api";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 import { formatMarketCap, formatPrice, formatSignedPercent } from "@/components/company-grid/format";
@@ -12,6 +12,25 @@ type BarPoint = {
   label: string;
   value: number | null;
 };
+
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+function getFocusableElements(container: HTMLElement) {
+  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+    (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true"
+  );
+}
+
+function isAbortError(error: unknown) {
+  return error instanceof DOMException && error.name === "AbortError";
+}
 
 function shortPeriodLabel(label: string) {
   return label.split(" ")[0] || label;
@@ -72,17 +91,60 @@ function AnalystBar({ detail }: { detail: CompanyDetail }) {
 
 export function CompanyModal({ stock, onClose }: { stock: StockData | null; onClose: () => void }) {
   const { currency } = useCurrency();
+  const titleId = useId();
+  const descriptionId = useId();
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const [detail, setDetail] = useState<CompanyDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!stock) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+
+    const active = document.activeElement;
+    previouslyFocusedRef.current = active instanceof HTMLElement ? active : null;
+    const previousOverflow = document.body.style.overflow;
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+
+      if (e.key !== "Tab" || !panelRef.current) return;
+
+      const focusable = getFocusableElements(panelRef.current);
+      if (!focusable.length) {
+        e.preventDefault();
+        panelRef.current.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const current = document.activeElement;
+
+      if (e.shiftKey && (current === first || !panelRef.current.contains(current))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && current === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
+      previouslyFocusedRef.current?.focus();
     };
   }, [stock, onClose]);
 
@@ -91,13 +153,24 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
     const controller = new AbortController();
     setLoading(true);
     setDetail(null);
+    setDetailError(null);
     fetch(`/api/company/${encodeURIComponent(stock.ticker)}?currency=${currency}`, { signal: controller.signal })
-      .then((r) => (r.ok ? (r.json() as Promise<CompanyDetail>) : Promise.reject()))
+      .then(async (r) => {
+        if (r.ok) return (await r.json()) as CompanyDetail;
+        const json = (await r.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(json?.error ?? `HTTP ${r.status}`);
+      })
       .then((d) => setDetail(d))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch((error: unknown) => {
+        if (!isAbortError(error)) {
+          setDetailError("Could not load company details.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
-  }, [stock, currency]);
+  }, [stock, currency, retryKey]);
 
   if (!stock) return null;
   const isPortfolio = stock.isPortfolio;
@@ -108,15 +181,30 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
   const up = (stock.changePct ?? 0) >= 0;
 
   return (
-    <div className="nei-cm-overlay" role="dialog" aria-modal="true" onClick={onClose}>
-      <div className="nei-cm-panel" onClick={(e) => e.stopPropagation()}>
-        <button type="button" className="nei-cm-close" onClick={onClose} aria-label="Close">
+    <div className="nei-cm-overlay" onClick={onClose}>
+      <div
+        className="nei-cm-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={detail?.description ? descriptionId : undefined}
+        tabIndex={-1}
+        ref={panelRef}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="nei-cm-close"
+          onClick={onClose}
+          aria-label="Close"
+          ref={closeButtonRef}
+        >
           ×
         </button>
 
         <div className="nei-cm-head">
           <div>
-            <h2 className="nei-heading">
+            <h2 id={titleId} className="nei-heading">
               {isPortfolio && <PortfolioMark />}
               {stock.displayName}
             </h2>
@@ -131,7 +219,16 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
           </div>
         </div>
 
-        {detail?.description && <p className="nei-cm-desc">{detail.description}</p>}
+        {detail?.description && <p id={descriptionId} className="nei-cm-desc">{detail.description}</p>}
+
+        {detailError && (
+          <div className="nei-cm-error" role="alert">
+            <span>{detailError}</span>
+            <button type="button" onClick={() => setRetryKey((key) => key + 1)}>
+              Retry
+            </button>
+          </div>
+        )}
 
         <div className="nei-cm-cards">
           <div className="nei-cm-card">
@@ -160,17 +257,19 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
           </div>
 
           <div className="nei-cm-card">
-            <span className="nei-cm-card-label">TTM asset intensity</span>
-            <strong className="nei-mono">{latest?.assetIntensity != null ? `${latest.assetIntensity.toFixed(2)}x` : "—"}</strong>
+            <span className="nei-cm-card-label">Asset turnover</span>
+            <strong className="nei-mono">{latest?.assetTurnover != null ? `${latest.assetTurnover.toFixed(2)}x` : "—"}</strong>
             <span className="nei-cm-card-sub">TTM revenue / assets</span>
-            <MiniBars label="TTM asset intensity" points={bars((f) => f.assetIntensity)} />
+            <MiniBars label="Asset turnover" points={bars((f) => f.assetTurnover)} />
           </div>
         </div>
 
         <div className="nei-cm-section">
           <span className="nei-cm-card-label">Share price</span>
           <div className="nei-cm-chart">
-            {detail && detail.priceSeries.length > 1 ? (
+            {detailError ? (
+              <p className="nei-cm-nodata">Price history unavailable.</p>
+            ) : detail && detail.priceSeries.length > 1 ? (
               <Sparkline series={detail.priceSeries.map((p) => p.close)} height={90} />
             ) : (
               <p className="nei-cm-nodata">{loading ? "Loading…" : "No price history."}</p>
@@ -180,7 +279,13 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
 
         <div className="nei-cm-section">
           <span className="nei-cm-card-label">Analyst consensus</span>
-          {detail ? <AnalystBar detail={detail} /> : <p className="nei-cm-nodata">Loading…</p>}
+          {detail ? (
+            <AnalystBar detail={detail} />
+          ) : detailError ? (
+            <p className="nei-cm-nodata">Analyst data unavailable.</p>
+          ) : (
+            <p className="nei-cm-nodata">Loading…</p>
+          )}
         </div>
       </div>
     </div>

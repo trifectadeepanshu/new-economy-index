@@ -16,7 +16,7 @@ const METHOD_CARDS = [
   {
     number: "01",
     title: "Market-cap weighted, by design",
-    body: "Each company's weight reflects its size in the public market. The index moves with the value of the cohort.",
+    body: "Each company's weight reflects its public-market size. The cohort moves with the aggregate value of its companies.",
   },
   {
     number: "03",
@@ -117,7 +117,7 @@ export function ConstituentsSection({
         padded={false}
       >
         <div className="nei-index-inner">
-          <SectionEyebrow number="03" label="Inside the Index" light />
+          <SectionEyebrow number="03" label="Inside the Cohort" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
               The full cohort, laid out.
@@ -249,14 +249,14 @@ export function DashboardFooter() {
               </div>
               <p>
                 Market data for NSE-listed companies, sourced from public feeds
-                and updated during market hours. The New Economy Index is for
+                and updated during market hours. NEI is for
                 informational purposes only and does not constitute investment
                 advice. © 2026 Trifecta Capital.
               </p>
             </div>
             <div className="nei-footer-links">
               <div>
-                <strong>The Index</strong>
+                <strong>NEI</strong>
                 <a href="#performance">Performance</a>
                 <a href="#constituents">Constituents</a>
                 <a href="#sectors">Sectors</a>
