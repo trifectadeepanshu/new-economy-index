@@ -438,6 +438,92 @@ export async function upsertConstituent(c: ConstituentInput): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Per-company data writes (onboarding / refresh)
+// ---------------------------------------------------------------------------
+
+export type ShareCountInput = { asOf: string; shares: number };
+
+/** Replace point-in-time share counts for a ticker (source-tagged). */
+export async function upsertShareCounts(
+  ticker: string,
+  points: ShareCountInput[],
+  source = "yahoo"
+): Promise<void> {
+  if (!points.length) return;
+  const sql = getSql();
+  await sql`
+    INSERT INTO share_counts (ticker, as_of, shares, source)
+    SELECT ${ticker}, * FROM unnest(
+      ${points.map((p) => p.asOf)}::date[],
+      ${points.map((p) => Math.round(p.shares))}::numeric[],
+      ${points.map(() => source)}::varchar[]
+    ) AS t(as_of, shares, source)
+    ON CONFLICT (ticker, as_of) DO UPDATE
+      SET shares = EXCLUDED.shares, source = EXCLUDED.source
+  `;
+}
+
+export type QuarterlyFinancialInput = {
+  period: string;
+  revenue: number | null;
+  ebitda: number | null;
+  pat: number | null;
+  assets: number | null;
+};
+
+export async function upsertQuarterlyFinancials(
+  ticker: string,
+  rows: QuarterlyFinancialInput[]
+): Promise<void> {
+  if (!rows.length) return;
+  const sql = getSql();
+  await sql`
+    INSERT INTO company_financials_quarterly (ticker, quarter_end, revenue, ebitda, pat, total_assets)
+    SELECT ${ticker}, * FROM unnest(
+      ${rows.map((r) => r.period)}::date[],
+      ${rows.map((r) => r.revenue)}::numeric[],
+      ${rows.map((r) => r.ebitda)}::numeric[],
+      ${rows.map((r) => r.pat)}::numeric[],
+      ${rows.map((r) => r.assets)}::numeric[]
+    ) AS t(quarter_end, revenue, ebitda, pat, total_assets)
+    ON CONFLICT (ticker, quarter_end) DO UPDATE
+      SET revenue = EXCLUDED.revenue, ebitda = EXCLUDED.ebitda,
+          pat = EXCLUDED.pat, total_assets = EXCLUDED.total_assets
+  `;
+}
+
+export async function upsertCompanyProfile(ticker: string, description: string | null): Promise<void> {
+  const sql = getSql();
+  await sql`
+    INSERT INTO company_profiles (ticker, description, updated_at)
+    VALUES (${ticker}, ${description}, now())
+    ON CONFLICT (ticker) DO UPDATE SET description = EXCLUDED.description, updated_at = now()
+  `;
+}
+
+export type AnalystRatingInput = {
+  strongBuy: number;
+  buy: number;
+  hold: number;
+  sell: number;
+  strongSell: number;
+  ratingKey: string | null;
+  numAnalysts: number | null;
+};
+
+export async function upsertAnalystRating(ticker: string, a: AnalystRatingInput): Promise<void> {
+  const sql = getSql();
+  await sql`
+    INSERT INTO analyst_ratings (ticker, strong_buy, buy, hold, sell, strong_sell, rating_key, num_analysts, updated_at)
+    VALUES (${ticker}, ${a.strongBuy}, ${a.buy}, ${a.hold}, ${a.sell}, ${a.strongSell}, ${a.ratingKey}, ${a.numAnalysts}, now())
+    ON CONFLICT (ticker) DO UPDATE
+      SET strong_buy = EXCLUDED.strong_buy, buy = EXCLUDED.buy, hold = EXCLUDED.hold,
+          sell = EXCLUDED.sell, strong_sell = EXCLUDED.strong_sell,
+          rating_key = EXCLUDED.rating_key, num_analysts = EXCLUDED.num_analysts, updated_at = now()
+  `;
+}
+
+// ---------------------------------------------------------------------------
 // Engine inputs
 // ---------------------------------------------------------------------------
 

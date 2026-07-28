@@ -33,6 +33,7 @@ export function ConstituentsAdmin() {
   const [rows, setRows] = useState<ConstituentRecord[]>([]);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [editing, setEditing] = useState<string | null>(null);
+  const [forceBackfill, setForceBackfill] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -58,21 +59,34 @@ export function ConstituentsAdmin() {
     event.preventDefault();
     setBusy(true);
     setError(null);
-    setNotice(null);
+    setNotice("Fetching from Yahoo and recomputing… this can take up to a minute.");
     try {
       const res = await fetch("/api/admin/constituents", {
         method: "POST",
         headers: { ...auth, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, ipoPrice: form.ipoPrice === "" ? null : form.ipoPrice }),
+        body: JSON.stringify({
+          ...form,
+          ipoPrice: form.ipoPrice === "" ? null : form.ipoPrice,
+          backfill: forceBackfill,
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
       setRows(json.constituents ?? []);
-      setNotice(`Saved ${json.ticker}. Price/share backfill + recompute run in Phase 2 — for now, re-run the snapshot cron to pull its data.`);
+      const o = json.onboard;
+      setNotice(
+        o
+          ? `Onboarded ${json.ticker}: ${o.priceRows} price rows (${o.firstDate} → ${o.lastDate})` +
+            `${o.ipoSeeded ? " + IPO seed" : ""}, ${o.shareRows} share points, ${o.financials} financial quarters` +
+            `${o.analyst ? ", analyst" : ""}. Index recomputed.`
+          : `Saved ${json.ticker}; index recomputed.`
+      );
       setForm(EMPTY_FORM);
       setEditing(null);
+      setForceBackfill(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to save");
+      setNotice(null);
     } finally {
       setBusy(false);
     }
@@ -172,6 +186,12 @@ export function ConstituentsAdmin() {
               Active (in index)
             </label>
           </div>
+          {editing && (
+            <label className="nei-admin-check" style={{ marginTop: 14 }}>
+              <input type="checkbox" checked={forceBackfill} onChange={(e) => setForceBackfill(e.target.checked)} />
+              Re-backfill prices / shares / financials from Yahoo
+            </label>
+          )}
           <div className="nei-admin-form-actions">
             <button type="submit" disabled={busy || !secret.trim()}>{editing ? "Save changes" : "Add company"}</button>
             {editing && (

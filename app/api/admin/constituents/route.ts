@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   ensureSchema,
   listConstituents,
+  recomputeAndPersistIndex,
   upsertConstituent,
   type ConstituentInput,
 } from "@/lib/db";
+import { onboardConstituent, type OnboardSummary } from "@/lib/onboard";
 import { isBearerAuthorized } from "@/lib/http-auth";
 import { SECTORS } from "@/lib/companies";
 
@@ -69,13 +71,35 @@ export async function POST(req: NextRequest) {
   if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) return unauthorized();
   try {
     await ensureSchema();
-    const parsed = parseBody(await req.json().catch(() => null));
+    const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+    const parsed = parseBody(body);
     if ("error" in parsed) {
       return NextResponse.json({ error: parsed.error }, { status: 400, headers: HEADERS });
     }
+
+    // Onboard (price/share/detail backfill) when the ticker is new, or when a
+    // re-backfill is explicitly requested. Do it before adding a new ticker so a
+    // bad symbol is rejected up front rather than breaking the daily cron.
+    const isNew = !(await listConstituents()).some((r) => r.ticker === parsed.ticker);
+    const shouldOnboard = isNew || body?.backfill === true;
+
+    let onboard: OnboardSummary | null = null;
+    if (shouldOnboard) {
+      try {
+        onboard = await onboardConstituent(parsed);
+      } catch (err) {
+        return NextResponse.json(
+          { error: err instanceof Error ? err.message : "Onboarding failed" },
+          { status: 400, headers: HEADERS }
+        );
+      }
+    }
+
     await upsertConstituent(parsed);
+    await recomputeAndPersistIndex();
+
     return NextResponse.json(
-      { ok: true, ticker: parsed.ticker, constituents: await listConstituents() },
+      { ok: true, ticker: parsed.ticker, onboard, constituents: await listConstituents() },
       { headers: HEADERS }
     );
   } catch (err) {
