@@ -204,6 +204,7 @@ export function useIndexDashboardModel() {
     sinceInception,
     heroSeries,
     heroStats,
+    marketStats,
   };
 }
 

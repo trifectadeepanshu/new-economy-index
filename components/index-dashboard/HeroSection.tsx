@@ -213,18 +213,27 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
 
       <div className="nei-hero-card-header">
         <MarketStatus marketOpen={model.marketOpen} nowIST={model.nowIST} />
-        <div className="nei-hero-header-right">
-          <div
-            className="nei-fx-ticker"
-            aria-label={
-              model.usdInr !== null
-                ? `Live USD to INR exchange rate ${usdInrDisplay}`
-                : "Live USD to INR exchange rate unavailable"
-            }
-          >
-            <span className="nei-fx-ticker-label">USD/INR</span>
-            <strong className="nei-fx-ticker-value nei-mono">{usdInrDisplay}</strong>
-            <span className="nei-fx-ticker-meta">live FX</span>
+        <span
+          className="nei-hero-fx nei-mono"
+          aria-label={
+            model.usdInr !== null
+              ? `Live USD to INR exchange rate ${usdInrDisplay}`
+              : "Live USD to INR exchange rate unavailable"
+          }
+        >
+          USD/INR {usdInrDisplay}
+        </span>
+      </div>
+
+      {model.isLoading && model.indexValue === null ? (
+        <div className="nei-index-value-skeleton">
+          <Skeleton height={82} radius={8} />
+        </div>
+      ) : (
+        <div className="nei-hero-value-row">
+          <div className={`nei-index-value nei-mono${valueFlashClass}`}>
+            {formatNumber(model.displayedValue ?? model.indexValue)}
+            {model.marketOpen && <span aria-hidden="true" className="nei-live-cursor" />}
           </div>
           {model.changePct !== null && (
             <span
@@ -235,17 +244,6 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
               {formatPercent(model.dayChange)}
             </span>
           )}
-        </div>
-      </div>
-
-      {model.isLoading && model.indexValue === null ? (
-        <div className="nei-index-value-skeleton">
-          <Skeleton height={82} radius={8} />
-        </div>
-      ) : (
-        <div className={`nei-index-value nei-mono${valueFlashClass}`}>
-          {formatNumber(model.displayedValue ?? model.indexValue)}
-          {model.marketOpen && <span aria-hidden="true" className="nei-live-cursor" />}
         </div>
       )}
 
@@ -270,36 +268,27 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
         )}
       </div>
 
-      <div className="nei-mktcap-row">
-        <span className="nei-hero-stat-label">New Economy · Total Market Cap</span>
-        <span className="nei-mono nei-mktcap-value">
-          {model.totalMarketCap !== null ? formatMarketCap(model.totalMarketCap, model.currency) : "—"}
-        </span>
-      </div>
-
-      <div className="nei-mktcap-row">
-        <span className="nei-hero-stat-label">Trifecta portfolio · share of index</span>
-        <span className="nei-mono nei-mktcap-value">
-          {model.trifectaWeightPct !== null ? `${model.trifectaWeightPct.toFixed(1)}%` : "—"}
-        </span>
-      </div>
-
-      <div className="nei-hero-card-stats">
-        {model.heroStats.map((stat, index) => (
-          <div
-            key={stat.label}
-            style={
-              model.dataLoaded
-                ? { animation: `nei-stat-reveal 0.4s ease-out ${index * 90}ms both` }
-                : { opacity: 0 }
-            }
-          >
-            <div className="nei-hero-stat-label">{stat.label}</div>
-            <div className={`nei-hero-stat-value nei-mono ${stat.tone ? `is-${stat.tone}` : ""}`}>
-              {stat.value}
-            </div>
-          </div>
-        ))}
+      <div className="nei-hero-strip">
+        <div className="nei-hero-strip-item">
+          <span className="nei-hero-stat-label">Market cap</span>
+          <strong className="nei-mono">
+            {model.totalMarketCap !== null ? formatMarketCap(model.totalMarketCap, model.currency) : "—"}
+          </strong>
+        </div>
+        <div className="nei-hero-strip-item">
+          <span className="nei-hero-stat-label">Trifecta share</span>
+          <strong className="nei-mono">
+            {model.trifectaWeightPct !== null ? `${model.trifectaWeightPct.toFixed(1)}%` : "—"}
+          </strong>
+        </div>
+        <div className="nei-hero-strip-item">
+          <span className="nei-hero-stat-label">52W range</span>
+          <strong className="nei-mono">
+            {model.marketStats.low52w !== null && model.marketStats.high52w !== null
+              ? `${formatNumber(model.marketStats.low52w, 0)} – ${formatNumber(model.marketStats.high52w, 0)}`
+              : "—"}
+          </strong>
+        </div>
       </div>
     </div>
   );

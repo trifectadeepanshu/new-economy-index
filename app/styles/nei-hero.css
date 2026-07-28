@@ -506,6 +506,42 @@
     letter-spacing: 0;
   }
 
+  /* Decluttered hero card: FX in the header, number + day-change, one stat strip */
+  .nei-hero-fx {
+    color: rgba(232,235,240,0.62);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .nei-hero-value-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+  }
+
+  .nei-hero-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 44px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(232,235,240,0.12);
+  }
+
+  .nei-hero-strip-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nei-hero-strip-item strong {
+    font-size: 20px;
+    font-weight: 500;
+    color: #A9C0FF;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
   .nei-hero-primary,
   .nei-hero-secondary {
     display: inline-flex;
