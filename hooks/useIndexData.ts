@@ -52,6 +52,7 @@ function normalizeLiveData(json: LiveIndexPayload): LiveIndexData {
       decliners: 0,
     },
     sectorComposition: json.sectorComposition ?? [],
+    tickerTape: json.tickerTape ?? json.stocks ?? [],
     stocks: json.stocks ?? [],
   };
 }

@@ -21,7 +21,7 @@ export type Company = {
   isPortfolio: boolean;
 };
 
-export const PORTFOLIO_TICKERS = new Set([
+const PORTFOLIO_TICKERS = new Set([
   "MEESHO",
   "URBANCO",
   "IXIGO",

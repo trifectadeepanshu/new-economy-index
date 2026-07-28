@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useIndexData } from "@/hooks/useIndexData";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
-import type { IndexHistoryPayload, StockData } from "@/lib/index-api";
+import type { IndexHistoryPayload, LiveTickerPayload, StockData } from "@/lib/index-api";
 import { INDEX_BASE_VALUE, INDEX_SIZE } from "@/lib/companies";
 import { isMarketOpen } from "@/lib/market-hours";
 import { formatNumber } from "@/components/index-dashboard/format";
@@ -16,6 +16,7 @@ export type HeroStat = {
 };
 
 const EMPTY_STOCKS: StockData[] = [];
+const EMPTY_TICKER_TAPE: LiveTickerPayload[] = [];
 const EMPTY_MARKET_STATS = {
   high52w: null,
   low52w: null,
@@ -149,6 +150,7 @@ export function useIndexDashboardModel() {
 
   const indexValue = data?.indexValue ?? null;
   const stocks = data?.stocks ?? EMPTY_STOCKS;
+  const tickerTape: LiveTickerPayload[] = data?.tickerTape?.length ? data.tickerTape : stocks;
   const displayedValue = useCountUp(indexValue);
   const valueFlash = useValueFlash(indexValue);
   const heroSeries = useMemo(
@@ -174,6 +176,7 @@ export function useIndexDashboardModel() {
 
   return {
     stocks,
+    tickerTape: tickerTape.length ? tickerTape : EMPTY_TICKER_TAPE,
     isLoading,
     dataError: error,
     refreshData: refresh,

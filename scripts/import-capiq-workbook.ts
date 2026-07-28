@@ -1,5 +1,10 @@
 /**
- * Import the canonical CapIQ workbook cache into the app database.
+ * One-time historical seed for the canonical CapIQ workbook cache.
+ *
+ * Do not use this for ongoing refreshes. The CMS owns constituent additions and
+ * Yahoo-backed cron jobs append prices, shares, financials, profiles, and
+ * analyst data going forward. This script is kept only to recreate or audit the
+ * frozen 2020-to-mid-2026 CapIQ history if the database ever needs reseeding.
  *
  * Dry-run:
  *   npx tsx scripts/import-capiq-workbook.ts --workbook "/path/to/TLF New Economy Index Data_v2 (1).xlsx"

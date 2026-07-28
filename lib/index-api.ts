@@ -26,6 +26,11 @@ export type LiveStockPayload = {
 
 export type StockData = LiveStockPayload;
 
+export type LiveTickerPayload = Pick<
+  LiveStockPayload,
+  "ticker" | "displayName" | "price" | "changePct"
+>;
+
 export type Currency = "inr" | "usd";
 
 export type MarketStats = {
@@ -65,6 +70,8 @@ export type LiveIndexPayload = {
   marketStats: MarketStats;
   /** Market-cap composition of the current index constituents. */
   sectorComposition: SectorCompositionPoint[];
+  /** Decorative ticker tape rows from the full active DB-backed universe. */
+  tickerTape: LiveTickerPayload[];
   stocks: LiveStockPayload[];
 };
 

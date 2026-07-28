@@ -3,8 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { COMPANIES } from "@/lib/companies";
-import type { StockData } from "@/lib/index-api";
+import type { LiveTickerPayload } from "@/lib/index-api";
 import {
   KineticBackdrop,
   Skeleton,
@@ -25,31 +24,20 @@ const NAV_LINKS = [
   ["Methodology", "#methodology"],
 ] as const;
 
-type TickerItem = Pick<StockData, "ticker" | "displayName" | "price" | "changePct">;
-
-function getTickerItems(stocks: StockData[]): TickerItem[] {
-  const rows: TickerItem[] = stocks.length
-    ? stocks
-    : COMPANIES.map((company) => ({
-        ticker: company.ticker,
-        displayName: company.displayName,
-        price: null,
-        changePct: null,
-      }));
-
-  return [...rows]
+function getTickerItems(items: LiveTickerPayload[]): LiveTickerPayload[] {
+  return [...items]
     .sort((a, b) => Math.abs(b.changePct ?? 0) - Math.abs(a.changePct ?? 0))
     .slice(0, 18);
 }
 
-export function TickerDrift({ stocks }: { stocks: StockData[] }) {
-  const items = useMemo(() => getTickerItems(stocks), [stocks]);
-  if (!items.length) return null;
+export function TickerDrift({ items }: { items: LiveTickerPayload[] }) {
+  const tickerItems = useMemo(() => getTickerItems(items), [items]);
+  if (!tickerItems.length) return null;
 
   return (
     <div className="nei-ticker-drift" aria-label="Constituent ticker tape">
       <div className="nei-ticker-track">
-        {[...items, ...items].map((row, index) => (
+        {[...tickerItems, ...tickerItems].map((row, index) => (
           <span key={`${row.ticker}-${index}`} className="nei-ticker-chip">
             <span className="nei-ticker-symbol">{row.displayName}</span>
             <span className="nei-ticker-price">

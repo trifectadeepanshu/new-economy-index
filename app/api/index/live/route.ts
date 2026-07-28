@@ -16,6 +16,7 @@ import {
 import type {
   Currency,
   LiveIndexPayload,
+  LiveTickerPayload,
   MarketStats,
   SectorCompositionPoint,
   StockData,
@@ -87,6 +88,24 @@ function buildStocks(
   });
 }
 
+function buildTickerTape(
+  companies: Company[],
+  prices: Record<string, PricePoint | undefined>,
+  usdInr: number | null
+): LiveTickerPayload[] {
+  const conv = (v: number | null) =>
+    v == null ? null : usdInr && usdInr > 0 ? v / usdInr : v;
+  return companies.map(({ ticker, displayName }) => {
+    const current = prices[ticker];
+    return {
+      ticker,
+      displayName,
+      price: conv(current?.price ?? null),
+      changePct: current?.changePct ?? null,
+    };
+  });
+}
+
 function quotePricesByTicker(quotes: QuoteResult[]): Record<string, PricePoint> {
   return Object.fromEntries(
     quotes
@@ -123,6 +142,7 @@ function toPayload({
   staleConstituents,
   marketStats,
   sectorComposition,
+  tickerTape,
 }: {
   stocks: StockData[];
   indexValue: number | null;
@@ -136,6 +156,7 @@ function toPayload({
   staleConstituents: string[];
   marketStats: MarketStats;
   sectorComposition: SectorCompositionPoint[];
+  tickerTape: LiveTickerPayload[];
 }): LiveIndexPayload {
   return {
     indexValue,
@@ -151,6 +172,7 @@ function toPayload({
     staleConstituents,
     marketStats,
     sectorComposition,
+    tickerTape,
     stocks,
   };
 }
@@ -220,6 +242,7 @@ export async function GET(req: NextRequest) {
     const indexTickers = new Set(liveState.members.map((m) => m.ticker));
     const constituents = active.filter((c) => indexTickers.has(c.ticker));
     const stocks = buildStocks(constituents, merged, basePrices, latestShares(shares), usd ? usdInr : null);
+    const tickerTape = buildTickerTape(active, merged, usd ? usdInr : null);
 
     // Extend the divisor chain with live prices. Quote completeness is checked
     // above, so missing prices cannot silently carry forward inside the index.
@@ -260,6 +283,7 @@ export async function GET(req: NextRequest) {
         staleConstituents: [],
         marketStats,
         sectorComposition,
+        tickerTape,
       }),
       { headers: LIVE_CACHE_HEADERS }
     );
@@ -287,6 +311,7 @@ export async function GET(req: NextRequest) {
     const indexTickers = new Set(liveState?.members.map((m) => m.ticker) ?? active.map((c) => c.ticker));
     const constituents = active.filter((c) => indexTickers.has(c.ticker));
     const stocks = buildStocks(constituents, latestPrices, basePrices, latestShares(shares), usd ? usdInr : null);
+    const tickerTape = buildTickerTape(active, latestPrices, usd ? usdInr : null);
 
     const closes = new Map<string, number>(
       Object.entries(latestClose).map(([t, p]: [string, LatestStockSnapshot]) => [t, p.price])
@@ -325,6 +350,7 @@ export async function GET(req: NextRequest) {
         staleConstituents,
         marketStats,
         sectorComposition,
+        tickerTape,
       }),
       { headers: LIVE_CACHE_HEADERS }
     );

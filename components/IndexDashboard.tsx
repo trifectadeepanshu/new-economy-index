@@ -24,7 +24,7 @@ function IndexDashboardInner() {
 
   return (
     <div className="nei-dashboard">
-      <TickerDrift stocks={model.stocks} />
+      <TickerDrift items={model.tickerTape} />
       <HeroSection model={model} />
 
       <PerformanceSection
