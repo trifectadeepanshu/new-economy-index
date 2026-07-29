@@ -35,12 +35,14 @@ export const CHART_MODES = [
   { value: "detail", label: "Sector Detail" },
 ] as const;
 
+// Brighter, more saturated categorical palette for readability on the light
+// sector section (dots, weight bars, sparklines, sector sub-index lines).
 export const SECTOR_CHART_COLORS: Record<Sector, string> = {
-  Platforms: "#1E3A5F",
-  "Consumer Brands": "#B45A2E",
-  Fintech: "#2C6E3C",
-  B2B: "#346C8C",
-  SaaS: "#5E5A8A",
-  Healthcare: "#4A7C6F",
-  "Deep Tech": "#747B86",
+  Platforms: "#2B62C4",
+  "Consumer Brands": "#E36A3C",
+  Fintech: "#1E9E54",
+  B2B: "#1C9BC7",
+  SaaS: "#7B5AD1",
+  Healthcare: "#12A386",
+  "Deep Tech": "#707A8C",
 };

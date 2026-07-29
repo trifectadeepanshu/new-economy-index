@@ -13,11 +13,9 @@ import {
   getChartTitle,
   getLatestColor,
   getRangeChangePct,
-  getSeriesReturn,
   toChartPoint,
   useShortDayLabels,
 } from "@/components/index-chart/data";
-import { BENCHMARK_KEYS } from "@/components/index-chart/constants";
 import type { ChartMode, ChartPoint, ChartRow, ComparePoint } from "@/components/index-chart/types";
 
 export type SeriesReturns = {
@@ -107,18 +105,6 @@ export function useIndexChartModel({
     [sectorData, selectedSector, shortDaySector]
   );
 
-  // Per-series % change over the visible window, for the legend cards. Rebasing
-  // preserves ratios, so returns read off the (rebased) chart rows are exact.
-  const seriesReturns = useMemo<SeriesReturns>(() => {
-    const rows: ChartRow[] = indexData;
-    const out: SeriesReturns = {
-      NE50: getSeriesReturn(rows, "value"),
-      TRIFECTA: getSeriesReturn(rows, "TRIFECTA"),
-    };
-    for (const key of BENCHMARK_KEYS) out[key] = getSeriesReturn(rows, key);
-    return out;
-  }, [indexData]);
-
   const currentData: ChartRow[] =
     activeMode === "compare" ? compareData : activeMode === "detail" ? detailData : indexData;
   const singleSeriesData = activeMode === "detail" ? detailData : indexData;
@@ -129,7 +115,6 @@ export function useIndexChartModel({
     latestColor: getLatestColor(activeMode, selectedSector, latestPoint),
     latestPoint,
     rangeChangePct: getRangeChangePct(singleSeriesData),
-    seriesReturns,
     selectedOrFocusedSector: focusedSector ?? selectedSector,
     title: getChartTitle(activeMode, selectedSector),
   };
