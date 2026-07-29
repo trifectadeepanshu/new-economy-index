@@ -173,14 +173,17 @@
   }
 
   .nei-hero-title {
-    max-width: none;
-    margin: 0;
+    max-width: 720px;
+    margin: 0 0 28px;
     color: #F2F4F8;
-    font-size: clamp(56px, 5.85vw, 88px);
-    font-weight: 600;
+    font-size: clamp(40px, 5.6vw, 76px);
+    font-weight: 500;
     line-height: 0.98;
-    letter-spacing: -0.018em;
-    white-space: nowrap;
+    letter-spacing: 0;
+  }
+
+  .nei-hero-title span {
+    color: rgba(232,235,240,0.55);
   }
 
   .nei-hero-mobile-break {
@@ -189,10 +192,10 @@
 
   .nei-hero-copy {
     max-width: 540px;
-    margin: 18px 0 0;
+    margin: 0;
     color: rgba(232,235,240,0.72);
     font-size: 17px;
-    line-height: 1.58;
+    line-height: 1.55;
   }
 
   .nei-hero-actions {
