@@ -106,13 +106,15 @@ export type FinancialRow = {
   assets: number | null;
 };
 
+const ANNUAL_FIN_TYPES =
+  "annualTotalRevenue,annualEBITDA,annualNetIncome,annualTotalAssets";
 const QUARTERLY_FIN_TYPES =
   "quarterlyTotalRevenue,quarterlyEBITDA,quarterlyNetIncome,quarterlyTotalAssets";
 
-export async function fetchQuarterlyFinancials(yfTicker: string): Promise<FinancialRow[]> {
+async function fetchFinancials(yfTicker: string, typeList: string): Promise<FinancialRow[]> {
   const url =
     `https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/${yfTicker}` +
-    `?symbol=${yfTicker}&type=${QUARTERLY_FIN_TYPES}&period1=1420070400&period2=1900000000`;
+    `?symbol=${yfTicker}&type=${typeList}&period1=1420070400&period2=1900000000`;
   const res = await fetch(url, UA);
   if (!res.ok) throw new Error(`fundamentals HTTP ${res.status}`);
   const json = (await res.json()) as { timeseries?: { result?: Array<Record<string, unknown>> } };
@@ -132,6 +134,14 @@ export async function fetchQuarterlyFinancials(yfTicker: string): Promise<Financ
     }
   }
   return [...byPeriod.values()].sort((a, b) => a.period.localeCompare(b.period));
+}
+
+export function fetchAnnualFinancials(yfTicker: string): Promise<FinancialRow[]> {
+  return fetchFinancials(yfTicker, ANNUAL_FIN_TYPES);
+}
+
+export function fetchQuarterlyFinancials(yfTicker: string): Promise<FinancialRow[]> {
+  return fetchFinancials(yfTicker, QUARTERLY_FIN_TYPES);
 }
 
 // ---------------------------------------------------------------------------

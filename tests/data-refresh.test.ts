@@ -43,6 +43,7 @@ function financialRow(): FinancialRow {
 function makeDeps(overrides: Partial<RefreshDependencies> = {}): RefreshDependencies {
   return {
     fetchPointInTimeShares: async (yfTicker) => [sharePoint(yfTicker)],
+    fetchAnnualFinancials: async () => [financialRow()],
     fetchQuarterlyFinancials: async () => [financialRow()],
     fetchCompanyMeta: async () => ({
       description: "A listed company.",
@@ -50,6 +51,7 @@ function makeDeps(overrides: Partial<RefreshDependencies> = {}): RefreshDependen
       currentShares: null,
     }),
     upsertYahooShareCounts: async (_ticker, points) => points.length,
+    upsertAnnualFinancials: async () => {},
     upsertQuarterlyFinancials: async () => {},
     upsertCompanyProfile: async () => {},
     upsertAnalystRating: async () => {},

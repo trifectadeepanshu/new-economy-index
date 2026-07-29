@@ -2,15 +2,27 @@
 /* eslint-disable react-hooks/set-state-in-effect -- effect resets + fetches on stock change */
 
 import { useEffect, useId, useRef, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { CompanyDetail, StockData } from "@/lib/index-api";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 import { formatMarketCap, formatPrice, formatSignedPercent } from "@/components/company-grid/format";
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
-import { Sparkline } from "@/components/index-dashboard/DashboardChrome";
 
 type BarPoint = {
   label: string;
   value: number | null;
+};
+
+type TooltipItem = {
+  value?: number;
+  payload?: CompanyDetail["priceSeries"][number];
 };
 
 const FOCUSABLE_SELECTOR = [
@@ -34,6 +46,93 @@ function isAbortError(error: unknown) {
 
 function shortPeriodLabel(label: string) {
   return label.split(" ")[0] || label;
+}
+
+function formatChartDate(date: string) {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function PriceTooltip({
+  active,
+  payload,
+  currency,
+}: {
+  active?: boolean;
+  payload?: TooltipItem[];
+  currency: CompanyDetail["currency"];
+}) {
+  const point = payload?.find((item) => typeof item.value === "number");
+  if (!active || !point || typeof point.value !== "number" || !point.payload) return null;
+
+  return (
+    <div className="nei-chart-tooltip nei-cm-price-tooltip">
+      <div className="nei-chart-tooltip-label">{formatChartDate(point.payload.date)}</div>
+      <div className="nei-chart-tooltip-row">
+        <span className="nei-chart-tooltip-name">
+          <span
+            className="nei-chart-tooltip-dot"
+            style={{ background: "var(--nei-pos)" }}
+          />
+          <span>Share price</span>
+        </span>
+        <span className="nei-chart-tooltip-value nei-mono">
+          {formatPrice(point.value, currency)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function PriceHistoryChart({
+  series,
+  currency,
+}: {
+  series: CompanyDetail["priceSeries"];
+  currency: CompanyDetail["currency"];
+}) {
+  const gradientId = `company-price-${useId().replace(/:/g, "")}`;
+
+  return (
+    <div
+      className="nei-cm-price-chart"
+      role="img"
+      aria-label="Historical share price chart"
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={series} margin={{ top: 10, right: 0, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--nei-pos)" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="var(--nei-pos)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="date" hide />
+          <YAxis dataKey="close" hide domain={["dataMin", "dataMax"]} />
+          <Tooltip
+            content={<PriceTooltip currency={currency} />}
+            cursor={{ stroke: "rgba(232,235,240,0.22)", strokeWidth: 1 }}
+            isAnimationActive={false}
+          />
+          <Area
+            type="monotone"
+            dataKey="close"
+            name="Share price"
+            stroke="var(--nei-pos)"
+            strokeWidth={1.6}
+            fill={`url(#${gradientId})`}
+            dot={false}
+            activeDot={{ r: 3, fill: "var(--nei-pos)", stroke: "#FFFFFF", strokeWidth: 1.4 }}
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
 /** Tiny bar sparkline for a financial metric's quarterly trajectory. */
@@ -270,7 +369,7 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
             {detailError ? (
               <p className="nei-cm-nodata">Price history unavailable.</p>
             ) : detail && detail.priceSeries.length > 1 ? (
-              <Sparkline series={detail.priceSeries.map((p) => p.close)} height={90} animate={false} />
+              <PriceHistoryChart series={detail.priceSeries} currency={detail.currency} />
             ) : (
               <p className="nei-cm-nodata">{loading ? "Loading…" : "No price history."}</p>
             )}

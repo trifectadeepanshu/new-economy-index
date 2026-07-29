@@ -2,11 +2,13 @@ import type { Company } from "./companies";
 import {
   recomputeAndPersistIndex,
   upsertAnalystRating,
+  upsertAnnualFinancials,
   upsertCompanyProfile,
   upsertQuarterlyFinancials,
   upsertYahooShareCounts,
 } from "./db";
 import {
+  fetchAnnualFinancials,
   fetchCompanyMeta,
   fetchPointInTimeShares,
   fetchQuarterlyFinancials,
@@ -61,9 +63,11 @@ export type RefreshOptions = {
 
 export type RefreshDependencies = {
   fetchPointInTimeShares: (yfTicker: string) => Promise<SharePoint[]>;
+  fetchAnnualFinancials: (yfTicker: string) => Promise<FinancialRow[]>;
   fetchQuarterlyFinancials: (yfTicker: string) => Promise<FinancialRow[]>;
   fetchCompanyMeta: (yfTicker: string) => Promise<CompanyMeta>;
   upsertYahooShareCounts: (ticker: string, points: SharePoint[]) => Promise<number>;
+  upsertAnnualFinancials: (ticker: string, rows: FinancialRow[]) => Promise<void>;
   upsertQuarterlyFinancials: (ticker: string, rows: FinancialRow[]) => Promise<void>;
   upsertCompanyProfile: (ticker: string, description: string | null) => Promise<void>;
   upsertAnalystRating: (
@@ -80,9 +84,11 @@ function wait(ms: number) {
 
 const DEFAULT_DEPS: RefreshDependencies = {
   fetchPointInTimeShares,
+  fetchAnnualFinancials,
   fetchQuarterlyFinancials,
   fetchCompanyMeta,
   upsertYahooShareCounts,
+  upsertAnnualFinancials,
   upsertQuarterlyFinancials,
   upsertCompanyProfile,
   upsertAnalystRating,
@@ -151,9 +157,15 @@ export async function refreshConstituentData(
 
     if (includeFinancials) {
       try {
-        const financials = await deps.fetchQuarterlyFinancials(c.yfTicker);
-        await deps.upsertQuarterlyFinancials(c.ticker, financials);
-        company.financialRows = financials.length;
+        const [annualFinancials, quarterlyFinancials] = await Promise.all([
+          deps.fetchAnnualFinancials(c.yfTicker),
+          deps.fetchQuarterlyFinancials(c.yfTicker),
+        ]);
+        await Promise.all([
+          deps.upsertAnnualFinancials(c.ticker, annualFinancials),
+          deps.upsertQuarterlyFinancials(c.ticker, quarterlyFinancials),
+        ]);
+        company.financialRows = quarterlyFinancials.length;
       } catch (err) {
         addFailure(company, failures, c.ticker, "financials", err);
       }

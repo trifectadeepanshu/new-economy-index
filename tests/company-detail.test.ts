@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildQuarterlyFinancials, quarterLabel } from "../lib/company-detail";
+import {
+  buildQuarterlyFinancials,
+  completeQuarterlyFinancialRows,
+  quarterLabel,
+} from "../lib/company-detail";
 
 test("quarter labels follow Indian fiscal-year quarters", () => {
   assert.equal(quarterLabel("2025-03-31"), "Q4 FY25");
@@ -35,4 +39,36 @@ test("asset turnover is TTM revenue over latest available assets", () => {
   assert.equal(financials[3].assetTurnover, 0.46);
   // Q4 FY26: TTM revenue 110+120+130+150 = 510 over assets 1600 = 0.32
   assert.equal(financials[4].assetTurnover, 0.32);
+});
+
+test("missing quarterly P&L can be derived from annual minus reported quarters", () => {
+  const rows = completeQuarterlyFinancialRows(
+    [
+      { period: "2025-06-30", revenue: 110, ebitda: 22, pat: 11, total_assets: null },
+      { period: "2025-12-31", revenue: 130, ebitda: 26, pat: 13, total_assets: null },
+      { period: "2026-03-31", revenue: 150, ebitda: 45, pat: 15, total_assets: null },
+    ],
+    [
+      { period: "2026-03-31", revenue: 500, ebitda: 100, pat: 50, total_assets: 1600 },
+    ]
+  );
+
+  const q2 = rows.find((row) => row.period === "2025-09-30");
+  assert.equal(q2?.revenue, 110);
+  assert.equal(q2?.ebitda, 7);
+  assert.equal(q2?.pat, 11);
+  assert.equal(rows.find((row) => row.period === "2026-03-31")?.total_assets, 1600);
+});
+
+test("quarterly financials preserve visible slots when a quarter has no data", () => {
+  const financials = buildQuarterlyFinancials([
+    { period: "2025-06-30", revenue: 110, ebitda: null, pat: null, total_assets: null },
+    { period: "2025-12-31", revenue: 130, ebitda: null, pat: null, total_assets: null },
+  ]);
+
+  assert.deepEqual(
+    financials.map((row) => row.label),
+    ["Q1 FY26", "Q2 FY26", "Q3 FY26"]
+  );
+  assert.equal(financials[1].revenue, null);
 });

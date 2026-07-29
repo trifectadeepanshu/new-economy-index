@@ -496,6 +496,27 @@ export type QuarterlyFinancialInput = {
   assets: number | null;
 };
 
+export async function upsertAnnualFinancials(
+  ticker: string,
+  rows: QuarterlyFinancialInput[]
+): Promise<void> {
+  if (!rows.length) return;
+  const sql = getSql();
+  await sql`
+    INSERT INTO company_financials (ticker, fiscal_year, revenue, ebitda, pat, total_assets)
+    SELECT ${ticker}, * FROM unnest(
+      ${rows.map((r) => r.period)}::date[],
+      ${rows.map((r) => r.revenue)}::numeric[],
+      ${rows.map((r) => r.ebitda)}::numeric[],
+      ${rows.map((r) => r.pat)}::numeric[],
+      ${rows.map((r) => r.assets)}::numeric[]
+    ) AS t(fiscal_year, revenue, ebitda, pat, total_assets)
+    ON CONFLICT (ticker, fiscal_year) DO UPDATE
+      SET revenue = EXCLUDED.revenue, ebitda = EXCLUDED.ebitda,
+          pat = EXCLUDED.pat, total_assets = EXCLUDED.total_assets
+  `;
+}
+
 export async function upsertQuarterlyFinancials(
   ticker: string,
   rows: QuarterlyFinancialInput[]

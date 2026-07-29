@@ -19,13 +19,17 @@ function getSql() {
   return neon(url);
 }
 
-type FinancialRawRow = {
+export type FinancialRawRow = {
   period: string;
   revenue: number | null;
   ebitda: number | null;
   pat: number | null;
   total_assets: number | null;
 };
+
+type FinancialMetric = "revenue" | "ebitda" | "pat";
+
+const FINANCIAL_METRICS: FinancialMetric[] = ["revenue", "ebitda", "pat"];
 
 const pct = (num: number | null, den: number | null): number | null =>
   num != null && den != null && den !== 0 ? Math.round((num / den) * 1000) / 10 : null;
@@ -44,6 +48,76 @@ export function quarterLabel(quarterEnd: string): string {
 function sameQuarterPreviousYear(period: string): string {
   const year = Number(period.slice(0, 4));
   return `${year - 1}${period.slice(4)}`;
+}
+
+function shiftQuarterEnd(period: string, quarters: number): string {
+  const [year, month] = period.split("-").map(Number);
+  const monthIndex = month - 1 + quarters * 3;
+  const endOfTargetMonth = new Date(Date.UTC(year, monthIndex + 1, 0));
+  return endOfTargetMonth.toISOString().slice(0, 10);
+}
+
+function fiscalQuarterPeriods(fiscalYearEnd: string) {
+  return [-3, -2, -1, 0].map((quarterOffset) =>
+    shiftQuarterEnd(fiscalYearEnd, quarterOffset)
+  );
+}
+
+function emptyFinancialRow(period: string): FinancialRawRow {
+  return { period, revenue: null, ebitda: null, pat: null, total_assets: null };
+}
+
+function completeQuarterSlots(rows: FinancialRawRow[]) {
+  if (!rows.length) return rows;
+
+  const byPeriod = new Map(rows.map((row) => [row.period, row]));
+  const sortedPeriods = [...byPeriod.keys()].sort();
+  const first = sortedPeriods[0];
+  const last = sortedPeriods[sortedPeriods.length - 1];
+  const completed: FinancialRawRow[] = [];
+
+  for (let period = first; period <= last; period = shiftQuarterEnd(period, 1)) {
+    completed.push(byPeriod.get(period) ?? emptyFinancialRow(period));
+  }
+
+  return completed;
+}
+
+export function completeQuarterlyFinancialRows(
+  quarterlyRows: FinancialRawRow[],
+  annualRows: FinancialRawRow[] = []
+) {
+  const byPeriod = new Map(
+    quarterlyRows.map((row) => [row.period, { ...row } satisfies FinancialRawRow])
+  );
+
+  for (const annual of [...annualRows].sort((a, b) => a.period.localeCompare(b.period))) {
+    const periods = fiscalQuarterPeriods(annual.period);
+
+    for (const metric of FINANCIAL_METRICS) {
+      const annualValue = annual[metric];
+      if (annualValue == null) continue;
+
+      const missingPeriods = periods.filter((period) => byPeriod.get(period)?.[metric] == null);
+      const knownValues = periods
+        .map((period) => byPeriod.get(period)?.[metric])
+        .filter((value): value is number => value != null);
+
+      if (missingPeriods.length !== 1 || knownValues.length !== 3) continue;
+
+      const missingPeriod = missingPeriods[0];
+      const row = byPeriod.get(missingPeriod) ?? emptyFinancialRow(missingPeriod);
+      row[metric] = annualValue - knownValues.reduce((sum, value) => sum + value, 0);
+      byPeriod.set(missingPeriod, row);
+    }
+
+    const fiscalYearEndRow = byPeriod.get(annual.period);
+    if (fiscalYearEndRow && fiscalYearEndRow.total_assets == null) {
+      fiscalYearEndRow.total_assets = annual.total_assets;
+    }
+  }
+
+  return completeQuarterSlots([...byPeriod.values()]);
 }
 
 function ttmRevenue(rows: FinancialRawRow[], index: number): number | null {
@@ -67,9 +141,10 @@ function assetsAsOf(rows: FinancialRawRow[], index: number): number | null {
 
 export function buildQuarterlyFinancials(
   rows: FinancialRawRow[],
-  money: (value: number | null) => number | null = (value) => value
+  money: (value: number | null) => number | null = (value) => value,
+  annualRows: FinancialRawRow[] = []
 ): CompanyFinancialPeriod[] {
-  const sorted = [...rows].sort((a, b) => a.period.localeCompare(b.period));
+  const sorted = completeQuarterlyFinancialRows(rows, annualRows);
   const byPeriod = new Map(sorted.map((row) => [row.period, row]));
 
   return sorted.map((row, index) => {
@@ -98,9 +173,11 @@ export function buildQuarterlyFinancials(
 
 export async function getCompanyDetail(ticker: string, currency: Currency): Promise<CompanyDetail> {
   const sql = getSql();
-  const [finRaw, profRaw, ratingRaw, priceRaw, fx] = await Promise.all([
+  const [finRaw, annualFinRaw, profRaw, ratingRaw, priceRaw, fx] = await Promise.all([
     sql`SELECT quarter_end::text AS period, revenue::float, ebitda::float, pat::float, total_assets::float
         FROM company_financials_quarterly WHERE ticker = ${ticker} ORDER BY quarter_end ASC`,
+    sql`SELECT fiscal_year::text AS period, revenue::float, ebitda::float, pat::float, total_assets::float
+        FROM company_financials WHERE ticker = ${ticker} ORDER BY fiscal_year ASC`,
     sql`SELECT description FROM company_profiles WHERE ticker = ${ticker}`,
     sql`SELECT strong_buy, buy, hold, sell, strong_sell, rating_key, num_analysts
         FROM analyst_ratings WHERE ticker = ${ticker}`,
@@ -109,6 +186,7 @@ export async function getCompanyDetail(ticker: string, currency: Currency): Prom
     getFxRates(),
   ]);
   const finRows = finRaw as FinancialRawRow[];
+  const annualFinRows = annualFinRaw as FinancialRawRow[];
   const profRows = profRaw as { description: string | null }[];
   const ratingRows = ratingRaw as { strong_buy: number; buy: number; hold: number; sell: number; strong_sell: number; rating_key: string | null; num_analysts: number | null }[];
   const priceRows = priceRaw as { date: string; close: number }[];
@@ -117,7 +195,7 @@ export async function getCompanyDetail(ticker: string, currency: Currency): Prom
   const rate = usd ? await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate) : 1;
   const money = (v: number | null): number | null => (v == null ? null : usd ? Math.round((v / rate) * 100) / 100 : v);
 
-  const financials = buildQuarterlyFinancials(finRows, money);
+  const financials = buildQuarterlyFinancials(finRows, money, annualFinRows);
 
   const rt = ratingRows[0];
   const analyst: AnalystConsensus | null =
