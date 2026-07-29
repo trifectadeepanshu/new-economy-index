@@ -216,6 +216,127 @@
     border: 1.5px solid transparent;
   }
 
+  /* Seeking-Alpha-style legend cards: name + return over the selected window. */
+  .nei-series-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .nei-series-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+    min-width: 140px;
+    flex: 1 1 140px;
+    max-width: 220px;
+    padding: 11px 14px;
+    border: 1px solid rgba(11,15,25,0.12);
+    border-radius: 10px;
+    background: #FFFFFF;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+
+  .nei-series-card.is-static {
+    cursor: default;
+  }
+
+  .nei-series-card.is-on {
+    border-color: rgba(11,15,25,0.2);
+    box-shadow: 0 1px 2px rgba(16,24,38,0.05);
+  }
+
+  .nei-series-card:not(.is-on) {
+    opacity: 0.55;
+  }
+
+  .nei-series-card:not(.is-static):hover {
+    border-color: rgba(11,15,25,0.32);
+  }
+
+  .nei-series-card-head {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .nei-series-swatch {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+  }
+
+  .nei-series-swatch.is-dash {
+    width: 16px;
+    height: 0;
+    border-radius: 0;
+    border: 0;
+    border-top: 2px dashed currentColor;
+    background: transparent !important;
+  }
+
+  .nei-series-name {
+    color: #0B0F19;
+    font: 600 12px var(--font-inter), system-ui, sans-serif;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nei-series-return {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .nei-series-return.is-positive {
+    color: #1B8A55;
+  }
+
+  .nei-series-return.is-negative {
+    color: #C74A2E;
+  }
+
+  .nei-series-return.is-off {
+    color: rgba(11,15,25,0.4);
+  }
+
+  /* Custom date-range picker (shown when the Custom range is selected). */
+  .nei-daterange {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nei-daterange-input {
+    min-height: 38px;
+    padding: 6px 10px;
+    border: 1px solid rgba(11,15,25,0.16);
+    border-radius: 7px;
+    background: #FFFFFF;
+    color: #0B0F19;
+    font: 500 12px var(--font-inter), ui-monospace, monospace;
+    cursor: pointer;
+  }
+
+  .nei-daterange-input:focus-visible {
+    outline: 2px solid var(--nei-deep);
+    outline-offset: 1px;
+  }
+
+  .nei-daterange-sep {
+    color: rgba(11,15,25,0.4);
+    font-size: 13px;
+  }
+
   .nei-sector-single {
     margin-top: 30px;
   }

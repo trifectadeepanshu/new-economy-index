@@ -123,7 +123,7 @@ async function runSnapshot() {
       console.warn("[/api/cron/snapshot] USD/INR update skipped:", err);
     }
 
-    // Record today's benchmark closes (Nifty 50 / Midcap) for the chart overlays.
+    // Record today's benchmark closes (Nifty 50 / Nifty 500) for the chart overlays.
     try {
       const { BENCHMARKS, upsertBenchmarkClose } = await import("@/lib/benchmarks");
       for (const b of BENCHMARKS) {

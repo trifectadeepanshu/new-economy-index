@@ -3,7 +3,6 @@ import { type Sector } from "@/lib/companies";
 import type {
   BenchmarkKey,
   BenchmarkSeries,
-  HistoryRange,
   IndexHistoryPoint,
   SectorHistoryPoint,
   StockData,
@@ -13,9 +12,17 @@ import {
   getChartTitle,
   getLatestColor,
   getRangeChangePct,
+  getSeriesReturn,
   toChartPoint,
+  useShortDayLabels,
 } from "@/components/index-chart/data";
+import { BENCHMARK_KEYS } from "@/components/index-chart/constants";
 import type { ChartMode, ChartPoint, ChartRow, ComparePoint } from "@/components/index-chart/types";
+
+export type SeriesReturns = {
+  NE50: number | null;
+  TRIFECTA: number | null;
+} & Partial<Record<BenchmarkKey, number | null>>;
 
 type ChartModelInput = {
   activeMode: ChartMode;
@@ -24,7 +31,6 @@ type ChartModelInput = {
   portfolioData: IndexHistoryPoint[];
   benchmarks: BenchmarkSeries[];
   liveValue: number | null;
-  range: HistoryRange;
   sectorData: SectorHistoryPoint[];
   selectedSector: Sector;
   stocks: StockData[];
@@ -37,10 +43,12 @@ export function useIndexChartModel({
   portfolioData,
   benchmarks,
   liveValue,
-  range,
   sectorData,
   selectedSector,
 }: ChartModelInput) {
+  const shortDayIndex = useShortDayLabels(historyData);
+  const shortDaySector = useShortDayLabels(sectorData);
+
   const indexData = useMemo<ChartPoint[]>(() => {
     // The NEI line keeps its true index level (so the chart headline matches the
     // index value shown elsewhere). Benchmarks and the Trifecta portfolio are
@@ -64,28 +72,40 @@ export function useIndexChartModel({
     addOverlay("TRIFECTA", portfolioData);
 
     const points = historyData.map((point) => {
-      const cp = toChartPoint(point, range);
+      const cp = toChartPoint(point, shortDayIndex);
       return { ...cp, value: round2(cp.value), ...overlayByDate.get(point.date) };
     });
     return liveValue !== null && points.length
       ? [...points, { date: "now", label: "Now", value: round2(liveValue) }]
       : points;
-  }, [historyData, portfolioData, benchmarks, liveValue, range]);
+  }, [historyData, portfolioData, benchmarks, liveValue, shortDayIndex]);
 
   // Sector sub-indices use the divisor engine; there's no client-side live
   // value for them, so the lines end at the latest close (no fake "Now" point).
   const compareData = useMemo<ComparePoint[]>(
-    () => buildCompareData(sectorData, range),
-    [range, sectorData]
+    () => buildCompareData(sectorData, shortDaySector),
+    [sectorData, shortDaySector]
   );
 
   const detailData = useMemo<ChartPoint[]>(
     () =>
       sectorData
         .filter((point) => point.sector === selectedSector)
-        .map((point) => toChartPoint(point, range)),
-    [range, sectorData, selectedSector]
+        .map((point) => toChartPoint(point, shortDaySector)),
+    [sectorData, selectedSector, shortDaySector]
   );
+
+  // Per-series % change over the visible window, for the legend cards. Rebasing
+  // preserves ratios, so returns read off the (rebased) chart rows are exact.
+  const seriesReturns = useMemo<SeriesReturns>(() => {
+    const rows: ChartRow[] = indexData;
+    const out: SeriesReturns = {
+      NE50: getSeriesReturn(rows, "value"),
+      TRIFECTA: getSeriesReturn(rows, "TRIFECTA"),
+    };
+    for (const key of BENCHMARK_KEYS) out[key] = getSeriesReturn(rows, key);
+    return out;
+  }, [indexData]);
 
   const currentData: ChartRow[] =
     activeMode === "compare" ? compareData : activeMode === "detail" ? detailData : indexData;
@@ -97,6 +117,7 @@ export function useIndexChartModel({
     latestColor: getLatestColor(activeMode, selectedSector, latestPoint),
     latestPoint,
     rangeChangePct: getRangeChangePct(singleSeriesData),
+    seriesReturns,
     selectedOrFocusedSector: focusedSector ?? selectedSector,
     title: getChartTitle(activeMode, selectedSector),
   };

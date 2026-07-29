@@ -31,19 +31,43 @@ function getFromDate(range: HistoryRange): string {
   }
 }
 
-export async function GET(req: NextRequest) {
-  const requestedRange = req.nextUrl.searchParams.get("range") ?? "1Y";
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-  if (!isHistoryRange(requestedRange)) {
+export async function GET(req: NextRequest) {
+  const params = req.nextUrl.searchParams;
+  const requestedRange = params.get("range") ?? "1Y";
+  const fromParam = params.get("from");
+  const toParam = params.get("to");
+  const today = getISTDate();
+
+  // A valid from+to pair defines a custom window and overrides the preset range.
+  const isCustom = Boolean(
+    fromParam && toParam && ISO_DATE.test(fromParam) && ISO_DATE.test(toParam)
+  );
+
+  if (!isCustom && !isHistoryRange(requestedRange)) {
     return NextResponse.json(
       { error: `Invalid range. Use one of: ${HISTORY_RANGES.join(", ")}` },
       { status: 400 }
     );
   }
 
-  const range = requestedRange;
-  const fromDate = getFromDate(range);
-  const toDate = getISTDate();
+  // `range` is echoed back for the payload; custom windows report as "ALL".
+  const range: HistoryRange = isHistoryRange(requestedRange) ? requestedRange : "ALL";
+
+  let fromDate: string;
+  let toDate: string;
+  if (isCustom) {
+    // Clamp the requested window into the index's valid span and order it.
+    let from = fromParam! < INDEX_ANCHOR_DATE ? INDEX_ANCHOR_DATE : fromParam!;
+    let to = toParam! > today ? today : toParam!;
+    if (from > to) [from, to] = [to, from];
+    fromDate = from;
+    toDate = to;
+  } else {
+    fromDate = getFromDate(range);
+    toDate = today;
+  }
   const includeSectors = req.nextUrl.searchParams.get("includeSectors") === "1";
   const includePortfolio = req.nextUrl.searchParams.get("portfolio") === "1";
   const includeBenchmarks = req.nextUrl.searchParams.get("benchmarks") === "1";

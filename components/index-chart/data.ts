@@ -1,6 +1,5 @@
 import { INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
 import type {
-  HistoryRange,
   IndexHistoryPoint,
   SectorHistoryPoint,
   StockData,
@@ -8,17 +7,26 @@ import type {
 import { round } from "@/lib/index-math";
 import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
 import { formatLabel } from "@/components/index-chart/format";
-import type { ChartMode, ChartPoint, ComparePoint } from "@/components/index-chart/types";
+import type { ChartMode, ChartPoint, ChartRow, ComparePoint } from "@/components/index-chart/types";
 
 const SECTOR_SET = new Set<string>(SECTORS);
 
+/** Day-level labels read well up to ~45 days; longer spans switch to months. */
+export function useShortDayLabels(points: { date: string }[]): boolean {
+  if (points.length < 2) return true;
+  const first = new Date(points[0].date).getTime();
+  const last = new Date(points[points.length - 1].date).getTime();
+  const days = (last - first) / 86_400_000;
+  return days <= 45;
+}
+
 export function toChartPoint(
   point: IndexHistoryPoint | SectorHistoryPoint,
-  range: HistoryRange
+  shortDay: boolean
 ): ChartPoint {
   return {
     date: point.date,
-    label: formatLabel(point.date, range),
+    label: formatLabel(point.date, shortDay),
     value: Number(point.value),
   };
 }
@@ -27,6 +35,20 @@ export function getRangeChangePct(points: ChartPoint[]) {
   const first = points[0];
   const latest = points[points.length - 1];
   return first && latest ? ((latest.value - first.value) / first.value) * 100 : null;
+}
+
+/** First→last percentage change of one series key across the chart rows. */
+export function getSeriesReturn(rows: ChartRow[], key: string): number | null {
+  let first: number | null = null;
+  let last: number | null = null;
+  for (const row of rows) {
+    const v = (row as Record<string, unknown>)[key];
+    if (typeof v === "number" && Number.isFinite(v)) {
+      if (first === null) first = v;
+      last = v;
+    }
+  }
+  return first !== null && last !== null && first !== 0 ? (last / first - 1) * 100 : null;
 }
 
 export function getChartTitle(mode: ChartMode, sector: Sector) {
@@ -41,14 +63,14 @@ export function getLatestColor(mode: ChartMode, sector: Sector, latest?: ChartPo
 
 export function buildCompareData(
   sectorData: SectorHistoryPoint[],
-  range: HistoryRange
+  shortDay: boolean
 ): ComparePoint[] {
   const byDate = new Map<string, ComparePoint>();
 
   for (const point of sectorData) {
     const row = byDate.get(point.date) ?? {
       date: point.date,
-      label: formatLabel(point.date, range),
+      label: formatLabel(point.date, shortDay),
     };
 
     row[point.sector] = Number(point.value);

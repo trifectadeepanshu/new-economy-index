@@ -1,9 +1,9 @@
 import { format, parseISO } from "date-fns";
 import { INDEX_BASE_VALUE } from "@/lib/companies";
-import type { HistoryRange } from "@/lib/index-api";
 
-export function formatLabel(date: string, range: HistoryRange) {
-  return format(parseISO(date), range === "1W" || range === "1M" ? "dd MMM" : "MMM ''yy");
+/** `shortDay` → day-level ticks ("dd MMM") for short spans, else month ("MMM 'yy"). */
+export function formatLabel(date: string, shortDay: boolean) {
+  return format(parseISO(date), shortDay ? "dd MMM" : "MMM ''yy");
 }
 
 export function formatValue(value: number) {

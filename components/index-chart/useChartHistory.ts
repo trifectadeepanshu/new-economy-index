@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import type { HistoryRange, IndexHistoryPayload } from "@/lib/index-api";
+import type { IndexHistoryPayload } from "@/lib/index-api";
+import {
+  RANGE_KEY_TO_API,
+  type RangeKey,
+} from "@/components/index-chart/constants";
 import type { HistoryState } from "@/components/index-chart/types";
 
 const INITIAL_HISTORY_STATE: HistoryState = {
-  range: null,
+  signature: null,
   historyData: [],
   sectorData: [],
   portfolioData: [],
@@ -11,29 +15,45 @@ const INITIAL_HISTORY_STATE: HistoryState = {
   error: null,
 };
 
+export type CustomRange = { from: string; to: string };
+
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";
 }
 
-export function useChartHistory(range: HistoryRange) {
+/** Build the history query + a stable signature for a preset or custom window. */
+function buildRequest(rangeKey: RangeKey, custom: CustomRange | null) {
+  const base = "includeSectors=1&benchmarks=1&portfolio=1";
+  if (rangeKey === "CUSTOM" && custom) {
+    const qs = `from=${custom.from}&to=${custom.to}&${base}`;
+    return { url: `/api/index/history?${qs}`, signature: `CUSTOM:${custom.from}:${custom.to}` };
+  }
+  const apiRange = RANGE_KEY_TO_API[rangeKey === "CUSTOM" ? "1Y" : rangeKey];
+  return { url: `/api/index/history?range=${apiRange}&${base}`, signature: apiRange };
+}
+
+export function useChartHistory(rangeKey: RangeKey, custom: CustomRange | null) {
   const [state, setState] = useState<HistoryState>(INITIAL_HISTORY_STATE);
 
+  // A CUSTOM selection without both dates yet shouldn't fire a request.
+  const pendingCustom = rangeKey === "CUSTOM" && (!custom?.from || !custom?.to);
+  const { url, signature } = buildRequest(rangeKey, custom);
+
   useEffect(() => {
+    if (pendingCustom) return;
+
     const controller = new AbortController();
     let ignore = false;
 
-    fetch(`/api/index/history?range=${range}&includeSectors=1&benchmarks=1&portfolio=1`, {
-      signal: controller.signal,
-    })
+    fetch(url, { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json() as Promise<IndexHistoryPayload>;
       })
       .then((json) => {
         if (ignore) return;
-
         setState({
-          range,
+          signature,
           historyData: json.data ?? [],
           sectorData: json.sectorData ?? [],
           portfolioData: json.portfolioData ?? [],
@@ -43,9 +63,8 @@ export function useChartHistory(range: HistoryRange) {
       })
       .catch((error: unknown) => {
         if (ignore || isAbortError(error)) return;
-
         setState({
-          range,
+          signature,
           historyData: [],
           sectorData: [],
           portfolioData: [],
@@ -58,7 +77,7 @@ export function useChartHistory(range: HistoryRange) {
       ignore = true;
       controller.abort();
     };
-  }, [range]);
+  }, [url, signature, pendingCustom]);
 
-  return { ...state, loading: state.range !== range };
+  return { ...state, loading: !pendingCustom && state.signature !== signature };
 }

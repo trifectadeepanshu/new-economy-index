@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
 import { SECTORS, type Sector } from "@/lib/companies";
-import { HISTORY_RANGES, type HistoryRange } from "@/lib/index-api";
-import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
+import {
+  RANGE_OPTIONS,
+  SECTOR_CHART_COLORS,
+  type RangeKey,
+} from "@/components/index-chart/constants";
+import type { CustomRange } from "@/components/index-chart/useChartHistory";
 import { formatSignedPct, formatValue } from "@/components/index-chart/format";
 import type { ChartPoint } from "@/components/index-chart/types";
 
@@ -78,27 +82,39 @@ export function ChartState({
 export function ChartToolbar({
   isReference,
   latestPoint,
-  onRangeChange,
-  range,
+  onRangeKeyChange,
+  rangeKey,
+  rangeLabel,
   rangeChangePct,
+  customRange,
+  onCustomRangeChange,
+  minDate,
+  maxDate,
   title,
 }: {
   isReference: boolean;
   latestPoint?: ChartPoint;
-  onRangeChange: (range: HistoryRange) => void;
-  range: HistoryRange;
+  onRangeKeyChange: (key: RangeKey) => void;
+  rangeKey: RangeKey;
+  rangeLabel: string;
   rangeChangePct: number | null;
+  customRange: CustomRange | null;
+  onCustomRangeChange: (next: CustomRange) => void;
+  minDate: string;
+  maxDate: string;
   title: string;
 }) {
   const changeTone = (rangeChangePct ?? 0) >= 0 ? "is-positive" : "is-negative";
   const referenceLabel = "New Economy 50";
+  const from = customRange?.from ?? "";
+  const to = customRange?.to ?? "";
 
   return (
     <div className="nei-chart-toolbar">
       {isReference ? (
         <div>
           <div className="nei-reference-chart-label">
-            {range} Range / {referenceLabel}
+            {rangeLabel} / {referenceLabel}
           </div>
           <div className="nei-reference-chart-value">
             <span className="nei-mono">
@@ -118,17 +134,41 @@ export function ChartToolbar({
 
       <div className="nei-chart-controls">
         <div className="nei-segmented-control" role="group" aria-label="Date range">
-          {HISTORY_RANGES.map((option) => (
+          {RANGE_OPTIONS.map((option) => (
             <ControlButton
-              key={option}
-              active={range === option}
+              key={option.key}
+              active={rangeKey === option.key}
               tone={isReference ? "ink" : "default"}
-              onClick={() => onRangeChange(option)}
+              onClick={() => onRangeKeyChange(option.key)}
             >
-              {option}
+              {option.label}
             </ControlButton>
           ))}
         </div>
+
+        {rangeKey === "CUSTOM" && (
+          <div className="nei-daterange" role="group" aria-label="Custom date range">
+            <input
+              type="date"
+              className="nei-daterange-input"
+              aria-label="Start date"
+              value={from}
+              min={minDate}
+              max={to || maxDate}
+              onChange={(e) => onCustomRangeChange({ from: e.target.value, to })}
+            />
+            <span className="nei-daterange-sep" aria-hidden="true">→</span>
+            <input
+              type="date"
+              className="nei-daterange-input"
+              aria-label="End date"
+              value={to}
+              min={from || minDate}
+              max={maxDate}
+              onChange={(e) => onCustomRangeChange({ from, to: e.target.value })}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

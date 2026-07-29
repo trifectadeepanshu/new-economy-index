@@ -87,7 +87,7 @@ export type SectorHistoryPoint = {
   numCompanies: number;
 };
 
-export type BenchmarkKey = "NIFTY500";
+export type BenchmarkKey = "NIFTY50" | "NIFTY500";
 
 export type BenchmarkSeries = {
   symbol: BenchmarkKey;

@@ -2,7 +2,6 @@ import type { Sector } from "@/lib/companies";
 import type {
   BenchmarkKey,
   BenchmarkSeries,
-  HistoryRange,
   IndexHistoryPoint,
   SectorHistoryPoint,
   StockData,
@@ -26,7 +25,8 @@ export type ComparePoint = {
 export type ChartRow = ChartPoint | ComparePoint;
 
 export type HistoryState = {
-  range: HistoryRange | null;
+  /** Fetch signature (range key + custom window) used to detect stale loads. */
+  signature: string | null;
   historyData: IndexHistoryPoint[];
   sectorData: SectorHistoryPoint[];
   portfolioData: IndexHistoryPoint[];
