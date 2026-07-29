@@ -177,11 +177,6 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
     },
     METHOD_CARDS[1],
     METHOD_CARDS[2],
-    {
-      number: "05",
-      title: "Public data, settled at the close",
-      body: "Prices, shares and fundamentals come from Yahoo Finance — public market data, not a proprietary feed. Through the trading day the index refreshes about every 30 seconds from delayed public quotes — an indicative value, not a real-time exchange feed — and settles to an official level about an hour after the 15:30 IST close, once the day's closing prices are final. Company fundamentals — shares outstanding, financials and analyst ratings — refresh weekly, keeping each company's market-cap weight current. Pre-2022 share counts are seeded from S&P Capital IQ.",
-    },
   ];
 
   return (
