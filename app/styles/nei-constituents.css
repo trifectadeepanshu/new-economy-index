@@ -663,8 +663,11 @@
     color: rgba(232,235,240,0.72);
     font-size: 13px;
     line-height: 1.6;
-    max-height: 118px;
-    overflow-y: auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .nei-cm-error {

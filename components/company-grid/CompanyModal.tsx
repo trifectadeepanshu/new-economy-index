@@ -194,7 +194,15 @@ function PriceHistoryChart({
 }
 
 /** Tiny bar sparkline for a financial metric's quarterly trajectory. */
-function MiniBars({ label, points }: { label: string; points: BarPoint[] }) {
+function MiniBars({
+  label,
+  points,
+  format = (v: number) => String(v),
+}: {
+  label: string;
+  points: BarPoint[];
+  format?: (v: number) => string;
+}) {
   const nums = points.map((point) => point.value).filter((v): v is number => v != null);
   if (!nums.length) return null;
   const max = Math.max(...nums, 0);
@@ -208,7 +216,7 @@ function MiniBars({ label, points }: { label: string; points: BarPoint[] }) {
             key={`${point.label}-${i}`}
             className={`nei-cm-bar${i === points.length - 1 ? " is-latest" : ""}`}
             style={{ height: `${point.value == null ? 4 : 8 + ((point.value - min) / range) * 30}px` }}
-            title={`${point.label}: ${point.value ?? "No data"}`}
+            title={`${point.label}: ${point.value == null ? "No data" : format(point.value)}`}
           />
         ))}
       </div>
@@ -398,28 +406,44 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
                 {formatSignedPercent(latest.revenueGrowth, 1)} same qtr YoY
               </span>
             )}
-            <MiniBars label="Revenue" points={bars((f) => f.revenue)} />
+            <MiniBars
+              label="Revenue"
+              points={bars((f) => f.revenue)}
+              format={(v) => formatMarketCap(v, detail?.currency ?? currency)}
+            />
           </div>
 
           <div className="nei-cm-card">
             <span className="nei-cm-card-label">EBITDA margin</span>
             <strong className="nei-mono">{latest?.ebitdaMargin != null ? `${latest.ebitdaMargin.toFixed(1)}%` : "—"}</strong>
             <span className="nei-cm-card-sub">{latest?.label ?? "latest quarter"}</span>
-            <MiniBars label="EBITDA margin" points={bars((f) => f.ebitdaMargin)} />
+            <MiniBars
+              label="EBITDA margin"
+              points={bars((f) => f.ebitdaMargin)}
+              format={(v) => `${v.toFixed(1)}%`}
+            />
           </div>
 
           <div className="nei-cm-card">
             <span className="nei-cm-card-label">PAT{latest?.label ? ` · ${latest.label}` : ""}</span>
             <strong className="nei-mono">{formatMarketCap(latest?.pat ?? null, detail?.currency ?? currency)}</strong>
             {latest?.patMargin != null && <span className="nei-cm-card-sub">{latest.patMargin.toFixed(1)}% margin</span>}
-            <MiniBars label="PAT" points={bars((f) => f.pat)} />
+            <MiniBars
+              label="PAT"
+              points={bars((f) => f.pat)}
+              format={(v) => formatMarketCap(v, detail?.currency ?? currency)}
+            />
           </div>
 
           <div className="nei-cm-card">
             <span className="nei-cm-card-label">Asset turnover</span>
             <strong className="nei-mono">{latest?.assetTurnover != null ? `${latest.assetTurnover.toFixed(2)}x` : "—"}</strong>
             <span className="nei-cm-card-sub">TTM revenue / assets</span>
-            <MiniBars label="Asset turnover" points={bars((f) => f.assetTurnover)} />
+            <MiniBars
+              label="Asset turnover"
+              points={bars((f) => f.assetTurnover)}
+              format={(v) => `${v.toFixed(2)}x`}
+            />
           </div>
         </div>
 
