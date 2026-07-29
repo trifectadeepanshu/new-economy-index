@@ -24,7 +24,7 @@ const SPECS: [string, string][] = [
 const ELIGIBILITY: [string, string][] = [
   [
     "Exchange listing",
-    "Actively listed and traded on the National Stock Exchange (NSE) or BSE Limited.",
+    "Actively listed and traded on the National Stock Exchange (NSE).",
   ],
   [
     "Business model",
@@ -98,7 +98,7 @@ export default function MethodologyPage() {
           The New Economy Index (NEI Top 50) is a rules-based, full
           market-capitalisation-weighted benchmark tracking the equity
           performance of the top 50 institutionally backed, technology-driven
-          public companies listed on Indian exchanges (NSE and BSE).
+          public companies listed on the National Stock Exchange (NSE).
         </p>
 
         <DocSection n="01" title="Objective">
@@ -272,8 +272,8 @@ export default function MethodologyPage() {
             <li>
               <strong>Fundamental & share maintenance.</strong> Outstanding share
               counts, company fundamentals, and related universe metrics are
-              refreshed on a rolling basis and at each quarterly review, keeping
-              market-capitalisation weights current between reviews.
+              refreshed on a quarterly basis, keeping market-capitalisation
+              weights current between reviews.
             </li>
           </ul>
         </DocSection>

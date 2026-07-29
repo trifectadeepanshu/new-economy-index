@@ -86,7 +86,7 @@ export function PerformanceSection({
       id="performance"
       eyebrow={{ number: "02", label: "Performance" }}
       title="The NEI Top 50 since day one."
-      copy={`Market-cap weighted across the top ${numCompanies} constituents. Base 1,000 set in January 2021.`}
+      copy={`Market-cap weighted across the top ${numCompanies} constituents. Base 1,000 set in December 2020.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
     </ReferenceShell>
