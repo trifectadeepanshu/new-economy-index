@@ -5,11 +5,12 @@ import type {
   StockData,
 } from "@/lib/index-api";
 import { round } from "@/lib/index-math";
-import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
+import { SECTOR_CHART_COLORS, type RangeKey } from "@/components/index-chart/constants";
 import { formatLabel } from "@/components/index-chart/format";
 import type { ChartMode, ChartPoint, ChartRow, ComparePoint } from "@/components/index-chart/types";
 
 const SECTOR_SET = new Set<string>(SECTORS);
+const MAX_CHART_DISPLAY_START_DATE = "2021-01-01";
 
 /** Day-level labels read well up to ~45 days; longer spans switch to months. */
 export function useShortDayLabels(points: { date: string }[]): boolean {
@@ -35,6 +36,17 @@ export function getRangeChangePct(points: ChartPoint[]) {
   const first = points[0];
   const latest = points[points.length - 1];
   return first && latest ? ((latest.value - first.value) / first.value) * 100 : null;
+}
+
+/** Presentation-only crop: keep raw MAX data for returns, but start the drawn chart in Jan 2021. */
+export function getDisplayChartRows(rows: ChartRow[], rangeKey: RangeKey): ChartRow[] {
+  if (rangeKey !== "MAX") return rows;
+
+  const visibleRows = rows.filter(
+    (row) => row.date === "now" || row.date >= MAX_CHART_DISPLAY_START_DATE
+  );
+
+  return visibleRows.length > 1 ? visibleRows : rows;
 }
 
 /** First→last percentage change of one series key across the chart rows. */

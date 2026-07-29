@@ -11,6 +11,7 @@ import {
   RANGE_OPTIONS,
   type RangeKey,
 } from "@/components/index-chart/constants";
+import { getDisplayChartRows } from "@/components/index-chart/data";
 import { formatSignedPct } from "@/components/index-chart/format";
 import { useChartHistory, type CustomRange } from "@/components/index-chart/useChartHistory";
 import { useIndexChartModel } from "@/components/index-chart/useIndexChartModel";
@@ -106,6 +107,10 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
   const hasTrifecta = portfolioData.length > 0;
   const availableBenchmarks = benchmarks.map((b) => b.symbol);
   const returns = model.seriesReturns;
+  const chartData = useMemo(
+    () => getDisplayChartRows(model.currentData, rangeKey),
+    [model.currentData, rangeKey]
+  );
 
   const rangeLabel =
     rangeKey === "CUSTOM"
@@ -157,7 +162,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
           <ChartCanvas
             activeMode="index"
             areaGradientId={areaGradientId}
-            data={model.currentData}
+            data={chartData}
             focusedSector={null}
             latestColor={model.latestColor}
             latestPoint={model.latestPoint}
