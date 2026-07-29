@@ -270,7 +270,7 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
             {detailError ? (
               <p className="nei-cm-nodata">Price history unavailable.</p>
             ) : detail && detail.priceSeries.length > 1 ? (
-              <Sparkline series={detail.priceSeries.map((p) => p.close)} height={90} />
+              <Sparkline series={detail.priceSeries.map((p) => p.close)} height={90} animate={false} />
             ) : (
               <p className="nei-cm-nodata">{loading ? "Loading…" : "No price history."}</p>
             )}
