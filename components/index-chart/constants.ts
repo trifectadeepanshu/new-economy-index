@@ -2,8 +2,8 @@ import type { Sector } from "@/lib/companies";
 import type { BenchmarkKey } from "@/lib/index-api";
 
 export const BENCHMARK_META: Record<BenchmarkKey, { label: string; color: string; dash: string }> = {
-  NIFTY50: { label: "Nifty 50", color: "#7A6FB8", dash: "2 3" },
-  NIFTY500: { label: "Nifty 500", color: "#8A94A6", dash: "5 4" },
+  NIFTY50: { label: "Nifty 50", color: "#8678F2", dash: "2 3" },
+  NIFTY500: { label: "Nifty 500", color: "#748196", dash: "5 4" },
 };
 
 export const BENCHMARK_KEYS: BenchmarkKey[] = ["NIFTY50", "NIFTY500"];

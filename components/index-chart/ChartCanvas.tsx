@@ -192,9 +192,9 @@ function BenchmarkLines({ visibleBenchmarks }: { visibleBenchmarks?: Set<Benchma
             dataKey={key}
             name={BENCHMARK_META[key].label}
             stroke={BENCHMARK_META[key].color}
-            strokeWidth={1.5}
+            strokeWidth={1.8}
             strokeDasharray={BENCHMARK_META[key].dash}
-            strokeOpacity={0.75}
+            strokeOpacity={0.95}
             dot={false}
             connectNulls
             isAnimationActive={false}
