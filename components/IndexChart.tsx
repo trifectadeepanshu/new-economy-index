@@ -11,7 +11,7 @@ import {
   RANGE_OPTIONS,
   type RangeKey,
 } from "@/components/index-chart/constants";
-import { getDisplayChartRows, getSeriesReturn } from "@/components/index-chart/data";
+import { getSeriesReturn } from "@/components/index-chart/data";
 import { formatSignedPct } from "@/components/index-chart/format";
 import { useChartHistory, type CustomRange } from "@/components/index-chart/useChartHistory";
 import { useIndexChartModel, type SeriesReturns } from "@/components/index-chart/useIndexChartModel";
@@ -106,14 +106,11 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
 
   const hasTrifecta = portfolioData.length > 0;
   const availableBenchmarks = benchmarks.map((b) => b.symbol);
-  const chartData = useMemo(
-    () => getDisplayChartRows(model.currentData, rangeKey),
-    [model.currentData, rangeKey]
-  );
+  const chartData = model.currentData;
 
-  // Compute every series' return from the *displayed* rows, so the header %,
-  // the legend cards, and the drawn line always agree — including the Max view,
-  // which is cropped to Jan 2021 for display.
+  // Compute every series' return from the drawn rows, so the header %, the
+  // legend cards, and the line always agree. The Max view runs from the base
+  // (Dec 2020, 1,000), so its return matches the hero's "since inception".
   const returns = useMemo<SeriesReturns>(() => {
     const out: SeriesReturns = {
       NE50: getSeriesReturn(chartData, "value"),
