@@ -857,3 +857,466 @@
     font-size: 42px;
   }
 }
+
+@media (max-width: 640px) {
+  .nei-dashboard {
+    padding-top: 32px;
+  }
+
+  .nei-ticker-drift {
+    height: 32px;
+  }
+
+  .nei-ticker-chip {
+    padding: 0 12px;
+    font-size: 10px;
+  }
+
+  .nei-v2-nav {
+    width: auto;
+    max-width: none;
+    margin-right: 0;
+    margin-left: 0;
+    padding: 8px 14px 0;
+  }
+
+  .nei-v2-nav-right {
+    gap: 6px;
+  }
+
+  .nei-brand-logo {
+    width: 112px;
+    max-height: 30px;
+  }
+
+  .nei-mobile-menu-button {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+  }
+
+  .nei-nav-currency-toggle .nei-currency-btn {
+    min-width: 44px;
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 10.5px;
+  }
+
+  .nei-hero-section,
+  .nei-hero-layer {
+    min-height: auto;
+  }
+
+  .nei-hero-inner {
+    width: auto;
+    max-width: none;
+    margin-right: 0;
+    margin-left: 0;
+    justify-content: flex-start;
+    padding: 18px 16px 48px;
+  }
+
+  .nei-hero-grid {
+    gap: 24px !important;
+  }
+
+  .nei-hero-title {
+    margin-bottom: 16px;
+    font-size: clamp(37px, 10.5vw, 48px);
+    line-height: 1.03;
+  }
+
+  .nei-hero-title span {
+    display: block;
+  }
+
+  .nei-hero-copy {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+
+  .nei-hero-actions {
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .nei-hero-primary,
+  .nei-hero-secondary {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .nei-hero-card {
+    padding: 18px 14px 16px;
+  }
+
+  .nei-hero-card-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .nei-market-status {
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .nei-hero-fx {
+    font-size: 11px;
+  }
+
+  .nei-hero-value-row {
+    gap: 8px;
+  }
+
+  .nei-index-value {
+    min-width: 0;
+    font-size: clamp(42px, 14vw, 58px);
+    overflow-wrap: anywhere;
+  }
+
+  .nei-day-change-pill {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .nei-since-inception {
+    margin-bottom: 14px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .nei-hero-spark,
+  .nei-hero-spark svg {
+    height: 70px;
+  }
+
+  .nei-hero-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+    padding-top: 14px;
+  }
+
+  .nei-hero-strip-item:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .nei-hero-stat-label {
+    font-size: 9px;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+  }
+
+  .nei-hero-strip-item strong {
+    font-size: 18px;
+    overflow-wrap: anywhere;
+  }
+
+  .nei-reference-section {
+    padding: 40px 14px 56px;
+  }
+
+  .nei-reference-frame,
+  .nei-index-frame,
+  .nei-method-frame {
+    width: auto;
+    max-width: none;
+  }
+
+  .nei-reference-inner {
+    padding-top: 36px;
+    padding-bottom: 40px;
+  }
+
+  .nei-reference-header {
+    align-items: flex-start;
+  }
+
+  .nei-reference-title,
+  .nei-index-title,
+  .nei-method-title {
+    font-size: clamp(31px, 9vw, 38px);
+  }
+
+  .nei-chart-toolbar {
+    gap: 12px;
+  }
+
+  .nei-reference-chart .nei-chart-controls {
+    gap: 8px;
+  }
+
+  .nei-segmented-control {
+    display: grid;
+    grid-auto-columns: minmax(52px, 1fr);
+    grid-auto-flow: column;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nei-control-button {
+    min-height: 44px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  .nei-chart-canvas {
+    height: 240px;
+    margin-left: 0;
+  }
+
+  .nei-series-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .nei-series-card {
+    min-width: 0;
+    max-width: none;
+    padding: 10px 11px;
+    border-radius: 8px;
+  }
+
+  .nei-series-name {
+    max-width: 100%;
+  }
+
+  .nei-series-return {
+    font-size: 15px;
+  }
+
+  .nei-dp {
+    width: 100%;
+  }
+
+  .nei-dp-trigger {
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .nei-dp-pop {
+    position: fixed;
+    inset: auto 12px max(12px, env(safe-area-inset-bottom)) 12px;
+    z-index: 1200;
+    width: auto;
+    max-height: min(78dvh, 520px);
+    overflow: auto;
+    border-radius: 12px;
+  }
+
+  .nei-dp-endpoints {
+    gap: 8px;
+  }
+
+  .nei-index-section {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .nei-index-inner {
+    padding-top: 48px;
+    padding-bottom: 56px;
+  }
+
+  .nei-index-panel {
+    padding: 0 10px 12px;
+  }
+
+  .nei-constituent-tools {
+    align-items: stretch;
+  }
+
+  .nei-sector-filter {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nei-sector-filter button {
+    padding: 0 13px;
+    font-size: 12px;
+  }
+
+  .nei-constituent-table {
+    min-width: 980px;
+    font-size: 13px;
+  }
+
+  .nei-constituent-table th,
+  .nei-constituent-table td {
+    padding: 14px 12px;
+  }
+
+  .nei-company-card-title h3,
+  .nei-company-card-title p {
+    white-space: normal;
+  }
+
+  .nei-company-card-title h3 {
+    display: block;
+    line-height: 1.25;
+  }
+
+  .nei-company-card-title p {
+    line-height: 1.35;
+  }
+
+  .nei-company-card-meta {
+    gap: 8px;
+  }
+
+  .nei-cm-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .nei-cm-panel {
+    max-width: none;
+    max-height: 94dvh;
+    overflow-y: auto;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 14px 14px 0 0;
+    padding: 22px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .nei-cm-close {
+    top: 10px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .nei-cm-head {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-right: 52px;
+  }
+
+  .nei-cm-head h2 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.1;
+  }
+
+  .nei-cm-sub {
+    line-height: 1.45;
+  }
+
+  .nei-cm-price {
+    align-items: baseline;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    text-align: left;
+  }
+
+  .nei-cm-desc {
+    max-height: 96px;
+  }
+
+  .nei-cm-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .nei-cm-card {
+    min-width: 0;
+    padding: 11px 10px;
+    border-radius: 8px;
+  }
+
+  .nei-cm-card-label {
+    font-size: 9px;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+  }
+
+  .nei-cm-card strong {
+    font-size: 17px;
+  }
+
+  .nei-cm-card-sub {
+    font-size: 10.5px;
+  }
+
+  .nei-cm-bar-row {
+    height: 34px;
+  }
+
+  .nei-cm-section {
+    margin-top: 18px;
+  }
+
+  .nei-cm-price-chart {
+    height: 150px;
+  }
+
+  .nei-cm-analyst-legend {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  .nei-cm-analyst-count {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .nei-method-section {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .nei-method-inner {
+    padding-top: 48px;
+    padding-bottom: 56px;
+  }
+
+  .nei-footer-inner {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+}
+
+@media (max-width: 359px) {
+  .nei-v2-nav,
+  .nei-hero-inner {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .nei-brand-logo {
+    width: 104px;
+  }
+
+  .nei-mobile-menu-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nei-nav-currency-toggle .nei-currency-btn {
+    min-width: 39px;
+    padding: 0 6px;
+  }
+
+  .nei-hero-title {
+    font-size: 34px;
+  }
+
+  .nei-index-value {
+    font-size: 40px;
+  }
+
+  .nei-series-cards,
+  .nei-cm-cards {
+    grid-template-columns: 1fr;
+  }
+}
