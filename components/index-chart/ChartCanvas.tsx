@@ -230,7 +230,7 @@ function IndexLine({
       <Line
         type="monotone"
         dataKey="value"
-        name={activeMode === "detail" ? selectedSector : "NEI"}
+        name={activeMode === "detail" ? selectedSector : "NEI 50"}
         stroke={latestColor}
         strokeWidth={2.2}
         dot={false}

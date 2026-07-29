@@ -46,7 +46,7 @@ export function ChartTooltip({
                   style={{ background: item.color }}
                 />
               )}
-              <span>{item.name ?? "NEI"}</span>
+              <span>{item.name ?? "NEI 50"}</span>
             </span>
             <span className="nei-chart-tooltip-value nei-mono">
               {formatValue(item.value)}

@@ -91,7 +91,7 @@ export function ChartToolbar({
   title: string;
 }) {
   const changeTone = (rangeChangePct ?? 0) >= 0 ? "is-positive" : "is-negative";
-  const referenceLabel = "NEI";
+  const referenceLabel = "NEI 50";
 
   return (
     <div className="nei-chart-toolbar">

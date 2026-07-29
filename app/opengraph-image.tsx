@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "NEI by Trifecta Capital";
+export const alt = "NEI 50 by Trifecta Capital";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -45,7 +45,7 @@ export default function OGImage() {
         {/* Main content */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ fontSize: 118, fontWeight: 700, color: "#F2F4F8", lineHeight: 1, letterSpacing: -2 }}>
-            NEI
+            NEI 50
           </div>
           <div style={{ fontSize: 32, fontWeight: 600, letterSpacing: 10, color: "rgba(232,235,240,0.70)", marginTop: 14, display: "flex" }}>
             NEW ECONOMY INDEX

@@ -31,7 +31,7 @@ export function getRangeChangePct(points: ChartPoint[]) {
 
 export function getChartTitle(mode: ChartMode, sector: Sector) {
   if (mode === "detail") return `${sector} performance`;
-  return mode === "compare" ? "Sector compare" : "NEI performance";
+  return mode === "compare" ? "Sector compare" : "NEI 50 performance";
 }
 
 export function getLatestColor(mode: ChartMode, sector: Sector, latest?: ChartPoint) {

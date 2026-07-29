@@ -84,7 +84,7 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
             <div className="nei-benchmark-legend" role="group" aria-label="Benchmarks">
               <span className="nei-benchmark-chip is-nei">
                 <span className="nei-benchmark-dot" style={{ background: "var(--nei-accent)" }} />
-                NEI
+                NEI 50
               </span>
               {hasTrifecta && (
                 <button
