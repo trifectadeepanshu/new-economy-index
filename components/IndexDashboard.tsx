@@ -4,7 +4,6 @@ import { HeroSection, TickerDrift } from "@/components/index-dashboard/HeroSecti
 import {
   ConstituentsSection,
   DashboardFooter,
-  MethodologySection,
   PerformanceSection,
   SectorSection,
 } from "@/components/index-dashboard/PageSections";
@@ -46,7 +45,6 @@ function IndexDashboardInner() {
         currency={model.currency}
       />
 
-      <MethodologySection numCompanies={model.numCompanies} />
       <DashboardFooter />
     </div>
   );

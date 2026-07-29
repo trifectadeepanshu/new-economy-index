@@ -12,24 +12,6 @@ import {
 import { SectorBento } from "@/components/index-dashboard/SectorBento";
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 
-const METHOD_CARDS = [
-  {
-    number: "01",
-    title: "Market-cap weighted, by design",
-    body: "Each company's weight reflects its public-market size. The cohort moves with the aggregate value of its companies.",
-  },
-  {
-    number: "03",
-    title: "A decade in the ecosystem",
-    body: "Trifecta Capital has backed India's new economy for over a decade, long before many of these companies became household names. The NEI Top 50 grew out of that vantage point — an objective read on how the whole cohort is performing.",
-  },
-  {
-    number: "04",
-    title: "Free, public, shareable",
-    body: "No paywall, no login. Use it for decks, MIS, research, or just to get a pulse check on the New Economy.",
-  },
-] as const;
-
 function ReferenceShell({
   id,
   eyebrow,
@@ -159,76 +141,6 @@ export function SectorSection({
     >
       <SectorBento sectors={sectorComposition} stocks={stocks} currency={currency} />
     </ReferenceShell>
-  );
-}
-
-export function MethodologySection({ numCompanies }: { numCompanies: number }) {
-  const methodStats = [
-    { label: "Deployed", value: "$1B" },
-    { label: "Companies invested", value: "220+" },
-    { label: "Funds", value: "5" },
-    { label: "Years", value: "10+" },
-  ];
-  const cards = [
-    METHOD_CARDS[0],
-    {
-      number: "02",
-      title: "The full picture, not the highlights",
-      body: `${numCompanies} companies across ${SECTORS.length} sectors. Not just the names everyone knows, but the complete public-market expression of India's new economy.`,
-    },
-    METHOD_CARDS[1],
-    METHOD_CARDS[2],
-  ];
-
-  return (
-    <section id="methodology" className="nei-method-section nei-dark-section-vars">
-      <TickFrame
-        className="nei-method-frame"
-        inset={32}
-        tone="paper"
-        lineLen={44}
-        corner={14}
-        opacity={0.42}
-        padded={false}
-      >
-        <div className="nei-method-inner">
-          <SectionEyebrow number="05" label="Why we built this" light />
-          <div className="nei-method-grid">
-            <div>
-              <h2 className="nei-heading nei-method-title">
-                A decade in.
-                <span> Here is what we learned.</span>
-              </h2>
-              <p className="nei-method-copy">
-                A decade of backing India&apos;s next generation of businesses
-                leaves you with a question: how is the cohort doing, all
-                together? The NEI Top 50 is our answer.
-              </p>
-              <div className="nei-method-stats">
-                {methodStats.map((stat) => (
-                  <div key={stat.label}>
-                    <span>{stat.label}</span>
-                    <strong className="nei-mono">{stat.value}</strong>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="nei-method-cards">
-              {cards.map((card) => (
-                <div key={card.number} className="nei-method-card">
-                  <span className="nei-mono">§{card.number}</span>
-                  <div>
-                    <h3>{card.title}</h3>
-                    <p>{card.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </TickFrame>
-    </section>
   );
 }
 
