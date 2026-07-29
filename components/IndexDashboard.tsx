@@ -32,16 +32,16 @@ function IndexDashboardInner() {
         numCompanies={model.numCompanies}
       />
 
+      <SectorSection
+        sectorComposition={model.sectorComposition}
+        stocks={model.stocks}
+        currency={model.currency}
+      />
+
       <ConstituentsSection
         stocks={model.stocks}
         isLoading={model.isLoading}
         numCompanies={model.numCompanies}
-        currency={model.currency}
-      />
-
-      <SectorSection
-        sectorComposition={model.sectorComposition}
-        stocks={model.stocks}
         currency={model.currency}
       />
 

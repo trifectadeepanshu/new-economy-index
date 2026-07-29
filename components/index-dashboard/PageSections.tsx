@@ -99,7 +99,7 @@ export function ConstituentsSection({
         padded={false}
       >
         <div className="nei-index-inner">
-          <SectionEyebrow number="03" label="Inside the Cohort" light />
+          <SectionEyebrow number="04" label="Inside the Cohort" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
               The full cohort, laid out.
@@ -135,7 +135,7 @@ export function SectorSection({
   return (
     <ReferenceShell
       id="sectors"
-      eyebrow={{ number: "04", label: "Sector Composition" }}
+      eyebrow={{ number: "03", label: "Sector Composition" }}
       title="What is India's new economy actually made of?"
       copy="Deeper than fintech. Broader than consumer. Constantly evolving. Open any sector for its trend and holdings."
     >
