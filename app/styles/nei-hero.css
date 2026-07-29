@@ -167,26 +167,20 @@
     margin: 0 auto;
   }
 
+  .nei-hero-intro {
+    width: min(100%, 720px);
+    padding-top: clamp(8px, 1.2vw, 18px);
+  }
+
   .nei-hero-title {
-    max-width: 680px;
-    margin: 0 0 26px;
+    max-width: none;
+    margin: 0;
     color: #F2F4F8;
-    font-size: clamp(50px, 6.8vw, 98px);
+    font-size: clamp(48px, 5.1vw, 76px);
     font-weight: 600;
-    line-height: 0.92;
-    letter-spacing: -0.018em;
-  }
-
-  .nei-hero-title span {
-    color: rgba(232,235,240,0.55);
-  }
-
-  .nei-hero-title .nei-hero-title-accent {
-    background: linear-gradient(96deg, #F1D4AF 0%, #E07A38 58%, #C85E22 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
   }
 
   .nei-hero-mobile-break {
@@ -194,18 +188,18 @@
   }
 
   .nei-hero-copy {
-    max-width: 500px;
-    margin: 0;
+    max-width: 540px;
+    margin: 18px 0 0;
     color: rgba(232,235,240,0.72);
-    font-size: 18px;
-    line-height: 1.6;
+    font-size: 17px;
+    line-height: 1.58;
   }
 
   .nei-hero-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 36px;
+    margin-top: 30px;
   }
 
   .nei-hero-actions .nei-hero-primary span {
@@ -645,7 +639,7 @@
   .nei-hero-grid {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    gap: 56px;
-    align-items: center;
+    gap: clamp(56px, 5.5vw, 88px);
+    align-items: start;
   }
 }

@@ -149,15 +149,11 @@ function HeroNav({
 
 function HeroIntro({ numCompanies }: { numCompanies: number }) {
   return (
-    <div>
-      <h1 className="nei-heading nei-hero-title">
-        New Economy{" "}
-        <span className="nei-hero-title-accent">50</span>
-      </h1>
+    <div className="nei-hero-intro">
+      <h1 className="nei-heading nei-hero-title">New Economy 50</h1>
       <p className="nei-hero-copy">
-        New Economy 50 is an index that tracks the top 50 institutionally backed,
-        technology-driven Indian companies that have gone public, weighted by
-        market capitalisation.
+        Tracks the top {numCompanies} institutionally backed, technology-driven
+        Indian public companies, weighted by market capitalisation.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">

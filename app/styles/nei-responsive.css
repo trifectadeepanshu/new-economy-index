@@ -119,9 +119,13 @@
     padding: 24px 20px 96px;
   }
 
+  .nei-hero-intro {
+    width: min(100%, 640px);
+    padding-top: 0;
+  }
+
   .nei-hero-title {
     max-width: 680px;
-    margin-bottom: 22px;
     font-size: clamp(42px, 7vw, 58px);
     line-height: 1.02;
   }
@@ -381,11 +385,11 @@
   }
 
   .nei-hero-title {
-    margin-bottom: 18px;
     max-width: 100%;
     font-size: clamp(31px, 8.2vw, 39px);
     line-height: 1.06;
     text-wrap: balance;
+    white-space: normal;
   }
 
   .nei-hero-title br {
@@ -842,6 +846,7 @@
   .nei-hero-title {
     font-size: 30px;
     line-height: 1.08;
+    white-space: normal;
   }
 
   .nei-hero-copy {
