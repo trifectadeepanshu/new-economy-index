@@ -150,19 +150,11 @@ function HeroNav({
 function HeroIntro({ numCompanies }: { numCompanies: number }) {
   return (
     <div>
-      <h1 className="nei-heading nei-hero-title">
-        India&apos;s new <br className="nei-hero-mobile-break" />economy,{" "}
-        <br />
-        <span>
-          tracked in one <br className="nei-hero-mobile-break" />live view.
-        </span>
-      </h1>
+      <h1 className="nei-heading nei-hero-title">NEI 50</h1>
       <p className="nei-hero-copy">
-        Trifecta Capital backed many of India&apos;s next generation of
-        businesses before they had a track record. NEI follows the top 50
-        institutionally backed technology-driven companies that have
-        now gone public so that you can see how the ecosystem is doing both on an
-        absolute and relative basis.
+        The NEI 50 tracks the top 50 institutionally backed, technology-driven
+        Indian companies that have gone public, market-cap weighted into a single
+        index.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">
