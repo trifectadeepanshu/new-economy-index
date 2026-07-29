@@ -168,7 +168,7 @@
   }
 
   .nei-hero-intro {
-    width: min(100%, 720px);
+    width: min(100%, 800px);
     padding-top: clamp(8px, 1.2vw, 18px);
   }
 
@@ -176,10 +176,10 @@
     max-width: none;
     margin: 0;
     color: #F2F4F8;
-    font-size: clamp(48px, 5.1vw, 76px);
+    font-size: clamp(56px, 5.85vw, 88px);
     font-weight: 600;
-    line-height: 1.02;
-    letter-spacing: -0.01em;
+    line-height: 0.98;
+    letter-spacing: -0.018em;
     white-space: nowrap;
   }
 

@@ -126,7 +126,7 @@
 
   .nei-hero-title {
     max-width: 680px;
-    font-size: clamp(42px, 7vw, 58px);
+    font-size: clamp(46px, 8vw, 66px);
     line-height: 1.02;
   }
 
@@ -386,7 +386,7 @@
 
   .nei-hero-title {
     max-width: 100%;
-    font-size: clamp(31px, 8.2vw, 39px);
+    font-size: clamp(34px, 9.4vw, 46px);
     line-height: 1.06;
     text-wrap: balance;
     white-space: normal;
@@ -844,7 +844,7 @@
   }
 
   .nei-hero-title {
-    font-size: 30px;
+    font-size: 34px;
     line-height: 1.08;
     white-space: normal;
   }
