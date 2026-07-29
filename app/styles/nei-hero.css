@@ -168,17 +168,25 @@
   }
 
   .nei-hero-title {
-    max-width: 720px;
-    margin: 0 0 28px;
+    max-width: 680px;
+    margin: 0 0 26px;
     color: #F2F4F8;
-    font-size: clamp(40px, 5.6vw, 76px);
-    font-weight: 500;
-    line-height: 0.98;
-    letter-spacing: 0;
+    font-size: clamp(50px, 6.8vw, 98px);
+    font-weight: 600;
+    line-height: 0.92;
+    letter-spacing: -0.018em;
   }
 
   .nei-hero-title span {
     color: rgba(232,235,240,0.55);
+  }
+
+  .nei-hero-title .nei-hero-title-accent {
+    background: linear-gradient(96deg, #F1D4AF 0%, #E07A38 58%, #C85E22 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
   .nei-hero-mobile-break {
@@ -186,11 +194,11 @@
   }
 
   .nei-hero-copy {
-    max-width: 540px;
+    max-width: 500px;
     margin: 0;
     color: rgba(232,235,240,0.72);
-    font-size: 17px;
-    line-height: 1.55;
+    font-size: 18px;
+    line-height: 1.6;
   }
 
   .nei-hero-actions {
