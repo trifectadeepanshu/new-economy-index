@@ -20,7 +20,7 @@ const METHOD_CARDS = [
   {
     number: "03",
     title: "Built by insiders",
-    body: "Trifecta Capital has backed this ecosystem for over a decade, long before many of these companies became household names. The NEI 50 is not an external observer's take. It's built by a firm that's been involved with many of these businesses and sees the need to objectively measure the role of the New Economy.",
+    body: "Trifecta Capital has backed this ecosystem for over a decade, long before many of these companies became household names. The New Economy 50 is not an external observer's take. It's built by a firm that's been involved with many of these businesses and sees the need to objectively measure the role of the New Economy.",
   },
   {
     number: "04",
@@ -84,7 +84,7 @@ export function PerformanceSection({
     <ReferenceShell
       id="performance"
       eyebrow={{ number: "02", label: "Performance" }}
-      title="The NEI 50 since day one."
+      title="The New Economy 50 since day one."
       copy={`Market-cap weighted across the top ${numCompanies} constituents. Base 1,000 set in January 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
@@ -201,7 +201,7 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
               <p className="nei-method-copy">
                 A decade of backing India&apos;s next generation of businesses
                 leaves you with a question: how is the cohort doing, all
-                together? The NEI 50 is our answer.
+                together? The New Economy 50 is our answer.
               </p>
               <div className="nei-method-stats">
                 {methodStats.map((stat) => (
@@ -249,14 +249,14 @@ export function DashboardFooter() {
               </div>
               <p>
                 Market data for NSE-listed companies, sourced from public feeds
-                and updated during market hours. The NEI 50 is for
+                and updated during market hours. The New Economy 50 is for
                 informational purposes only and does not constitute investment
                 advice. © 2026 Trifecta Capital.
               </p>
             </div>
             <div className="nei-footer-links">
               <div>
-                <strong>NEI 50</strong>
+                <strong>New Economy 50</strong>
                 <a href="#performance">Performance</a>
                 <a href="#constituents">Constituents</a>
                 <a href="#sectors">Sectors</a>

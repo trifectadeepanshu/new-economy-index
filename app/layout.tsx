@@ -31,23 +31,23 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://new-economy-index.vercel.app"),
-  title: "NEI 50 · India's New Economy Index | Trifecta Capital",
+  title: "New Economy 50 | Trifecta Capital",
   description:
-    "The NEI 50 tracks the top 50 institutionally backed, technology-driven Indian companies that have gone public — market-cap weighted into a single live index.",
+    "The New Economy 50 tracks the top 50 institutionally backed, technology-driven Indian companies that have gone public — market-cap weighted into a single live index.",
   icons: {
     icon: "/trifecta-mark.png",
     shortcut: "/trifecta-mark.png",
     apple: "/trifecta-mark.png",
   },
   openGraph: {
-    title: "NEI 50 · India's New Economy Index | Trifecta Capital",
-    description: "The NEI 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
+    title: "New Economy 50 | Trifecta Capital",
+    description: "The New Economy 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NEI 50 · India's New Economy Index | Trifecta Capital",
-    description: "The NEI 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
+    title: "New Economy 50 | Trifecta Capital",
+    description: "The New Economy 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
   },
 };
 
