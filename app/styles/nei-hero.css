@@ -177,9 +177,9 @@
     margin: 0 0 28px;
     color: #F2F4F8;
     font-size: clamp(40px, 5.6vw, 76px);
-    font-weight: 500;
+    font-weight: 700;
     line-height: 0.98;
-    letter-spacing: 0;
+    letter-spacing: -0.02em;
   }
 
   .nei-hero-title span {
