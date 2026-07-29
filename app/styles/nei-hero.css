@@ -173,13 +173,14 @@
   }
 
   .nei-hero-title {
-    max-width: 720px;
+    max-width: 15ch;
     margin: 0 0 28px;
     color: #F2F4F8;
-    font-size: clamp(40px, 5.6vw, 76px);
+    font-size: clamp(40px, 5.2vw, 68px);
     font-weight: 700;
-    line-height: 0.98;
+    line-height: 1.0;
     letter-spacing: -0.02em;
+    text-wrap: balance;
   }
 
   .nei-hero-title span {
