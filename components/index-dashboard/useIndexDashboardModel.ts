@@ -3,8 +3,9 @@ import { useIndexData } from "@/hooks/useIndexData";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 import type { IndexHistoryPayload, LiveTickerPayload, StockData } from "@/lib/index-api";
 import { INDEX_BASE_VALUE, INDEX_SIZE } from "@/lib/companies";
-import { isMarketOpen } from "@/lib/market-hours";
+import { getISTDate, isMarketOpen } from "@/lib/market-hours";
 import { formatNumber } from "@/components/index-dashboard/format";
+import { buildHeroSeries, type HeroSparkPoint } from "@/components/index-dashboard/heroSeries";
 
 type ValueFlash = "" | "pos" | "neg";
 type StatTone = "positive" | "negative";
@@ -64,7 +65,7 @@ function useCountUp(target: number | null) {
 }
 
 function useSparkSeries() {
-  const [series, setSeries] = useState<number[]>([]);
+  const [series, setSeries] = useState<HeroSparkPoint[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -76,8 +77,8 @@ function useSparkSeries() {
       })
       .then((json) => {
         const values = (json.data ?? [])
-          .map((point) => Number(point.value))
-          .filter(Number.isFinite);
+          .map((point) => ({ date: point.date, value: Number(point.value) }))
+          .filter((point) => point.date && Number.isFinite(point.value));
 
         setSeries(values);
       })
@@ -130,21 +131,11 @@ function useValueFlash(indexValue: number | null) {
   return flash;
 }
 
-function buildHeroSeries(sparkSeries: number[], indexValue: number | null) {
-  if (!sparkSeries.length) {
-    return indexValue === null ? [] : [INDEX_BASE_VALUE, indexValue];
-  }
-
-  if (indexValue === null) return sparkSeries;
-
-  const last = sparkSeries[sparkSeries.length - 1];
-  return Math.abs(last - indexValue) < 0.01 ? sparkSeries : [...sparkSeries, indexValue];
-}
-
 export function useIndexDashboardModel() {
   const { currency, setCurrency } = useCurrency();
   const { data, isLoading, error, refresh } = useIndexData(currency);
   const sparkSeries = useSparkSeries();
+  const todayDate = getISTDate();
   const marketOpen = isMarketOpen();
   const nowIST = useMarketClock(marketOpen);
 
@@ -154,8 +145,8 @@ export function useIndexDashboardModel() {
   const displayedValue = useCountUp(indexValue);
   const valueFlash = useValueFlash(indexValue);
   const heroSeries = useMemo(
-    () => buildHeroSeries(sparkSeries, indexValue),
-    [indexValue, sparkSeries]
+    () => buildHeroSeries(sparkSeries, indexValue, todayDate),
+    [indexValue, sparkSeries, todayDate]
   );
   const marketStats = data?.marketStats ?? EMPTY_MARKET_STATS;
   const dataLoaded = stocks.length > 0;

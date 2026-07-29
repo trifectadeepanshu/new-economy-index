@@ -257,7 +257,7 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
 
       <div className="nei-hero-spark">
         {model.heroSeries.length > 1 ? (
-          <Sparkline series={model.heroSeries} height={82} />
+          <Sparkline series={model.heroSeries} height={82} animate={false} />
         ) : (
           <Skeleton height={82} radius={6} />
         )}

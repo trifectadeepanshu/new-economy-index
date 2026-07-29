@@ -14,7 +14,15 @@ export function Skeleton({ width, height, radius = 6 }: { width?: string | numbe
   );
 }
 
-export function Sparkline({ series, height = 80 }: { series: number[]; height?: number }) {
+export function Sparkline({
+  series,
+  height = 80,
+  animate = true,
+}: {
+  series: number[];
+  height?: number;
+  animate?: boolean;
+}) {
   const gradientId = `spark-${useId().replace(/:/g, "")}`;
 
   if (series.length < 2) return null;
@@ -23,14 +31,20 @@ export function Sparkline({ series, height = 80 }: { series: number[]; height?: 
   const max = Math.max(...series) * 1.002;
   const range = max - min || 1;
   const width = 400;
-  const path = series
-    .map((value, index) => {
-      const x = (index / (series.length - 1)) * width;
-      const y = height - ((value - min) / range) * height;
-      return `${index === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
+  const points = series.map((value, index) => {
+    const x = (index / (series.length - 1)) * width;
+    const y = height - ((value - min) / range) * height;
+    return { x, y };
+  });
+  const path = points
+    .map(
+      (point, index) =>
+        `${index === 0 ? "M" : "L"}${point.x.toFixed(1)},${point.y.toFixed(1)}`
+    )
     .join(" ");
-  const areaPath = `${path} L${width},${height} L0,${height} Z`;
+  const firstPoint = points[0];
+  const lastPoint = points[points.length - 1];
+  const areaPath = `${path} L${lastPoint.x.toFixed(1)},${height} L${firstPoint.x.toFixed(1)},${height} Z`;
   const color = series[series.length - 1] >= series[0] ? "var(--nei-pos)" : "var(--nei-neg)";
 
   return (
@@ -47,7 +61,11 @@ export function Sparkline({ series, height = 80 }: { series: number[]; height?: 
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={areaPath} fill={`url(#${gradientId})`} className="nei-spark-area" />
+      <path
+        d={areaPath}
+        fill={`url(#${gradientId})`}
+        className={animate ? "nei-spark-area" : undefined}
+      />
       <path
         d={path}
         fill="none"
@@ -56,10 +74,10 @@ export function Sparkline({ series, height = 80 }: { series: number[]; height?: 
         strokeLinejoin="round"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
-        pathLength="1"
-        strokeDasharray="1"
-        strokeDashoffset="1"
-        className="nei-spark-line"
+        pathLength={animate ? 1 : undefined}
+        strokeDasharray={animate ? 1 : undefined}
+        strokeDashoffset={animate ? 1 : undefined}
+        className={animate ? "nei-spark-line" : undefined}
       />
     </svg>
   );
