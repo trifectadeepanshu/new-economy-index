@@ -6,6 +6,7 @@ import {
   type RangeKey,
 } from "@/components/index-chart/constants";
 import type { CustomRange } from "@/components/index-chart/useChartHistory";
+import { DateRangePicker } from "@/components/index-chart/DateRangePicker";
 import { formatSignedPct, formatValue } from "@/components/index-chart/format";
 import type { ChartPoint } from "@/components/index-chart/types";
 
@@ -106,8 +107,6 @@ export function ChartToolbar({
 }) {
   const changeTone = (rangeChangePct ?? 0) >= 0 ? "is-positive" : "is-negative";
   const referenceLabel = "NEI Top 50";
-  const from = customRange?.from ?? "";
-  const to = customRange?.to ?? "";
 
   return (
     <div className="nei-chart-toolbar">
@@ -147,27 +146,12 @@ export function ChartToolbar({
         </div>
 
         {rangeKey === "CUSTOM" && (
-          <div className="nei-daterange" role="group" aria-label="Custom date range">
-            <input
-              type="date"
-              className="nei-daterange-input"
-              aria-label="Start date"
-              value={from}
-              min={minDate}
-              max={to || maxDate}
-              onChange={(e) => onCustomRangeChange({ from: e.target.value, to })}
-            />
-            <span className="nei-daterange-sep" aria-hidden="true">→</span>
-            <input
-              type="date"
-              className="nei-daterange-input"
-              aria-label="End date"
-              value={to}
-              min={from || minDate}
-              max={maxDate}
-              onChange={(e) => onCustomRangeChange({ from, to: e.target.value })}
-            />
-          </div>
+          <DateRangePicker
+            value={customRange}
+            min={minDate}
+            max={maxDate}
+            onChange={onCustomRangeChange}
+          />
         )}
       </div>
     </div>
