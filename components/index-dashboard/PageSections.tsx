@@ -19,8 +19,8 @@ const METHOD_CARDS = [
   },
   {
     number: "03",
-    title: "Built by insiders",
-    body: "Trifecta Capital has backed this ecosystem for over a decade, long before many of these companies became household names. The New Economy 50 is not an external observer's take. It's built by a firm that's been involved with many of these businesses and sees the need to objectively measure the role of the New Economy.",
+    title: "A decade in the ecosystem",
+    body: "Trifecta Capital has backed India's new economy for over a decade, long before many of these companies became household names. The NEI Top 50 grew out of that vantage point — an objective read on how the whole cohort is performing.",
   },
   {
     number: "04",
@@ -84,7 +84,7 @@ export function PerformanceSection({
     <ReferenceShell
       id="performance"
       eyebrow={{ number: "02", label: "Performance" }}
-      title="The New Economy 50 since day one."
+      title="The NEI Top 50 since day one."
       copy={`Market-cap weighted across the top ${numCompanies} constituents. Base 1,000 set in January 2021.`}
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
@@ -177,6 +177,11 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
     },
     METHOD_CARDS[1],
     METHOD_CARDS[2],
+    {
+      number: "05",
+      title: "Public data, settled at the close",
+      body: "Prices, shares and fundamentals come from Yahoo Finance — public market data, not a proprietary feed. Through the trading day the index refreshes about every 30 seconds from delayed public quotes — an indicative value, not a real-time exchange feed — and settles to an official level about an hour after the 15:30 IST close, once the day's closing prices are final. Company fundamentals — shares outstanding, financials and analyst ratings — refresh weekly, keeping each company's market-cap weight current. Pre-2022 share counts are seeded from S&P Capital IQ.",
+    },
   ];
 
   return (
@@ -201,7 +206,7 @@ export function MethodologySection({ numCompanies }: { numCompanies: number }) {
               <p className="nei-method-copy">
                 A decade of backing India&apos;s next generation of businesses
                 leaves you with a question: how is the cohort doing, all
-                together? The New Economy 50 is our answer.
+                together? The NEI Top 50 is our answer.
               </p>
               <div className="nei-method-stats">
                 {methodStats.map((stat) => (
@@ -249,14 +254,14 @@ export function DashboardFooter() {
               </div>
               <p>
                 Market data for NSE-listed companies, sourced from public feeds
-                and updated during market hours. The New Economy 50 is for
+                and updated during market hours. The NEI Top 50 is for
                 informational purposes only and does not constitute investment
                 advice. © 2026 Trifecta Capital.
               </p>
             </div>
             <div className="nei-footer-links">
               <div>
-                <strong>New Economy 50</strong>
+                <strong>NEI Top 50</strong>
                 <a href="#performance">Performance</a>
                 <a href="#constituents">Constituents</a>
                 <a href="#sectors">Sectors</a>

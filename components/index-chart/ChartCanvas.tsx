@@ -120,7 +120,7 @@ export function ChartCanvas({
                 <Line
                   type="monotone"
                   dataKey="TRIFECTA"
-                  name="Trifecta portfolio"
+                  name="Trifecta Capital portfolio"
                   stroke="#E07A38"
                   strokeWidth={1.8}
                   dot={false}
@@ -230,7 +230,7 @@ function IndexLine({
       <Line
         type="monotone"
         dataKey="value"
-        name={activeMode === "detail" ? selectedSector : "New Economy 50"}
+        name={activeMode === "detail" ? selectedSector : "NEI Top 50"}
         stroke={latestColor}
         strokeWidth={2.2}
         dot={false}

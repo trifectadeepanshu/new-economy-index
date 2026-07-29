@@ -176,22 +176,12 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
           {(availableBenchmarks.length > 0 || hasTrifecta) && (
             <div className="nei-series-cards" role="group" aria-label="Series">
               <SeriesCard
-                label="New Economy 50"
+                label="NEI Top 50"
                 color={model.latestColor}
                 ret={returns.NE50}
                 on
                 toggleable={false}
               />
-              {hasTrifecta && (
-                <SeriesCard
-                  label="Trifecta portfolio"
-                  color="#E07A38"
-                  ret={returns.TRIFECTA}
-                  on={showTrifecta}
-                  toggleable
-                  onToggle={() => setShowTrifecta((v) => !v)}
-                />
-              )}
               {availableBenchmarks.map((key) => (
                 <SeriesCard
                   key={key}
@@ -204,12 +194,23 @@ export function IndexChart({ liveValue, stocks, variant = "default" }: IndexChar
                   onToggle={() => toggleBenchmark(key)}
                 />
               ))}
+              {/* Trifecta Capital shown last — it's a portfolio, not an index. */}
+              {hasTrifecta && (
+                <SeriesCard
+                  label="Trifecta Capital portfolio"
+                  color="#E07A38"
+                  ret={returns.TRIFECTA}
+                  on={showTrifecta}
+                  toggleable
+                  onToggle={() => setShowTrifecta((v) => !v)}
+                />
+              )}
             </div>
           )}
 
           {showTrifecta && hasTrifecta && (
             <p className="nei-chart-note">
-              Trifecta portfolio is rebased from each holding&apos;s IPO price, so it
+              Trifecta Capital portfolio is rebased from each holding&apos;s IPO price, so it
               includes listing-day performance.
             </p>
           )}

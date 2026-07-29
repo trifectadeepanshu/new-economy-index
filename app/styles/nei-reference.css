@@ -142,11 +142,11 @@
   }
 
   .nei-sector-row-values .is-positive {
-    color: #1B8A55;
+    color: #16A34A;
   }
 
   .nei-sector-row-values .is-negative {
-    color: #C74A2E;
+    color: #DC3A2E;
   }
 
   .nei-sector-track {
@@ -298,11 +298,11 @@
   }
 
   .nei-series-return.is-positive {
-    color: #1B8A55;
+    color: #16A34A;
   }
 
   .nei-series-return.is-negative {
-    color: #C74A2E;
+    color: #DC3A2E;
   }
 
   .nei-series-return.is-off {
@@ -403,8 +403,8 @@
     font-weight: 600;
   }
 
-  .nei-sector-single-chg.is-pos { color: #1B8A55; }
-  .nei-sector-single-chg.is-neg { color: #C74A2E; }
+  .nei-sector-single-chg.is-pos { color: #16A34A; }
+  .nei-sector-single-chg.is-neg { color: #DC3A2E; }
 
   .nei-sector-single-chart {
     height: 300px;
@@ -417,7 +417,7 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    color: #C74A2E;
+    color: #DC3A2E;
     font-size: 13px;
   }
 
@@ -561,10 +561,10 @@
 
   .nei-sb-tile-chg.is-pos,
   .nei-sb-panel-meta .is-pos,
-  .nei-sb-co-chg.is-pos { color: #1B8A55; }
+  .nei-sb-co-chg.is-pos { color: #16A34A; }
   .nei-sb-tile-chg.is-neg,
   .nei-sb-panel-meta .is-neg,
-  .nei-sb-co-chg.is-neg { color: #C74A2E; }
+  .nei-sb-co-chg.is-neg { color: #DC3A2E; }
 
   .nei-sb-tile-spark {
     height: 40px;

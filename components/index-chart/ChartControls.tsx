@@ -105,7 +105,7 @@ export function ChartToolbar({
   title: string;
 }) {
   const changeTone = (rangeChangePct ?? 0) >= 0 ? "is-positive" : "is-negative";
-  const referenceLabel = "New Economy 50";
+  const referenceLabel = "NEI Top 50";
   const from = customRange?.from ?? "";
   const to = customRange?.to ?? "";
 

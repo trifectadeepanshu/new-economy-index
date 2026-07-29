@@ -65,7 +65,7 @@ export function getSeriesReturn(rows: ChartRow[], key: string): number | null {
 
 export function getChartTitle(mode: ChartMode, sector: Sector) {
   if (mode === "detail") return `${sector} performance`;
-  return mode === "compare" ? "Sector compare" : "New Economy 50 performance";
+  return mode === "compare" ? "Sector compare" : "NEI Top 50 performance";
 }
 
 export function getLatestColor(mode: ChartMode, sector: Sector, latest?: ChartPoint) {

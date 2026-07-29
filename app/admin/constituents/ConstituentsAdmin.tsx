@@ -179,7 +179,7 @@ export function ConstituentsAdmin() {
             </label>
             <label className="nei-admin-check">
               <input type="checkbox" checked={form.isPortfolio} onChange={(e) => set({ isPortfolio: e.target.checked })} />
-              Trifecta portfolio company
+              Trifecta Capital portfolio company
             </label>
             <label className="nei-admin-check">
               <input type="checkbox" checked={form.isActive} onChange={(e) => set({ isActive: e.target.checked })} />

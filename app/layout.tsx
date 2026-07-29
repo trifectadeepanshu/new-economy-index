@@ -26,23 +26,23 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://new-economy-index.vercel.app"),
-  title: "New Economy 50 | Trifecta Capital",
+  title: "NEI Top 50 | Trifecta Capital",
   description:
-    "The New Economy 50 tracks the top 50 institutionally backed, technology-driven Indian companies that have gone public — market-cap weighted into a single live index.",
+    "The NEI Top 50 tracks the top 50 institutionally backed, technology-driven Indian companies that have gone public — market-cap weighted into a single live index.",
   icons: {
     icon: "/trifecta-mark.png",
     shortcut: "/trifecta-mark.png",
     apple: "/trifecta-mark.png",
   },
   openGraph: {
-    title: "New Economy 50 | Trifecta Capital",
-    description: "The New Economy 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
+    title: "NEI Top 50 | Trifecta Capital",
+    description: "The NEI Top 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "New Economy 50 | Trifecta Capital",
-    description: "The New Economy 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
+    title: "NEI Top 50 | Trifecta Capital",
+    description: "The NEI Top 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
   },
 };
 

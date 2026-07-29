@@ -119,7 +119,7 @@ function sumMarketCap(stocks: StockData[]): number | null {
   return total > 0 ? total : null;
 }
 
-/** Trifecta portfolio names' share of the index market cap (currency-independent). */
+/** Trifecta Capital portfolio names' share of the index market cap (currency-independent). */
 function trifectaWeight(stocks: StockData[]): number | null {
   const total = stocks.reduce((sum, s) => sum + (s.marketCap ?? 0), 0);
   if (total <= 0) return null;

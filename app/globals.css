@@ -91,8 +91,8 @@ html.dark {
   --nei-grid-strong: rgba(11, 15, 25, 0.11);
   --nei-hover:       rgba(11, 15, 25, 0.03);
   --nei-accent:      #1E3A5F;
-  --nei-pos:         #2C6E3C;
-  --nei-neg:         #B45A2E;
+  --nei-pos:         #16A34A;
+  --nei-neg:         #DC3A2E;
   --nei-pos-bright:  #7DD89B;
   --nei-neg-bright:  #E89175;
   --nei-chip:        rgba(16, 24, 38, 0.05);

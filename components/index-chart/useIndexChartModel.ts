@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { type Sector } from "@/lib/companies";
+import { getISTDate } from "@/lib/market-hours";
 import type {
   BenchmarkKey,
   BenchmarkSeries,
@@ -51,7 +52,7 @@ export function useIndexChartModel({
 
   const indexData = useMemo<ChartPoint[]>(() => {
     // The NEI line keeps its true index level (so the chart headline matches the
-    // index value shown elsewhere). Benchmarks and the Trifecta portfolio are
+    // index value shown elsewhere). Benchmarks and the Trifecta Capital portfolio are
     // rebased to meet the NEI at the range start, so every line starts together
     // at that level and the chart reads as relative performance from there.
     const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -75,9 +76,20 @@ export function useIndexChartModel({
       const cp = toChartPoint(point, shortDayIndex);
       return { ...cp, value: round2(cp.value), ...overlayByDate.get(point.date) };
     });
-    return liveValue !== null && points.length
-      ? [...points, { date: "now", label: "Now", value: round2(liveValue) }]
-      : points;
+
+    if (liveValue === null || !points.length) return points;
+
+    // Stitch the live value onto the right edge. If today's close is already the
+    // last point (post-snapshot), update it in place instead of appending a
+    // separate "Now" point — appending both left a duplicate dangling past the
+    // real end date (the 1M "end date doesn't align" bug).
+    const live = round2(liveValue);
+    const last = points[points.length - 1];
+    if (Math.abs(last.value - live) < 0.01) return points;
+    if (last.date >= getISTDate()) {
+      return [...points.slice(0, -1), { ...last, value: live }];
+    }
+    return [...points, { date: "now", label: "Now", value: live }];
   }, [historyData, portfolioData, benchmarks, liveValue, shortDayIndex]);
 
   // Sector sub-indices use the divisor engine; there's no client-side live

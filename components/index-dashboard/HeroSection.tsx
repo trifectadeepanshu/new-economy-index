@@ -151,11 +151,11 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
   return (
     <div className="nei-hero-intro">
       <h1 className="nei-heading nei-hero-title">
-        NE 50: India&apos;s new <br className="nei-hero-mobile-break" />economy,{" "}
+        NEI Top 50: India&apos;s new <br className="nei-hero-mobile-break" />economy,{" "}
         <span>in one number.</span>
       </h1>
       <p className="nei-hero-copy">
-        The New Economy 50 tracks the top 50 institutionally backed,
+        The NEI Top 50 tracks the top 50 institutionally backed,
         technology-driven Indian companies that have gone public, market-cap
         weighted into a single index.
       </p>
