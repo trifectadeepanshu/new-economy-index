@@ -17,6 +17,8 @@
   .nei-hero-layer {
     position: relative;
     z-index: 3;
+    display: flex;
+    flex-direction: column;
     min-height: 100dvh;
   }
 
@@ -160,10 +162,14 @@
   }
 
   .nei-hero-inner {
-    padding: 64px 56px 96px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 56px 56px;
     position: relative;
     z-index: 2;
-    max-width: 1480px;
+    width: min(100%, 1480px);
     margin: 0 auto;
   }
 
