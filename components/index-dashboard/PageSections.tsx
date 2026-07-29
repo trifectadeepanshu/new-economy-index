@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
@@ -257,10 +258,10 @@ export function DashboardFooter() {
             <div className="nei-footer-links">
               <div>
                 <strong>NEI Top 50</strong>
-                <a href="#performance">Performance</a>
-                <a href="#constituents">Constituents</a>
-                <a href="#sectors">Sectors</a>
-                <a href="#methodology">Methodology</a>
+                <Link href="/#performance">Performance</Link>
+                <Link href="/#constituents">Constituents</Link>
+                <Link href="/#sectors">Sectors</Link>
+                <Link href="/methodology">Methodology</Link>
               </div>
               <div>
                 <strong>Trifecta Capital</strong>

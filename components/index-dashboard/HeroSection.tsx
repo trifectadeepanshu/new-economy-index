@@ -21,7 +21,7 @@ const NAV_LINKS = [
   ["Performance", "#performance"],
   ["Constituents", "#constituents"],
   ["Sectors", "#sectors"],
-  ["Methodology", "#methodology"],
+  ["Methodology", "/methodology"],
 ] as const;
 
 function getTickerItems(items: LiveTickerPayload[]): LiveTickerPayload[] {
@@ -110,11 +110,17 @@ function HeroNav({
           className={`nei-v2-links ${isMenuOpen ? "is-open" : ""}`}
           aria-label="Primary navigation"
         >
-          {NAV_LINKS.map(([label, href]) => (
-            <a key={label} href={href} onClick={closeMenu}>
-              {label}
-            </a>
-          ))}
+          {NAV_LINKS.map(([label, href]) =>
+            href.startsWith("/") ? (
+              <Link key={label} href={href} onClick={closeMenu}>
+                {label}
+              </Link>
+            ) : (
+              <a key={label} href={href} onClick={closeMenu}>
+                {label}
+              </a>
+            )
+          )}
           <a
             href="https://trifectacapital.in"
             target="_blank"
