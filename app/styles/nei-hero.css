@@ -71,7 +71,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 56px 0;
-    max-width: 1480px;
+    width: min(100%, 1480px);
     margin: 0 auto;
   }
 
