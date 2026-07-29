@@ -21,7 +21,7 @@ import type {
 } from "@/components/company-grid/types";
 
 const INITIAL_SORT: SortState = { key: "ratio", dir: -1 };
-const MOBILE_CARD_VIEW = "(max-width: 640px)";
+const MOBILE_CARD_VIEW = "(max-width: 1100px)";
 const INITIAL_CARD_COUNT = 4;
 const EXPANDED_CARD_COUNT = 8;
 

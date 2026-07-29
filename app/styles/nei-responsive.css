@@ -1320,3 +1320,188 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .nei-hero-intro,
+  .nei-hero-frame-wrap {
+    width: min(100%, 680px);
+    max-width: 680px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .nei-hero-title {
+    max-width: 100%;
+    font-size: 56px;
+  }
+
+  .nei-hero-copy {
+    max-width: 620px;
+  }
+
+  .nei-sector-filter {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+
+  .nei-sector-filter button {
+    flex: 0 1 auto;
+  }
+
+  .nei-company-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1100px) {
+  .nei-v2-links {
+    gap: 18px;
+    font-size: 12.5px;
+  }
+
+  .nei-v2-links .nei-v2-nav-cta {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .nei-hero-inner {
+    padding-top: 36px;
+    padding-bottom: 48px;
+  }
+
+  .nei-hero-grid {
+    grid-template-columns: minmax(0, 0.98fr) minmax(390px, 1fr);
+    gap: 32px;
+  }
+
+  .nei-hero-title {
+    max-width: 14ch;
+    margin-bottom: 22px;
+    font-size: 54px;
+  }
+
+  .nei-hero-copy {
+    max-width: 480px;
+    font-size: 16px;
+  }
+
+  .nei-hero-card {
+    padding: 28px 28px 26px;
+  }
+
+  .nei-index-value {
+    font-size: 78px;
+  }
+
+  .nei-hero-strip {
+    gap: 16px 28px;
+  }
+}
+
+@media (min-width: 1680px) {
+  .nei-v2-nav,
+  .nei-hero-inner,
+  .nei-reference-frame,
+  .nei-index-frame,
+  .nei-method-frame,
+  .nei-footer-inner {
+    width: min(100%, 1680px);
+  }
+
+  .nei-hero-grid {
+    grid-template-columns: minmax(0, 1.02fr) minmax(660px, 0.98fr);
+    gap: 96px;
+  }
+
+  .nei-hero-title {
+    max-width: 17ch;
+    font-size: 78px;
+  }
+
+  .nei-hero-copy {
+    max-width: 620px;
+    font-size: 18px;
+  }
+
+  .nei-hero-card {
+    padding: 38px 42px 34px;
+  }
+
+  .nei-index-value {
+    font-size: 108px;
+  }
+
+  .nei-hero-spark,
+  .nei-hero-spark svg {
+    height: 100px;
+  }
+
+  .nei-reference-inner,
+  .nei-index-inner,
+  .nei-method-inner {
+    padding-right: 64px;
+    padding-left: 64px;
+  }
+
+  .nei-reference-title,
+  .nei-index-title {
+    max-width: 840px;
+  }
+
+  .nei-chart-canvas {
+    height: 360px;
+  }
+}
+
+@media (min-width: 1680px) and (min-height: 950px) {
+  .nei-hero-inner {
+    justify-content: flex-start;
+    padding-top: clamp(140px, 14dvh, 220px);
+    padding-bottom: 120px;
+  }
+}
+
+@media (min-width: 2200px) {
+  .nei-v2-nav,
+  .nei-hero-inner,
+  .nei-reference-frame,
+  .nei-index-frame,
+  .nei-method-frame,
+  .nei-footer-inner {
+    width: min(100%, 1920px);
+  }
+
+  .nei-hero-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(820px, 0.98fr);
+    gap: 128px;
+  }
+
+  .nei-hero-inner {
+    padding-top: 160px;
+    padding-bottom: 112px;
+  }
+
+  .nei-hero-title {
+    max-width: 18ch;
+    font-size: 92px;
+  }
+
+  .nei-hero-copy {
+    max-width: 680px;
+    font-size: 19px;
+  }
+
+  .nei-hero-card {
+    padding: 44px 48px 40px;
+  }
+
+  .nei-index-value {
+    font-size: 126px;
+  }
+
+  .nei-hero-spark,
+  .nei-hero-spark svg {
+    height: 116px;
+  }
+}
