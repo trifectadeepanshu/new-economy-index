@@ -65,6 +65,35 @@ function formatAxisMonth(date: string) {
   return `${mon} '${String(d.getUTCFullYear()).slice(2)}`;
 }
 
+/**
+ * Axis tick that left-anchors the first label and right-anchors the last, so
+ * the edge labels don't clip against the chart bounds (the middle ones stay
+ * centered). Recharts injects x/y/payload; first/last are passed in.
+ */
+function PriceAxisTick(props: {
+  x?: number;
+  y?: number;
+  payload?: { value?: string };
+  first?: string;
+  last?: string;
+}) {
+  const value = props.payload?.value ?? "";
+  const anchor = value === props.first ? "start" : value === props.last ? "end" : "middle";
+  return (
+    <text
+      x={props.x}
+      y={props.y}
+      dy={12}
+      textAnchor={anchor}
+      fontSize={10}
+      fill="var(--nei-muted)"
+      fontFamily="var(--font-inter), system-ui"
+    >
+      {formatAxisMonth(value)}
+    </text>
+  );
+}
+
 function PriceTooltip({
   active,
   payload,
@@ -134,14 +163,12 @@ function PriceHistoryChart({
           </defs>
           <XAxis
             dataKey="date"
-            tickFormatter={formatAxisMonth}
             interval="preserveStartEnd"
-            minTickGap={60}
-            tickMargin={6}
+            minTickGap={44}
             height={18}
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 10, fill: "var(--nei-muted)", fontFamily: "var(--font-inter), system-ui" }}
+            tick={<PriceAxisTick first={series[0]?.date} last={series[series.length - 1]?.date} />}
           />
           <YAxis dataKey="close" hide domain={["dataMin", "dataMax"]} />
           <Tooltip
