@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   CartesianGrid,
   Line,
@@ -94,7 +95,7 @@ function SectorPanel({
     [stocks, comp.sector]
   );
 
-  return (
+  const overlay = (
     <div className="nei-sb-overlay" onClick={onClose}>
       <div
         className="nei-sb-panel"
@@ -184,6 +185,10 @@ function SectorPanel({
       </div>
     </div>
   );
+
+  // Portal to <body> so the overlay isn't trapped by the section's stacking
+  // context and always covers the page.
+  return createPortal(overlay, document.body);
 }
 
 /** Bento grid of expandable sector tiles (Stripe-style expand-on-demand). */

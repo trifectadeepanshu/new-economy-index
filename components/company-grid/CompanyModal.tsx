@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect -- effect resets + fetches on stock change */
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Area,
   AreaChart,
@@ -309,7 +310,9 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
     fins.map((point) => ({ label: point.label, value: selector(point) }));
   const up = (stock.changePct ?? 0) >= 0;
 
-  return (
+  // Portal to <body> so the fixed overlay escapes any ancestor stacking
+  // context (section frames, transforms) and always sits above the page.
+  const overlay = (
     <div className="nei-cm-overlay" onClick={onClose}>
       <div
         className="nei-cm-panel"
@@ -419,4 +422,6 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
       </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 }
