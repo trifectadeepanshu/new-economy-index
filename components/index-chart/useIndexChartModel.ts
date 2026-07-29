@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { type Sector } from "@/lib/companies";
+import { INDEX_ANCHOR_DATE, type Sector } from "@/lib/companies";
 import { getISTDate } from "@/lib/market-hours";
 import type {
   BenchmarkKey,
@@ -16,7 +16,12 @@ import {
   toChartPoint,
   useShortDayLabels,
 } from "@/components/index-chart/data";
+import { formatLabel } from "@/components/index-chart/format";
 import type { ChartMode, ChartPoint, ChartRow, ComparePoint } from "@/components/index-chart/types";
+
+// The base is the year-end 2020 close; we label it as the Jan 2021 inception
+// so the axis/tooltip match the "Base 1,000, set in January 2021" copy.
+const INCEPTION_LABEL_DATE = "2021-01-01";
 
 export type SeriesReturns = {
   NE50: number | null;
@@ -72,7 +77,9 @@ export function useIndexChartModel({
 
     const points = historyData.map((point) => {
       const cp = toChartPoint(point, shortDayIndex);
-      return { ...cp, value: round2(cp.value), ...overlayByDate.get(point.date) };
+      const label =
+        point.date === INDEX_ANCHOR_DATE ? formatLabel(INCEPTION_LABEL_DATE, shortDayIndex) : cp.label;
+      return { ...cp, label, value: round2(cp.value), ...overlayByDate.get(point.date) };
     });
 
     if (liveValue === null || !points.length) return points;
