@@ -244,6 +244,7 @@
   .nei-doc-formula {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 12px;
     margin: 8px 0 4px;
     padding: 22px 24px;
@@ -251,13 +252,19 @@
     border-radius: 10px;
     background: rgba(23, 44, 84, 0.04);
     color: #172c54;
-    font-size: 18px;
-    font-weight: 600;
     text-align: center;
   }
 
+  .nei-doc-formula-expr {
+    font-size: clamp(16px, 2.4vw, 20px);
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
   .nei-doc-formula sub {
-    font-size: 0.68em;
+    font-size: 0.66em;
+    vertical-align: sub;
   }
 
   .nei-doc-formula-key {

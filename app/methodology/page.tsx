@@ -214,9 +214,11 @@ export default function MethodologyPage() {
             additions and deletions, and structural corporate events:
           </p>
           <div className="nei-doc-formula nei-mono" role="img" aria-label="Index level equals the sum over constituents of price times shares, divided by the active divisor">
-            Index level = Σ&nbsp;(P<sub>i</sub> × S<sub>i</sub>) &nbsp;/&nbsp; Divisor
+            <span className="nei-doc-formula-expr">
+              Index level = Σ&nbsp;(P<sub>i</sub> × S<sub>i</sub>) / Divisor
+            </span>
             <span className="nei-doc-formula-key">
-              P<sub>i</sub> = price of constituent i&nbsp;&nbsp;·&nbsp;&nbsp;S<sub>i</sub> = total outstanding shares&nbsp;&nbsp;·&nbsp;&nbsp;Divisor = active divisor
+              P<sub>i</sub> = price of constituent i&nbsp;·&nbsp;S<sub>i</sub> = total outstanding shares&nbsp;·&nbsp;Divisor = active divisor
             </span>
           </div>
 
