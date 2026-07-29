@@ -136,5 +136,7 @@ export type CompanyDetail = {
   description: string | null;
   financials: CompanyFinancialPeriod[];
   analyst: AnalystConsensus | null;
-  priceSeries: { date: string; close: number }[]; // in `currency`
+  // close + point-in-time market cap (close × shares outstanding on that date),
+  // both in `currency`. marketCap is null when no share count is available.
+  priceSeries: { date: string; close: number; marketCap: number | null }[];
 };

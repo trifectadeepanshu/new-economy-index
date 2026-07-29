@@ -173,7 +173,7 @@ export function buildQuarterlyFinancials(
 
 export async function getCompanyDetail(ticker: string, currency: Currency): Promise<CompanyDetail> {
   const sql = getSql();
-  const [finRaw, annualFinRaw, profRaw, ratingRaw, priceRaw, fx] = await Promise.all([
+  const [finRaw, annualFinRaw, profRaw, ratingRaw, priceRaw, sharesRaw, fx] = await Promise.all([
     sql`SELECT quarter_end::text AS period, revenue::float, ebitda::float, pat::float, total_assets::float
         FROM company_financials_quarterly WHERE ticker = ${ticker} ORDER BY quarter_end ASC`,
     sql`SELECT fiscal_year::text AS period, revenue::float, ebitda::float, pat::float, total_assets::float
@@ -183,6 +183,8 @@ export async function getCompanyDetail(ticker: string, currency: Currency): Prom
         FROM analyst_ratings WHERE ticker = ${ticker}`,
     sql`SELECT date::text AS date, close_price::float AS close
         FROM stock_snapshots WHERE ticker = ${ticker} ORDER BY date ASC`,
+    sql`SELECT as_of::text AS as_of, shares::float AS shares
+        FROM share_counts WHERE ticker = ${ticker} ORDER BY as_of ASC`,
     getFxRates(),
   ]);
   const finRows = finRaw as FinancialRawRow[];
@@ -190,6 +192,7 @@ export async function getCompanyDetail(ticker: string, currency: Currency): Prom
   const profRows = profRaw as { description: string | null }[];
   const ratingRows = ratingRaw as { strong_buy: number; buy: number; hold: number; sell: number; strong_sell: number; rating_key: string | null; num_analysts: number | null }[];
   const priceRows = priceRaw as { date: string; close: number }[];
+  const shareRows = sharesRaw as { as_of: string; shares: number }[];
 
   const usd = currency === "usd";
   const rate = usd ? await fetchLiveUsdInr(fx.points.at(-1)?.rate ?? fx.baseRate) : 1;
@@ -211,10 +214,26 @@ export async function getCompanyDetail(ticker: string, currency: Currency): Prom
         }
       : null;
 
-  const priceSeries = priceRows.map((p) => ({
-    date: p.date,
-    close: money(p.close) ?? p.close,
-  }));
+  // Point-in-time shares for a date: the latest count as of that date, else the
+  // earliest known (held back so early history still gets a market cap).
+  const sharesAt = (date: string): number | null => {
+    if (!shareRows.length) return null;
+    let val = shareRows[0].shares;
+    for (const s of shareRows) {
+      if (s.as_of <= date) val = s.shares;
+      else break;
+    }
+    return val;
+  };
+
+  const priceSeries = priceRows.map((p) => {
+    const shares = sharesAt(p.date);
+    return {
+      date: p.date,
+      close: money(p.close) ?? p.close,
+      marketCap: shares != null ? money(p.close * shares) : null,
+    };
+  });
 
   return {
     ticker,

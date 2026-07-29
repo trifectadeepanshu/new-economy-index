@@ -57,6 +57,13 @@ function formatChartDate(date: string) {
   });
 }
 
+/** Compact month + 2-digit year for the price chart's start/end axis ticks. */
+function formatAxisMonth(date: string) {
+  const d = new Date(`${date}T00:00:00Z`);
+  const mon = d.toLocaleDateString("en-IN", { month: "short", timeZone: "UTC" });
+  return `${mon} '${String(d.getUTCFullYear()).slice(2)}`;
+}
+
 function PriceTooltip({
   active,
   payload,
@@ -68,6 +75,8 @@ function PriceTooltip({
 }) {
   const point = payload?.find((item) => typeof item.value === "number");
   if (!active || !point || typeof point.value !== "number" || !point.payload) return null;
+
+  const marketCap = point.payload.marketCap;
 
   return (
     <div className="nei-chart-tooltip nei-cm-price-tooltip">
@@ -84,6 +93,17 @@ function PriceTooltip({
           {formatPrice(point.value, currency)}
         </span>
       </div>
+      {marketCap != null && (
+        <div className="nei-chart-tooltip-row">
+          <span className="nei-chart-tooltip-name">
+            <span className="nei-chart-tooltip-dot" style={{ background: "transparent" }} />
+            <span>Market cap</span>
+          </span>
+          <span className="nei-chart-tooltip-value nei-mono">
+            {formatMarketCap(marketCap, currency)}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -111,7 +131,17 @@ function PriceHistoryChart({
               <stop offset="100%" stopColor="var(--nei-pos)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis dataKey="date" hide />
+          <XAxis
+            dataKey="date"
+            tickFormatter={formatAxisMonth}
+            interval="preserveStartEnd"
+            minTickGap={60}
+            tickMargin={6}
+            height={18}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 10, fill: "var(--nei-muted)", fontFamily: "var(--font-inter), system-ui" }}
+          />
           <YAxis dataKey="close" hide domain={["dataMin", "dataMax"]} />
           <Tooltip
             content={<PriceTooltip currency={currency} />}
