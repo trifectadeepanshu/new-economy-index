@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://new-economy-index.vercel.app"),
   title: "NEI Top 50 | Trifecta Capital",
   description:
-    "The NEI Top 50 tracks the top 50 institutionally backed, technology-driven Indian companies that have gone public — market-cap weighted into a single live index.",
+    "The New Economy Index: a live, market-cap weighted view of India's top 50 VC-backed, tech-enabled publicly listed companies.",
   icons: {
     icon: "/trifecta-mark.png",
     shortcut: "/trifecta-mark.png",
@@ -37,13 +37,13 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "NEI Top 50 | Trifecta Capital",
-    description: "The NEI Top 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
+    description: "The New Economy Index: a live, market-cap weighted view of India's top 50 VC-backed, tech-enabled publicly listed companies.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "NEI Top 50 | Trifecta Capital",
-    description: "The NEI Top 50 — the top 50 institutionally backed, technology-driven Indian companies that have gone public, in one market-cap weighted index.",
+    description: "The New Economy Index: a live, market-cap weighted view of India's top 50 VC-backed, tech-enabled publicly listed companies.",
   },
 };
 

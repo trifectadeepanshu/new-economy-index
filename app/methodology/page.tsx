@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const SPECS: [string, string][] = [
   ["Index name", "New Economy Index — NEI Top 50"],
   ["Symbol", "NEI Top 50"],
-  ["Base date", "31 December 2020 (market close)"],
+  ["Base date", "January 2021"],
   ["Base value", "1,000.00"],
   ["Weighting", "Full market-capitalisation weighted"],
   ["Target constituents", "50 companies"],
