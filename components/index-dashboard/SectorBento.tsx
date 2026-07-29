@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import {
   CartesianGrid,
   Line,
@@ -231,7 +232,7 @@ function SectorTile({
   );
 }
 
-/** One sector's expanded section panel: comparison chart + companies inside it. */
+/** One sector's expanded modal: comparison chart + companies inside it. */
 function SectorPanel({
   comp,
   series,
@@ -247,7 +248,7 @@ function SectorPanel({
   currency: Currency;
   onClose: () => void;
 }) {
-  const backRef = useRef<HTMLButtonElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
   const comparison = useMemo(() => buildComparisonSeries(series, indexSeries), [indexSeries, series]);
   const sectorChange = comparisonChange(comparison, "sector");
   const indexChange = comparisonChange(comparison, "index");
@@ -261,9 +262,12 @@ function SectorPanel({
       }
     };
     document.addEventListener("keydown", onKey);
-    window.setTimeout(() => backRef.current?.focus(), 0);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.setTimeout(() => closeRef.current?.focus(), 0);
     return () => {
       document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
     };
   }, [onClose]);
 
@@ -288,59 +292,61 @@ function SectorPanel({
     [stocks, comp.sector]
   );
 
-  return (
-    <div
-      className="nei-sb-panel"
-      role="region"
-      aria-label={`${comp.sector} sector detail`}
-      style={{ "--sector-color": color } as CSSProperties}
-    >
-      <div className="nei-sb-panel-head">
-        <button ref={backRef} type="button" className="nei-sb-back" onClick={onClose}>
-          <span aria-hidden="true" />
-          Sectors
+  const overlay = (
+    <div className="nei-sb-overlay" onClick={onClose}>
+      <div
+        className="nei-sb-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${comp.sector} sector detail`}
+        style={{ "--sector-color": color } as CSSProperties}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button ref={closeRef} type="button" className="nei-sb-close" onClick={onClose} aria-label="Close">
+          ×
         </button>
 
-        <div className="nei-sb-panel-title">
-          <span className="nei-sb-dot" style={{ background: color }} />
-          <h3 className="nei-heading">{comp.sector}</h3>
+        <div className="nei-sb-panel-head">
+          <div className="nei-sb-panel-title">
+            <span className="nei-sb-dot" style={{ background: color }} />
+            <h3 className="nei-heading">{comp.sector}</h3>
+          </div>
+
+          <div className="nei-sb-panel-meta">
+            <span>
+              <strong>{(comp.weightPct ?? 0).toFixed(1)}%</strong>
+              of index
+            </span>
+            <span>
+              <strong>{comp.numCompanies}</strong>
+              companies
+            </span>
+            <span>
+              <strong className={(sectorChange ?? 0) >= 0 ? "is-pos" : "is-neg"}>
+                {formatChange(sectorChange)}
+              </strong>
+              sector 1Y
+            </span>
+            <span>
+              <strong className={(indexChange ?? 0) >= 0 ? "is-pos" : "is-neg"}>
+                {formatChange(indexChange)}
+              </strong>
+              NEI 1Y
+            </span>
+          </div>
         </div>
 
-        <div className="nei-sb-panel-meta">
-          <span>
-            <strong>{(comp.weightPct ?? 0).toFixed(1)}%</strong>
-            of index
-          </span>
-          <span>
-            <strong>{comp.numCompanies}</strong>
-            companies
-          </span>
-          <span>
-            <strong className={(sectorChange ?? 0) >= 0 ? "is-pos" : "is-neg"}>
-              {formatChange(sectorChange)}
-            </strong>
-            sector 1Y
-          </span>
-          <span>
-            <strong className={(indexChange ?? 0) >= 0 ? "is-pos" : "is-neg"}>
-              {formatChange(indexChange)}
-            </strong>
-            NEI 1Y
-          </span>
-        </div>
-      </div>
+        <p className="sr-only">
+          The chart compares {comp.sector} to NEI Top 50 over the last year, with both series rebased to the
+          first common point in the selected period.
+        </p>
 
-      <p className="sr-only">
-        The chart compares {comp.sector} to NEI Top 50 over the last year, with both series rebased to the
-        first common point in the selected period.
-      </p>
-
-      <div className="nei-sb-panel-chart">
-        <div className="nei-sb-chart-topline">
-          <span className="nei-mono">1Y performance, rebased</span>
-          <SectorLegend sector={comp.sector} color={color} />
-        </div>
-        {comparison.length > 1 ? (
+        <div className="nei-sb-panel-chart">
+          <div className="nei-sb-chart-topline">
+            <span className="nei-mono">1Y performance, rebased</span>
+            <SectorLegend sector={comp.sector} color={color} />
+          </div>
+          {comparison.length > 1 ? (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={comparison} margin={{ top: 12, right: 18, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,15,25,0.06)" vertical={false} />
@@ -393,31 +399,34 @@ function SectorPanel({
           ) : (
             <p className="nei-cm-nodata">No sector history available.</p>
           )}
-      </div>
+        </div>
 
-      <div className="nei-sb-companies">
-        <span className="nei-sb-companies-label">Companies in {comp.sector}</span>
-        <ul>
-          {companies.map((c) => {
-            const up = (c.changePct ?? 0) >= 0;
-            return (
-              <li key={c.ticker}>
-                <div className="nei-sb-co-name">
-                  <CompanyLogo ticker={c.ticker} name={c.name} size={26} />
-                  <span>{c.displayName}</span>
-                </div>
-                <span className="nei-mono nei-sb-co-mcap">{formatMarketCap(c.marketCap, currency)}</span>
-                <span className="nei-mono nei-sb-co-price">{formatPrice(c.price, currency)}</span>
-                <span className={`nei-mono nei-sb-co-chg ${up ? "is-pos" : "is-neg"}`}>
-                  {formatSignedPercent(c.changePct, 1)}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="nei-sb-companies">
+          <span className="nei-sb-companies-label">Companies in {comp.sector}</span>
+          <ul>
+            {companies.map((c) => {
+              const up = (c.changePct ?? 0) >= 0;
+              return (
+                <li key={c.ticker}>
+                  <div className="nei-sb-co-name">
+                    <CompanyLogo ticker={c.ticker} name={c.name} size={26} />
+                    <span>{c.displayName}</span>
+                  </div>
+                  <span className="nei-mono nei-sb-co-mcap">{formatMarketCap(c.marketCap, currency)}</span>
+                  <span className="nei-mono nei-sb-co-price">{formatPrice(c.price, currency)}</span>
+                  <span className={`nei-mono nei-sb-co-chg ${up ? "is-pos" : "is-neg"}`}>
+                    {formatSignedPercent(c.changePct, 1)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 }
 
 /** Bento grid of expandable sector tiles (Stripe-style expand-on-demand). */

@@ -801,18 +801,25 @@
   .nei-sb-expand::after {
     content: "";
     position: absolute;
-    background: currentColor;
-    border-radius: 2px;
+    width: 8px;
+    height: 8px;
+    background: transparent;
   }
 
   .nei-sb-expand::before {
-    width: 10px;
-    height: 1.5px;
+    top: 6px;
+    right: 6px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    border-radius: 0 2px 0 0;
   }
 
   .nei-sb-expand::after {
-    width: 1.5px;
-    height: 10px;
+    left: 6px;
+    bottom: 6px;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    border-radius: 0 0 0 2px;
   }
 
   .nei-sb-tile:hover .nei-sb-expand {
@@ -942,18 +949,40 @@
       linear-gradient(90deg, rgba(11,15,25,0.42) 0 45%, transparent 45% 70%, rgba(11,15,25,0.42) 70% 100%);
   }
 
-  /* ── Sector panel (expanded in-section takeover) ────────────────────── */
+  /* ── Sector panel (compact expanded modal) ──────────────────────────── */
+  .nei-sb-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(11,15,25,0.52);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: nei-sb-fade 0.16s ease-out;
+  }
+
+  @keyframes nei-sb-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
   .nei-sb-panel {
     position: relative;
     --sector-color: #2B62C4;
+    width: min(100%, 760px);
+    max-height: min(86vh, 760px);
+    overflow-y: auto;
     min-width: 0;
-    padding: 26px 28px 28px;
+    padding: 28px 28px 24px;
     border: 1px solid rgba(11,15,25,0.10);
-    border-radius: 8px;
+    border-radius: 10px;
     background:
-      linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.76)),
-      linear-gradient(135deg, color-mix(in oklab, var(--sector-color) 10%, transparent), transparent 56%);
-    box-shadow: 0 20px 60px rgba(11,15,25,0.08);
+      linear-gradient(135deg, color-mix(in oklab, var(--sector-color) 7%, transparent), transparent 56%),
+      #FFFFFF;
+    box-shadow: 0 30px 80px rgba(11,15,25,0.30);
     animation: nei-sb-rise 0.18s ease-out;
   }
 
@@ -962,48 +991,42 @@
     to { opacity: 1; transform: none; }
   }
 
-  .nei-sb-back {
+  .nei-sb-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    width: fit-content;
-    min-height: 40px;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
     border: 1px solid rgba(11,15,25,0.14);
     border-radius: 8px;
     background: rgba(255,255,255,0.58);
     color: rgba(11,15,25,0.62);
-    padding: 0 12px;
-    font: 700 12px var(--font-inter), system-ui, sans-serif;
+    font-size: 22px;
+    line-height: 1;
     cursor: pointer;
     transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
   }
 
-  .nei-sb-back span {
-    width: 8px;
-    height: 8px;
-    border-left: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: rotate(45deg);
-  }
-
-  .nei-sb-back:hover,
-  .nei-sb-back:focus-visible {
+  .nei-sb-close:hover,
+  .nei-sb-close:focus-visible {
     color: #0B0F19;
     border-color: rgba(11,15,25,0.3);
     background: #FFFFFF;
   }
 
-  .nei-sb-back:focus-visible {
+  .nei-sb-close:focus-visible {
     outline: 3px solid rgba(224,122,56,0.28);
     outline-offset: 2px;
   }
 
   .nei-sb-panel-head {
     display: grid;
-    grid-template-columns: 180px minmax(0, 1fr);
-    gap: 18px 28px;
+    gap: 14px;
     align-items: start;
-    margin-bottom: 22px;
+    margin: 0 44px 18px 0;
   }
 
   .nei-sb-panel-title {
@@ -1015,23 +1038,22 @@
   .nei-sb-panel-head h3 {
     margin: 0;
     color: #0B0F19;
-    font-size: 36px;
+    font-size: 28px;
     font-weight: 600;
     line-height: 1.06;
   }
 
   .nei-sb-panel-meta {
-    grid-column: 2;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
   }
 
   .nei-sb-panel-meta span {
     display: grid;
     gap: 4px;
     min-width: 0;
-    padding: 12px 14px;
+    padding: 10px 12px;
     border: 1px solid rgba(11,15,25,0.08);
     border-radius: 8px;
     background: rgba(255,255,255,0.56);
@@ -1042,7 +1064,7 @@
 
   .nei-sb-panel-meta strong {
     color: #0B0F19;
-    font: 600 20px var(--font-sora), var(--font-inter), system-ui, sans-serif;
+    font: 600 18px var(--font-sora), var(--font-inter), system-ui, sans-serif;
     line-height: 1;
     letter-spacing: 0;
   }
@@ -1050,12 +1072,12 @@
   .nei-sb-panel-chart {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    gap: 12px;
-    height: 360px;
+    gap: 10px;
+    height: 250px;
     min-width: 0;
-    min-height: 300px;
-    margin-bottom: 24px;
-    padding-top: 16px;
+    min-height: 220px;
+    margin-bottom: 18px;
+    padding: 14px 0 4px;
     border-top: 1px solid rgba(11,15,25,0.07);
     border-bottom: 1px solid rgba(11,15,25,0.07);
   }
@@ -1086,7 +1108,9 @@
   .nei-sb-companies ul {
     list-style: none;
     margin: 0;
-    padding: 0;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 0 4px 0 0;
   }
 
   .nei-sb-companies li {
@@ -1094,8 +1118,8 @@
     grid-template-columns: minmax(0, 1fr) minmax(112px, auto) minmax(86px, auto) minmax(68px, auto);
     align-items: center;
     gap: 14px;
-    min-height: 52px;
-    padding: 10px 0;
+    min-height: 46px;
+    padding: 8px 0;
     border-top: 1px solid rgba(11,15,25,0.07);
   }
 
@@ -1152,17 +1176,14 @@
       grid-row: span 2;
     }
 
-    .nei-sb-panel-head {
-      grid-template-columns: 1fr;
-    }
-
-    .nei-sb-panel-meta {
-      grid-column: auto;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
   }
 
   @media (max-width: 720px) {
+    .nei-sb-overlay {
+      align-items: flex-start;
+      padding: 12px;
+    }
+
     .nei-sb-grid {
       grid-template-columns: 1fr;
       grid-auto-rows: auto;
@@ -1197,11 +1218,20 @@
     }
 
     .nei-sb-panel {
-      padding: 18px 14px 18px;
+      max-height: calc(100dvh - 24px);
+      padding: 18px 14px 16px;
+    }
+
+    .nei-sb-close {
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
     }
 
     .nei-sb-panel-head {
       gap: 14px;
+      margin-right: 40px;
     }
 
     .nei-sb-panel-head h3 {
@@ -1213,8 +1243,8 @@
     }
 
     .nei-sb-panel-chart {
-      height: 300px;
-      min-height: 260px;
+      height: 240px;
+      min-height: 220px;
     }
 
     .nei-sb-chart-topline {
