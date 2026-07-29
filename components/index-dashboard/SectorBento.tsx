@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   CartesianGrid,
   Line,
@@ -15,46 +14,243 @@ import { SECTORS, type Sector } from "@/lib/companies";
 import type {
   Currency,
   IndexHistoryPayload,
+  IndexHistoryPoint,
   SectorCompositionPoint,
   SectorHistoryPoint,
   StockData,
 } from "@/lib/index-api";
 import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
-import { Sparkline } from "@/components/index-dashboard/DashboardChrome";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import { formatMarketCap } from "@/lib/formatters";
 import { formatPrice, formatSignedPercent } from "@/components/company-grid/format";
 
 type SectorSeries = Map<Sector, { date: string; value: number }[]>;
+type SectorPoint = { date: string; value: number };
+type ComparisonPoint = {
+  date: string;
+  sector: number;
+  index: number;
+  sectorRaw: number;
+  indexRaw: number;
+};
 
 function monthLabel(date: string): string {
   const d = new Date(date);
   return `${d.toLocaleDateString("en-US", { month: "short" })} '${String(d.getUTCFullYear()).slice(2)}`;
 }
 
-function oneYearChange(series: { value: number }[] | undefined): number | null {
-  if (!series || series.length < 2) return null;
-  const first = series[0].value;
-  const last = series[series.length - 1].value;
+function buildComparisonSeries(
+  sectorSeries: SectorPoint[] | undefined,
+  indexSeries: IndexHistoryPoint[]
+): ComparisonPoint[] {
+  if (!sectorSeries || sectorSeries.length < 2 || indexSeries.length < 2) return [];
+
+  const indexByDate = new Map(indexSeries.map((point) => [point.date, point.value]));
+  const paired = sectorSeries
+    .map((point) => {
+      const indexValue = indexByDate.get(point.date);
+      return typeof indexValue === "number"
+        ? { date: point.date, sectorRaw: point.value, indexRaw: indexValue }
+        : null;
+    })
+    .filter((point): point is { date: string; sectorRaw: number; indexRaw: number } => Boolean(point));
+
+  const base = paired.find((point) => point.sectorRaw > 0 && point.indexRaw > 0);
+  if (!base) return [];
+
+  return paired.map((point) => ({
+    ...point,
+    sector: (point.sectorRaw / base.sectorRaw) * 100,
+    index: (point.indexRaw / base.indexRaw) * 100,
+  }));
+}
+
+function comparisonChange(data: ComparisonPoint[], key: "sector" | "index"): number | null {
+  if (data.length < 2) return null;
+  const first = data[0][key];
+  const last = data[data.length - 1][key];
   return first ? (last / first - 1) * 100 : null;
 }
 
-/** One sector's expanded panel: sub-index chart + the companies inside it. */
+function formatChange(value: number | null): string {
+  if (value == null) return "—";
+  return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function ComparisonSparkline({
+  data,
+  color,
+  compact = false,
+}: {
+  data: ComparisonPoint[];
+  color: string;
+  compact?: boolean;
+}) {
+  if (data.length < 2) return null;
+
+  const width = 400;
+  const height = compact ? 64 : 132;
+  const sectorValues = data.map((point) => point.sector);
+  const indexValues = data.map((point) => point.index);
+  const values = [...sectorValues, ...indexValues];
+  const min = Math.min(...values) * 0.998;
+  const max = Math.max(...values) * 1.002;
+  const range = max - min || 1;
+
+  const pointsFor = (series: number[]) =>
+    series.map((value, index) => {
+      const x = (index / (series.length - 1)) * width;
+      const y = height - ((value - min) / range) * height;
+      return { x, y };
+    });
+
+  const points = pointsFor(sectorValues);
+  const indexPoints = pointsFor(indexValues);
+  const first = points[0];
+  const last = points[points.length - 1];
+  const sectorPath = points
+    .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)},${point.y.toFixed(1)}`)
+    .join(" ");
+  const areaPath = `${sectorPath} L${last.x.toFixed(1)},${height} L${first.x.toFixed(1)},${height} Z`;
+  const indexPath = indexPoints
+    .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)},${point.y.toFixed(1)}`)
+    .join(" ");
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      width="100%"
+      height="100%"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d={areaPath} fill={color} opacity={compact ? 0.12 : 0.16} />
+      <path
+        d={indexPath}
+        fill="none"
+        stroke="rgba(11,15,25,0.42)"
+        strokeWidth={compact ? 1.4 : 1.6}
+        strokeDasharray="5 5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d={sectorPath}
+        fill="none"
+        stroke={color}
+        strokeWidth={compact ? 1.9 : 2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+function SectorLegend({ sector, color }: { sector: Sector; color: string }) {
+  return (
+    <div className="nei-sb-legend" aria-hidden="true">
+      <span>
+        <i style={{ background: color }} />
+        {sector}
+      </span>
+      <span>
+        <i className="is-index" />
+        NEI Top 50
+      </span>
+    </div>
+  );
+}
+
+function SectorTile({
+  comp,
+  series,
+  indexSeries,
+  rank,
+  onOpen,
+}: {
+  comp: SectorCompositionPoint;
+  series: SectorPoint[] | undefined;
+  indexSeries: IndexHistoryPoint[];
+  rank: number;
+  onOpen: () => void;
+}) {
+  const color = SECTOR_CHART_COLORS[comp.sector];
+  const weight = comp.weightPct ?? 0;
+  const comparison = buildComparisonSeries(series, indexSeries);
+  const chg = comparisonChange(comparison, "sector");
+  const isMajor = rank === 0;
+  const isMedium = rank > 0 && rank <= 2;
+  const showChart = isMajor || isMedium;
+  const tileClass = isMajor ? "is-major" : isMedium ? "is-medium" : "is-compact";
+  const label = `${comp.sector}. ${weight.toFixed(1)} percent of the index. ${comp.numCompanies} companies. Open sector detail.`;
+
+  return (
+    <button
+      type="button"
+      className={`nei-sb-tile ${tileClass}`}
+      style={{ "--sector-color": color } as CSSProperties}
+      onClick={onOpen}
+      aria-label={label}
+      aria-expanded={false}
+    >
+      <div className="nei-sb-tile-head">
+        <span className="nei-sb-dot" style={{ background: color }} />
+        <strong>{comp.sector}</strong>
+        <span className="nei-sb-expand" aria-hidden="true" />
+      </div>
+
+      {isMajor ? (
+        <p className="nei-sb-tile-insight">
+          {comp.sector} has the largest contribution to the index.
+        </p>
+      ) : null}
+
+      {showChart ? (
+        <div className="nei-sb-tile-chart">
+          <ComparisonSparkline data={comparison} color={color} compact={isMedium} />
+        </div>
+      ) : null}
+
+      <div className="nei-sb-tile-bottom">
+        <div className="nei-sb-tile-weight nei-mono">
+          {weight.toFixed(1)}
+          <span>% of index</span>
+        </div>
+        <div className="nei-sb-tile-foot">
+          <span className="nei-mono nei-sb-tile-count">{comp.numCompanies} cos</span>
+          <span className={`nei-mono nei-sb-tile-chg ${(chg ?? 0) >= 0 ? "is-pos" : "is-neg"}`}>
+            {formatChange(chg)} · 1Y
+          </span>
+        </div>
+        {showChart ? <SectorLegend sector={comp.sector} color={color} /> : null}
+      </div>
+    </button>
+  );
+}
+
+/** One sector's expanded section panel: comparison chart + companies inside it. */
 function SectorPanel({
   comp,
   series,
+  indexSeries,
   stocks,
   currency,
   onClose,
 }: {
   comp: SectorCompositionPoint;
-  series: { date: string; value: number }[];
+  series: SectorPoint[];
+  indexSeries: IndexHistoryPoint[];
   stocks: StockData[];
   currency: Currency;
   onClose: () => void;
 }) {
-  const closeRef = useRef<HTMLButtonElement | null>(null);
-  const chg = oneYearChange(series);
+  const backRef = useRef<HTMLButtonElement | null>(null);
+  const comparison = useMemo(() => buildComparisonSeries(series, indexSeries), [indexSeries, series]);
+  const sectorChange = comparisonChange(comparison, "sector");
+  const indexChange = comparisonChange(comparison, "index");
   const color = SECTOR_CHART_COLORS[comp.sector];
 
   useEffect(() => {
@@ -65,19 +261,16 @@ function SectorPanel({
       }
     };
     document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.setTimeout(() => closeRef.current?.focus(), 0);
+    window.setTimeout(() => backRef.current?.focus(), 0);
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
     };
   }, [onClose]);
 
   const monthTicks = useMemo(() => {
     const ticks: string[] = [];
     const seen = new Set<string>();
-    for (const p of series) {
+    for (const p of comparison) {
       const m = p.date.slice(0, 7);
       if (!seen.has(m)) {
         seen.add(m);
@@ -85,7 +278,7 @@ function SectorPanel({
       }
     }
     return ticks;
-  }, [series]);
+  }, [comparison]);
 
   const companies = useMemo(
     () =>
@@ -95,39 +288,61 @@ function SectorPanel({
     [stocks, comp.sector]
   );
 
-  const overlay = (
-    <div className="nei-sb-overlay" onClick={onClose}>
-      <div
-        className="nei-sb-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${comp.sector} sector`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button ref={closeRef} type="button" className="nei-sb-close" onClick={onClose} aria-label="Close">
-          ×
+  return (
+    <div
+      className="nei-sb-panel"
+      role="region"
+      aria-label={`${comp.sector} sector detail`}
+      style={{ "--sector-color": color } as CSSProperties}
+    >
+      <div className="nei-sb-panel-head">
+        <button ref={backRef} type="button" className="nei-sb-back" onClick={onClose}>
+          <span aria-hidden="true" />
+          Sectors
         </button>
 
-        <div className="nei-sb-panel-head">
+        <div className="nei-sb-panel-title">
           <span className="nei-sb-dot" style={{ background: color }} />
           <h3 className="nei-heading">{comp.sector}</h3>
-          <div className="nei-sb-panel-meta nei-mono">
-            <span>{(comp.weightPct ?? 0).toFixed(1)}% of index</span>
-            <span>·</span>
-            <span>{comp.numCompanies} companies</span>
-            {chg != null && (
-              <span className={chg >= 0 ? "is-pos" : "is-neg"}>
-                {chg >= 0 ? "+" : ""}
-                {chg.toFixed(1)}% · 1Y
-              </span>
-            )}
-          </div>
         </div>
 
-        <div className="nei-sb-panel-chart">
-          {series.length > 1 ? (
+        <div className="nei-sb-panel-meta">
+          <span>
+            <strong>{(comp.weightPct ?? 0).toFixed(1)}%</strong>
+            of index
+          </span>
+          <span>
+            <strong>{comp.numCompanies}</strong>
+            companies
+          </span>
+          <span>
+            <strong className={(sectorChange ?? 0) >= 0 ? "is-pos" : "is-neg"}>
+              {formatChange(sectorChange)}
+            </strong>
+            sector 1Y
+          </span>
+          <span>
+            <strong className={(indexChange ?? 0) >= 0 ? "is-pos" : "is-neg"}>
+              {formatChange(indexChange)}
+            </strong>
+            NEI 1Y
+          </span>
+        </div>
+      </div>
+
+      <p className="sr-only">
+        The chart compares {comp.sector} to NEI Top 50 over the last year, with both series rebased to the
+        first common point in the selected period.
+      </p>
+
+      <div className="nei-sb-panel-chart">
+        <div className="nei-sb-chart-topline">
+          <span className="nei-mono">1Y performance, rebased</span>
+          <SectorLegend sector={comp.sector} color={color} />
+        </div>
+        {comparison.length > 1 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={series} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+              <LineChart data={comparison} margin={{ top: 12, right: 18, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,15,25,0.06)" vertical={false} />
                 <XAxis
                   dataKey="date"
@@ -145,50 +360,64 @@ function SectorPanel({
                   axisLine={false}
                   tickLine={false}
                   width={50}
-                  tickFormatter={(v: number) => Math.round(v).toLocaleString("en-IN")}
+                  tickFormatter={(v: number) => v.toFixed(0)}
                 />
                 <Tooltip
                   contentStyle={{ background: "#0D1E3A", border: "1px solid rgba(232,235,240,0.12)", borderRadius: 8, fontSize: 12 }}
                   labelStyle={{ color: "rgba(232,235,240,0.55)", fontSize: 11 }}
                   itemStyle={{ color: "#FFFFFF" }}
-                  formatter={(v) => [Math.round(Number(v)).toLocaleString("en-IN"), comp.sector]}
+                  formatter={(v, name) => [
+                    Number(v).toFixed(1),
+                    name === "sector" ? comp.sector : "NEI Top 50",
+                  ]}
                 />
-                <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2.2} dot={false} isAnimationActive={false} />
+                <Line
+                  type="monotone"
+                  dataKey="index"
+                  stroke="rgba(11,15,25,0.48)"
+                  strokeWidth={1.8}
+                  strokeDasharray="6 5"
+                  dot={false}
+                  isAnimationActive={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="sector"
+                  stroke={color}
+                  strokeWidth={2.4}
+                  dot={false}
+                  isAnimationActive={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           ) : (
             <p className="nei-cm-nodata">No sector history available.</p>
           )}
-        </div>
+      </div>
 
-        <div className="nei-sb-companies">
-          <span className="nei-sb-companies-label">Companies in {comp.sector}</span>
-          <ul>
-            {companies.map((c) => {
-              const up = (c.changePct ?? 0) >= 0;
-              return (
-                <li key={c.ticker}>
-                  <div className="nei-sb-co-name">
-                    <CompanyLogo ticker={c.ticker} name={c.name} size={26} />
-                    <span>{c.displayName}</span>
-                  </div>
-                  <span className="nei-mono nei-sb-co-mcap">{formatMarketCap(c.marketCap, currency)}</span>
-                  <span className="nei-mono nei-sb-co-price">{formatPrice(c.price, currency)}</span>
-                  <span className={`nei-mono nei-sb-co-chg ${up ? "is-pos" : "is-neg"}`}>
-                    {formatSignedPercent(c.changePct, 1)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+      <div className="nei-sb-companies">
+        <span className="nei-sb-companies-label">Companies in {comp.sector}</span>
+        <ul>
+          {companies.map((c) => {
+            const up = (c.changePct ?? 0) >= 0;
+            return (
+              <li key={c.ticker}>
+                <div className="nei-sb-co-name">
+                  <CompanyLogo ticker={c.ticker} name={c.name} size={26} />
+                  <span>{c.displayName}</span>
+                </div>
+                <span className="nei-mono nei-sb-co-mcap">{formatMarketCap(c.marketCap, currency)}</span>
+                <span className="nei-mono nei-sb-co-price">{formatPrice(c.price, currency)}</span>
+                <span className={`nei-mono nei-sb-co-chg ${up ? "is-pos" : "is-neg"}`}>
+                  {formatSignedPercent(c.changePct, 1)}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
-
-  // Portal to <body> so the overlay isn't trapped by the section's stacking
-  // context and always covers the page.
-  return createPortal(overlay, document.body);
 }
 
 /** Bento grid of expandable sector tiles (Stripe-style expand-on-demand). */
@@ -202,6 +431,7 @@ export function SectorBento({
   currency: Currency;
 }) {
   const [seriesBySector, setSeriesBySector] = useState<SectorSeries>(new Map());
+  const [indexSeries, setIndexSeries] = useState<IndexHistoryPoint[]>([]);
   const [open, setOpen] = useState<Sector | null>(null);
 
   useEffect(() => {
@@ -210,6 +440,7 @@ export function SectorBento({
       .then((r) => (r.ok ? (r.json() as Promise<IndexHistoryPayload>) : Promise.reject()))
       .then((json) => {
         const map: SectorSeries = new Map();
+        setIndexSeries(json.data ?? []);
         for (const p of (json.sectorData ?? []) as SectorHistoryPoint[]) {
           const arr = map.get(p.sector) ?? [];
           arr.push({ date: p.date, value: p.value });
@@ -241,61 +472,28 @@ export function SectorBento({
 
   return (
     <div className="nei-sb">
-      <div className="nei-sb-grid">
-        {ordered.map((comp) => {
-          const series = seriesBySector.get(comp.sector);
-          const chg = oneYearChange(series);
-          const color = SECTOR_CHART_COLORS[comp.sector];
-          const weight = comp.weightPct ?? 0;
-          return (
-            <button
-              key={comp.sector}
-              type="button"
-              className="nei-sb-tile"
-              onClick={() => setOpen(comp.sector)}
-              aria-label={`Expand ${comp.sector}`}
-            >
-              <div className="nei-sb-tile-head">
-                <span className="nei-sb-dot" style={{ background: color }} />
-                <strong>{comp.sector}</strong>
-                <span className="nei-sb-expand" aria-hidden="true">⤢</span>
-              </div>
-
-              <div className="nei-sb-tile-weight nei-mono">
-                {weight.toFixed(1)}<span>% of index</span>
-              </div>
-              <div className="nei-sb-tile-bar" aria-hidden="true">
-                <span style={{ width: `${weight}%`, background: color }} />
-              </div>
-
-              <div className="nei-sb-tile-foot">
-                <span className="nei-mono nei-sb-tile-count">{comp.numCompanies} cos</span>
-                {chg != null && (
-                  <span className={`nei-mono nei-sb-tile-chg ${chg >= 0 ? "is-pos" : "is-neg"}`}>
-                    {chg >= 0 ? "+" : ""}
-                    {chg.toFixed(1)}% · 1Y
-                  </span>
-                )}
-              </div>
-
-              <div className="nei-sb-tile-spark">
-                {series && series.length > 1 && (
-                  <Sparkline series={series.map((p) => p.value)} height={40} />
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {openComp && (
+      {openComp ? (
         <SectorPanel
           comp={openComp}
           series={seriesBySector.get(openComp.sector) ?? []}
+          indexSeries={indexSeries}
           stocks={stocks}
           currency={currency}
           onClose={() => setOpen(null)}
         />
+      ) : (
+        <div className="nei-sb-grid">
+          {ordered.map((comp, index) => (
+            <SectorTile
+              key={comp.sector}
+              comp={comp}
+              series={seriesBySector.get(comp.sector)}
+              indexSeries={indexSeries}
+              rank={index}
+              onOpen={() => setOpen(comp.sector)}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
