@@ -163,7 +163,7 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
       <p className="nei-hero-copy">
         The NEI Top 50 tracks the top 50 institutionally backed,
         technology-driven Indian companies that have gone public, market-cap
-        weighted into a single index.
+        weighted into a single live index.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">
@@ -277,7 +277,7 @@ function HeroCard({ model }: { model: IndexDashboardModel }) {
           </strong>
         </div>
         <div className="nei-hero-strip-item">
-          <span className="nei-hero-stat-label">Trifecta share</span>
+          <span className="nei-hero-stat-label">Trifecta Capital share</span>
           <strong className="nei-mono">
             {model.trifectaWeightPct !== null ? `${model.trifectaWeightPct.toFixed(1)}%` : "—"}
           </strong>

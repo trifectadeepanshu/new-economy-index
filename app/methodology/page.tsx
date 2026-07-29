@@ -100,6 +100,7 @@ export default function MethodologyPage() {
           performance of the top 50 institutionally backed, technology-driven
           public companies listed on the National Stock Exchange (NSE).
         </p>
+        <div className="nei-doc-meta nei-mono">Version 2 · Effective July 2026</div>
 
         <DocSection n="01" title="Objective">
           <p>

@@ -173,7 +173,7 @@
   }
 
   .nei-hero-title {
-    max-width: 15ch;
+    max-width: 16ch;
     margin: 0 0 28px;
     color: #F2F4F8;
     font-size: clamp(40px, 5.2vw, 68px);

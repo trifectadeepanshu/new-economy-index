@@ -143,13 +143,10 @@ export function DateRangePicker({
     setMonth(startOfMonth(parseISO(parsed)));
     const other = which === "start" ? end : start;
     if (!other) {
-      if (which === "start") {
-        setStart(parsed);
-        setStartText(pretty(parsed));
-      } else {
-        setEnd(parsed);
-        setEndText(pretty(parsed));
-      }
+      // With only one endpoint chosen, treat it as the start.
+      setStart(parsed);
+      setStartText(pretty(parsed));
+      if (which === "end") setEndText("");
       return;
     }
     const both = which === "start" ? [parsed, other] : [other, parsed];
@@ -301,6 +298,7 @@ export function DateRangePicker({
                   type="button"
                   className={cls}
                   disabled={dis}
+                  aria-label={format(d, "d MMMM yyyy")}
                   onMouseEnter={() => start && !end && setHover(dISO)}
                   onClick={() => pick(dISO)}
                 >

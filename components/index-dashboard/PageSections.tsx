@@ -145,6 +145,7 @@ export function SectorSection({
 }
 
 export function DashboardFooter() {
+  const year = new Date().getFullYear();
   return (
     <footer className="nei-footer-v2">
       <TickFrame inset={32} tone="paper" lineLen={36} corner={12} opacity={0.3} padded={false}>
@@ -164,7 +165,7 @@ export function DashboardFooter() {
                 Market data for NSE-listed companies, sourced from public feeds
                 and updated during market hours. The NEI Top 50 is for
                 informational purposes only and does not constitute investment
-                advice. © 2026 Trifecta Capital.
+                advice. © {year} Trifecta Capital.
               </p>
             </div>
             <div className="nei-footer-links">
@@ -185,7 +186,7 @@ export function DashboardFooter() {
             </div>
           </div>
           <div className="nei-footer-bottom">
-            <span>2015 → 2026 →</span>
+            <span>2015 → {year} →</span>
             <span>Gurugram · Mumbai · Bengaluru</span>
           </div>
         </div>
