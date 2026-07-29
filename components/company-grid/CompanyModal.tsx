@@ -313,7 +313,7 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
   // Portal to <body> so the fixed overlay escapes any ancestor stacking
   // context (section frames, transforms) and always sits above the page.
   const overlay = (
-    <div className="nei-cm-overlay" onClick={onClose}>
+    <div className="nei-cm-overlay nei-dark-section-vars" onClick={onClose}>
       <div
         className="nei-cm-panel"
         role="dialog"
