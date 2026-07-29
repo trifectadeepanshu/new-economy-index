@@ -52,4 +52,13 @@ export const LOGO_ASSETS: Record<string, { width: number; height: number }> = {
   TRACXN: { width: 64, height: 64 },
   URBANCO: { width: 64, height: 64 },
   ZAGGLE: { width: 64, height: 64 },
+  AFFLE: { width: 16, height: 16 },
+  ANGELONE: { width: 96, height: 96 },
+  E2E: { width: 32, height: 32 },
+  JUSTDIAL: { width: 16, height: 16 },
+  MATRIMONY: { width: 32, height: 32 },
+  NEPHROPLUS: { width: 16, height: 16 },
+  QUICKHEAL: { width: 24, height: 24 },
+  SMARTWORKS: { width: 30, height: 30 },
+  UNIMECH: { width: 64, height: 64 },
 };

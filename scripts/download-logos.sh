@@ -87,6 +87,15 @@ download NAUKRI     naukri.com
 download NAZARA     nazara.com
 download CARTRADE   cartrade.com
 download SEDEMAC    sedemac.com
+download AFFLE      affle.com
+download ANGELONE   angelone.in
+download E2E        e2enetworks.com
+download JUSTDIAL   justdial.com
+download MATRIMONY  bharatmatrimony.com
+download NEPHROPLUS nephroplus.com
+download QUICKHEAL  quickheal.com
+download SMARTWORKS smartworksoffice.com
+download UNIMECH    unimechaerospace.com
 
 echo ""
 echo "Done. $(ls *.png 2>/dev/null | wc -l) logos downloaded."
