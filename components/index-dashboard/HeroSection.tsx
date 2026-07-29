@@ -161,9 +161,8 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
         <span>in one number.</span>
       </h1>
       <p className="nei-hero-copy">
-        The NEI Top 50 tracks the top 50 institutionally backed,
-        technology-driven Indian companies that have gone public, market-cap
-        weighted into a single live index.
+        The New Economy Index: a live, market-cap weighted view of
+        India&apos;s top 50 VC-backed, tech-enabled publicly listed companies.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">

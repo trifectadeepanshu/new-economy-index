@@ -29,7 +29,6 @@ function IndexDashboardInner() {
       <PerformanceSection
         indexValue={model.indexValue}
         stocks={model.stocks}
-        numCompanies={model.numCompanies}
       />
 
       <SectorSection

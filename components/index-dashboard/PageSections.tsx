@@ -10,7 +10,6 @@ import {
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorBento } from "@/components/index-dashboard/SectorBento";
-import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 
 function ReferenceShell({
   id,
@@ -57,18 +56,16 @@ function ReferenceShell({
 export function PerformanceSection({
   indexValue,
   stocks,
-  numCompanies,
 }: {
   indexValue: number | null;
   stocks: StockData[];
-  numCompanies: number;
 }) {
   return (
     <ReferenceShell
       id="performance"
       eyebrow={{ number: "02", label: "Performance" }}
       title="The NEI Top 50 since day one."
-      copy={`Market-cap weighted across the top ${numCompanies} constituents. Base 1,000 set in December 2020.`}
+      copy="Base 1,000, set in January 2021. Tracked live since."
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
     </ReferenceShell>
@@ -102,11 +99,11 @@ export function ConstituentsSection({
           <SectionEyebrow number="04" label="Inside the Cohort" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
-              The full cohort, laid out.
-              <span> Filter, sort, explore.</span>
+              The full cohort,
+              <span> laid out.</span>
             </h2>
             <p className="nei-index-copy">
-              {numCompanies} companies across {SECTORS.length} sectors. The complete public-market picture of India&apos;s new economy. Names marked with the <PortfolioMark /> are Trifecta Capital portfolio companies.
+              {numCompanies} companies. {SECTORS.length} sectors. The full public-market picture.
             </p>
           </div>
           <div className="nei-index-panel">
@@ -136,8 +133,9 @@ export function SectorSection({
     <ReferenceShell
       id="sectors"
       eyebrow={{ number: "03", label: "Sector Composition" }}
-      title="What is India's new economy actually made of?"
-      copy="Deeper than fintech. Broader than consumer. Constantly evolving. Open any sector for its trend and holdings."
+      title="India's new economy,"
+      mutedTitle="broken down."
+      copy="Deeper than fintech. Broader than consumer. Constantly evolving."
     >
       <SectorBento sectors={sectorComposition} stocks={stocks} currency={currency} />
     </ReferenceShell>
@@ -162,9 +160,8 @@ export function DashboardFooter() {
                 />
               </div>
               <p>
-                Market data for NSE-listed companies, sourced from public feeds
-                and updated during market hours. The NEI Top 50 is for
-                informational purposes only and does not constitute investment
+                Market data sourced from Yahoo Finance, updated during market
+                hours. Provided for informational purposes only; not investment
                 advice. © {year} Trifecta Capital.
               </p>
             </div>
