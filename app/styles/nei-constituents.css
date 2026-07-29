@@ -177,7 +177,7 @@
   .nei-constituent-count {
     margin-left: auto;
     color: var(--nei-muted);
-    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 12px var(--font-inter), ui-monospace, monospace;
     white-space: nowrap;
   }
 
@@ -208,7 +208,7 @@
     padding-bottom: 14px;
     border-top: 0;
     color: var(--nei-muted);
-    font: 700 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 11px var(--font-inter), ui-monospace, monospace;
     text-transform: uppercase;
   }
 
@@ -246,7 +246,7 @@
   .nei-row-number {
     width: 56px;
     color: var(--nei-muted);
-    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 12px var(--font-inter), ui-monospace, monospace;
     text-align: right;
   }
 
@@ -296,7 +296,7 @@
   .nei-company-cell strong {
     display: block;
     color: var(--nei-fg);
-    font: 700 14px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 14px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0.03em;
   }
 
@@ -318,7 +318,7 @@
     color: var(--nei-fg);
     padding: 0;
     text-align: left;
-    font: 700 14px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 14px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0.03em;
     cursor: pointer;
   }
@@ -712,7 +712,7 @@
   .nei-cm-card-label {
     display: block;
     color: rgba(232,235,240,0.45);
-    font: 600 10px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 10px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
@@ -729,7 +729,7 @@
     display: flex;
     gap: 3px;
     color: rgba(232,235,240,0.36);
-    font: 600 8px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 8px var(--font-inter), ui-monospace, monospace;
     line-height: 1.2;
   }
   .nei-cm-bar-labels span {

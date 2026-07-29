@@ -54,7 +54,7 @@
   .nei-reference-chart-label {
     margin-bottom: 6px;
     color: rgba(11,15,25,0.5);
-    font: 700 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 11px var(--font-inter), ui-monospace, monospace;
     text-transform: uppercase;
   }
 
@@ -113,7 +113,7 @@
 
   .nei-sector-row-title span {
     color: rgba(11,15,25,0.45);
-    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 10px var(--font-inter), ui-monospace, monospace;
   }
 
   .nei-sector-row-title strong {
@@ -124,7 +124,7 @@
 
   .nei-sector-row-title em {
     color: rgba(11,15,25,0.45);
-    font: 500 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 500 11px var(--font-inter), ui-monospace, monospace;
     font-style: normal;
     white-space: nowrap;
   }
@@ -188,7 +188,7 @@
     border: 1px solid rgba(11,15,25,0.14);
     background: transparent;
     color: rgba(11,15,25,0.5);
-    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 11px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0.02em;
     cursor: pointer;
     transition: color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
@@ -542,7 +542,7 @@
     display: block;
     margin-bottom: 8px;
     color: rgba(11,15,25,0.5);
-    font: 700 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 11px var(--font-inter), ui-monospace, monospace;
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }

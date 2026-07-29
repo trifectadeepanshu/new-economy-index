@@ -83,7 +83,7 @@ export function ChartCanvas({
             tick={{
               fill: "var(--nei-muted)",
               fontSize: 11,
-              fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+              fontFamily: "var(--font-inter), ui-monospace, monospace",
             }}
             axisLine={false}
             tickLine={false}
@@ -256,7 +256,7 @@ function IndexLine({
             fill: "var(--nei-fg)",
             fontSize: 11,
             fontWeight: 600,
-            fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
+            fontFamily: "var(--font-inter), ui-monospace, monospace",
           }}
         />
       )}

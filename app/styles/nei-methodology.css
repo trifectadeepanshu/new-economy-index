@@ -69,7 +69,7 @@
     display: block;
     margin-bottom: 6px;
     color: rgba(232,235,240,0.5);
-    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 10px var(--font-inter), ui-monospace, monospace;
     text-transform: uppercase;
   }
 
@@ -183,7 +183,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 11px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -224,7 +224,7 @@
     border-radius: 4px;
     background: transparent;
     color: rgba(232,235,240,0.45);
-    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 11px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0.1em;
     cursor: pointer;
     transition: border-color 150ms, color 150ms, background 150ms;
@@ -251,7 +251,7 @@
     justify-content: center;
     height: 100%;
     color: rgba(232,235,240,0.3);
-    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 12px var(--font-inter), ui-monospace, monospace;
   }
 
   /* Right stats column */
@@ -389,7 +389,7 @@
     display: block;
     margin-bottom: 8px;
     color: rgba(232,235,240,0.45);
-    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 10px var(--font-inter), ui-monospace, monospace;
     text-transform: uppercase;
   }
 
@@ -412,7 +412,7 @@
     padding-top: 18px;
     border-top: 1px solid rgba(232,235,240,0.08);
     color: rgba(232,235,240,0.4);
-    font: 600 10px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 10px var(--font-inter), ui-monospace, monospace;
     text-transform: uppercase;
   }
 }

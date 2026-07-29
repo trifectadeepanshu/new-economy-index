@@ -14,7 +14,7 @@
   }
 
   .nei-mono {
-    font-family: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+    font-family: var(--font-inter), ui-monospace, SFMono-Regular, monospace;
     font-variant-numeric: tabular-nums;
   }
 
@@ -76,7 +76,7 @@
   }
 
   .nei-section-eyebrow span:nth-child(3) {
-    font: 500 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 500 11px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }

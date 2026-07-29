@@ -268,7 +268,7 @@
     align-items: center;
     gap: 7px;
     color: rgba(232,235,240,0.55);
-    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 11px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0.13em;
     text-transform: uppercase;
   }
@@ -291,7 +291,7 @@
     flex-shrink: 0;
     padding: 4px 10px;
     border-radius: 999px;
-    font: 600 12px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 12px var(--font-inter), ui-monospace, monospace;
   }
 
   .nei-day-change-pill.is-positive {
@@ -333,7 +333,7 @@
 
   .nei-fx-ticker-label {
     color: rgba(232,235,240,0.66);
-    font: 700 10px var(--font-jetbrains), ui-monospace, monospace;
+    font: 700 10px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0;
     line-height: 1;
   }
@@ -354,7 +354,7 @@
     align-items: center;
     gap: 5px;
     color: rgba(232,235,240,0.46);
-    font: 650 9px var(--font-jetbrains), ui-monospace, monospace;
+    font: 650 9px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0;
     line-height: 1;
     text-transform: uppercase;
@@ -380,7 +380,7 @@
 
   .nei-currency-btn {
     padding: 4px 11px;
-    font: 600 11px var(--font-jetbrains), ui-monospace, monospace;
+    font: 600 11px var(--font-inter), ui-monospace, monospace;
     letter-spacing: 0;
     color: rgba(232,235,240,0.5);
     background: transparent;
@@ -495,7 +495,7 @@
   }
 
   .nei-hero-stat-label {
-    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    font-family: var(--font-inter), ui-monospace, monospace;
     font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -612,7 +612,7 @@
     gap: 10px;
     padding: 0 26px;
     border-right: 1px solid rgba(232,235,240,0.08);
-    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    font-family: var(--font-inter), ui-monospace, monospace;
     font-size: 12px;
     letter-spacing: 0.02em;
     color: rgba(232,235,240,0.78);

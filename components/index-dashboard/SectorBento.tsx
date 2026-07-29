@@ -140,7 +140,7 @@ function SectorPanel({
                 />
                 <YAxis
                   domain={["auto", "auto"]}
-                  tick={{ fontSize: 11, fill: "rgba(11,15,25,0.45)", fontFamily: "var(--font-jetbrains), ui-monospace, monospace" }}
+                  tick={{ fontSize: 11, fill: "rgba(11,15,25,0.45)", fontFamily: "var(--font-inter), ui-monospace, monospace" }}
                   axisLine={false}
                   tickLine={false}
                   width={50}
