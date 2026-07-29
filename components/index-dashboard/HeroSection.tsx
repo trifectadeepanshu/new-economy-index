@@ -151,19 +151,13 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
   return (
     <div className="nei-hero-intro">
       <h1 className="nei-heading nei-hero-title">
-        India&apos;s new <br className="nei-hero-mobile-break" />economy,{" "}
-        <br />
-        <span>
-          tracked in one <br className="nei-hero-mobile-break" />live view.
-        </span>
+        NE 50: India&apos;s new <br className="nei-hero-mobile-break" />economy,{" "}
+        <span>in one number.</span>
       </h1>
       <p className="nei-hero-copy">
-        Trifecta Capital backed many of India&apos;s next generation of
-        businesses before they had a track record. New Economy 50 follows the top
-        {" "}
-        {numCompanies} institutionally backed, technology-driven companies that
-        have now gone public — so you can see how the ecosystem is doing on both
-        an absolute and relative basis.
+        The New Economy 50 tracks the top 50 institutionally backed,
+        technology-driven Indian companies that have gone public, market-cap
+        weighted into a single index.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">
