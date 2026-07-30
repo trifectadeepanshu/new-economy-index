@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 const SPECS: [string, string][] = [
-  ["Index name", "New Economy Index — NEI Top 50"],
+  ["Index name", "New Economy Index Top 50 — NEI Top 50"],
   ["Symbol", "NEI Top 50"],
   ["Base date", "January 2021"],
   ["Base value", "1,000.00"],
@@ -36,7 +36,7 @@ const ELIGIBILITY: [string, string][] = [
   ],
   [
     "Market-cap rank",
-    "Must rank within the Top 50 eligible companies by total full market capitalisation on the review date.",
+    "Must rank within the Top 50 eligible companies by full market capitalisation on the review date.",
   ],
 ];
 
@@ -95,19 +95,17 @@ export default function MethodologyPage() {
           NEI Top 50 <span>methodology &amp; governance</span>
         </h1>
         <p className="nei-doc-lede">
-          The New Economy Index (NEI Top 50) is a rules-based, full
+          The New Economy Index (NEI Top 50) is a full
           market-capitalisation-weighted benchmark tracking the equity
           performance of the top 50 institutionally backed, technology-driven
           public companies listed on the National Stock Exchange (NSE).
         </p>
-        <div className="nei-doc-meta nei-mono">Version 2 · Effective July 2026</div>
 
         <DocSection n="01" title="Objective">
           <p>
             The primary objective of the NEI Top 50 is to provide a transparent,
-            continuous, and representative benchmark capturing the growth and
-            performance of India&apos;s emerging digital and public technology
-            ecosystem.
+            continuous, and representative benchmark capturing performance of
+            India&apos;s emerging digital and public technology ecosystem.
           </p>
         </DocSection>
 
@@ -161,13 +159,13 @@ export default function MethodologyPage() {
           <h3>4.2 Scheduled quarterly review</h3>
           <ul>
             <li>
-              <strong>Selection.</strong> All eligible companies in the new
+              <strong>Selection</strong> — All eligible companies in the new
               economy universe are ranked in descending order by full market
               capitalisation. The top 50 highest-ranked companies form the
               constituent basket for the subsequent quarter.
             </li>
             <li>
-              <strong>Weight reset.</strong> Constituent weights are reset based
+              <strong>Weight reset</strong> — Constituent weights are reset based
               on their closing full market capitalisations on the review date.
             </li>
           </ul>
