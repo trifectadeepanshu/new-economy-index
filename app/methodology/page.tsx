@@ -90,7 +90,6 @@ export default function MethodologyPage() {
       </header>
 
       <main className="nei-doc-main">
-        <div className="nei-doc-eyebrow nei-mono">Our Index Methodology &amp; Governance</div>
         <h1 className="nei-heading nei-doc-title">
           NEI Top 50 <span>methodology &amp; governance</span>
         </h1>
