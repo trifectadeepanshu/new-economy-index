@@ -340,7 +340,19 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
   if (!stock) return null;
   const isPortfolio = stock.isPortfolio;
   const fins = (detail?.financials ?? []).slice(-5);
-  const latest = fins.at(-1);
+  // Most recent quarter that actually has a given metric — so each card shows
+  // the latest *reported* figure (with its quarter label) instead of "—" when
+  // the newest quarter's value hasn't been published yet (e.g. fresh listings).
+  const latestWith = (sel: (point: (typeof fins)[number]) => number | null | undefined) => {
+    for (let i = fins.length - 1; i >= 0; i -= 1) {
+      if (sel(fins[i]) != null) return fins[i];
+    }
+    return undefined;
+  };
+  const revQ = latestWith((f) => f.revenue);
+  const ebitdaQ = latestWith((f) => f.ebitdaMargin);
+  const patQ = latestWith((f) => f.pat);
+  const assetQ = latestWith((f) => f.assetTurnover);
   const bars = (selector: (point: (typeof fins)[number]) => number | null): BarPoint[] =>
     fins.map((point) => ({ label: point.label, value: selector(point) }));
   const up = (stock.changePct ?? 0) >= 0;
@@ -399,11 +411,11 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
 
         <div className="nei-cm-cards">
           <div className="nei-cm-card">
-            <span className="nei-cm-card-label">Revenue{latest?.label ? ` · ${latest.label}` : ""}</span>
-            <strong className="nei-mono">{formatMarketCap(latest?.revenue ?? null, detail?.currency ?? currency)}</strong>
-            {latest?.revenueGrowth != null && (
-              <span className={`nei-cm-card-sub ${latest.revenueGrowth >= 0 ? "is-pos" : "is-neg"}`}>
-                {formatSignedPercent(latest.revenueGrowth, 1)} same qtr YoY
+            <span className="nei-cm-card-label">Revenue{revQ?.label ? ` · ${revQ.label}` : ""}</span>
+            <strong className="nei-mono">{formatMarketCap(revQ?.revenue ?? null, detail?.currency ?? currency)}</strong>
+            {revQ?.revenueGrowth != null && (
+              <span className={`nei-cm-card-sub ${revQ.revenueGrowth >= 0 ? "is-pos" : "is-neg"}`}>
+                {formatSignedPercent(revQ.revenueGrowth, 1)} same qtr YoY
               </span>
             )}
             <MiniBars
@@ -415,8 +427,8 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
 
           <div className="nei-cm-card">
             <span className="nei-cm-card-label">EBITDA margin</span>
-            <strong className="nei-mono">{latest?.ebitdaMargin != null ? `${latest.ebitdaMargin.toFixed(1)}%` : "—"}</strong>
-            <span className="nei-cm-card-sub">{latest?.label ?? "latest quarter"}</span>
+            <strong className="nei-mono">{ebitdaQ?.ebitdaMargin != null ? `${ebitdaQ.ebitdaMargin.toFixed(1)}%` : "—"}</strong>
+            <span className="nei-cm-card-sub">{ebitdaQ?.label ?? "latest quarter"}</span>
             <MiniBars
               label="EBITDA margin"
               points={bars((f) => f.ebitdaMargin)}
@@ -425,9 +437,9 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
           </div>
 
           <div className="nei-cm-card">
-            <span className="nei-cm-card-label">PAT{latest?.label ? ` · ${latest.label}` : ""}</span>
-            <strong className="nei-mono">{formatMarketCap(latest?.pat ?? null, detail?.currency ?? currency)}</strong>
-            {latest?.patMargin != null && <span className="nei-cm-card-sub">{latest.patMargin.toFixed(1)}% margin</span>}
+            <span className="nei-cm-card-label">PAT{patQ?.label ? ` · ${patQ.label}` : ""}</span>
+            <strong className="nei-mono">{formatMarketCap(patQ?.pat ?? null, detail?.currency ?? currency)}</strong>
+            {patQ?.patMargin != null && <span className="nei-cm-card-sub">{patQ.patMargin.toFixed(1)}% margin</span>}
             <MiniBars
               label="PAT"
               points={bars((f) => f.pat)}
@@ -437,7 +449,7 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
 
           <div className="nei-cm-card">
             <span className="nei-cm-card-label">Asset turnover</span>
-            <strong className="nei-mono">{latest?.assetTurnover != null ? `${latest.assetTurnover.toFixed(2)}x` : "—"}</strong>
+            <strong className="nei-mono">{assetQ?.assetTurnover != null ? `${assetQ.assetTurnover.toFixed(2)}x` : "—"}</strong>
             <span className="nei-cm-card-sub">TTM revenue / assets</span>
             <MiniBars
               label="Asset turnover"
