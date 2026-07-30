@@ -162,7 +162,7 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
       </h1>
       <p className="nei-hero-copy">
         The New Economy Index: a live, market-cap weighted view of
-        India&apos;s top 50 VC-backed, tech-enabled publicly listed companies.
+        India&apos;s top 50 institutionally backed, tech-enabled publicly listed companies.
       </p>
       <div className="nei-hero-actions">
         <a className="nei-hero-primary" href="#performance">

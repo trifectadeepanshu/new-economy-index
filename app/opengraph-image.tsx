@@ -51,7 +51,7 @@ export default function OGImage() {
             MARKET-CAP WEIGHTED INDEX
           </div>
           <div style={{ fontSize: 23, fontWeight: 400, color: "rgba(232,235,240,0.62)", marginTop: 30, textAlign: "center", maxWidth: 680, display: "flex" }}>
-            {"India's VC-backed public-market cohort, tracked as one market-cap weighted index."}
+            {"India's institutionally backed public-market cohort, tracked as one market-cap weighted index."}
           </div>
           <div style={{ display: "flex", alignItems: "center", marginTop: 52, gap: 14 }}>
             <div style={{ width: 28, height: 2, background: "rgba(232,235,240,0.35)", display: "flex" }} />
