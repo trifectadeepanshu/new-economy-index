@@ -1255,11 +1255,33 @@
     }
 
     .nei-sb-companies li {
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 6px 12px;
+      grid-template-columns: minmax(0, 1fr) minmax(74px, auto);
+      grid-template-rows: auto auto;
+      gap: 2px 12px;
+      min-height: 64px;
+      padding: 10px 0;
     }
 
     .nei-sb-co-mcap { display: none; }
+
+    .nei-sb-co-name {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+    }
+
+    .nei-sb-co-price {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+      font-size: 14px;
+    }
+
+    .nei-sb-co-chg {
+      grid-column: 2;
+      grid-row: 2;
+      justify-self: end;
+      min-width: 0;
+    }
   }
 
   @media (max-width: 359px) {
