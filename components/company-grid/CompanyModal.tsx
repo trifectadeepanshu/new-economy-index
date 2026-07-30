@@ -204,7 +204,9 @@ function MiniBars({
   format?: (v: number) => string;
 }) {
   const nums = points.map((point) => point.value).filter((v): v is number => v != null);
-  if (!nums.length) return null;
+  // A trajectory needs at least two real points; one lone value isn't a trend,
+  // so hide the bars entirely rather than render mostly-empty placeholders.
+  if (nums.length < 2) return null;
   const max = Math.max(...nums, 0);
   const min = Math.min(...nums, 0);
   const range = max - min || 1;
