@@ -20,7 +20,7 @@ import type {
   SortState,
 } from "@/components/company-grid/types";
 
-const INITIAL_SORT: SortState = { key: "ratio", dir: -1 };
+const INITIAL_SORT: SortState = { key: "marketCap", dir: -1 };
 const MOBILE_CARD_VIEW = "(max-width: 1100px)";
 const INITIAL_CARD_COUNT = 4;
 const EXPANDED_CARD_COUNT = 8;
