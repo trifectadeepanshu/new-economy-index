@@ -209,7 +209,7 @@ export default function MethodologyPage() {
 
         <DocSection n="05" title="Corporate actions & divisor maintenance">
           <p>
-            The index uses a chain-linked divisor methodology to maintain
+            The index uses a divisor methodology to maintain
             continuous historical levels across quarterly reconstitutions, stock
             additions and deletions, and structural corporate events:
           </p>
