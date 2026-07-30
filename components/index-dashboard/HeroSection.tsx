@@ -161,7 +161,7 @@ function HeroIntro({ numCompanies }: { numCompanies: number }) {
         <span>in one number.</span>
       </h1>
       <p className="nei-hero-copy">
-        The New Economy Index: a live, market-cap weighted view of
+        The New Economy Index (NEI): a live, market-cap weighted view of
         India&apos;s top 50 institutionally backed, tech-enabled publicly listed companies.
       </p>
       <div className="nei-hero-actions">
