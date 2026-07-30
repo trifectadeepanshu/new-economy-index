@@ -21,7 +21,7 @@ function ReferenceShell({
 }: {
   id: string;
   eyebrow: { number: string; label: string };
-  title: string;
+  title: ReactNode;
   mutedTitle?: string;
   copy: string;
   children: ReactNode;
@@ -64,7 +64,11 @@ export function PerformanceSection({
     <ReferenceShell
       id="performance"
       eyebrow={{ number: "02", label: "Performance" }}
-      title="The NEI Top 50 since day one."
+      title={
+        <>
+          The NEI Top 50<br />since day one.
+        </>
+      }
       copy="Base 1,000, set in January 2021. Tracked live since."
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
