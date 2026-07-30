@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { DashboardFooter } from "@/components/index-dashboard/PageSections";
+import { MethodologyToc, type TocItem } from "@/components/methodology/MethodologyToc";
 
 export const metadata: Metadata = {
   title: "Index Methodology & Governance | NEI Top 50 | Trifecta Capital",
@@ -40,17 +41,29 @@ const ELIGIBILITY: [string, string][] = [
   ],
 ];
 
+const TOC: TocItem[] = [
+  { id: "objective", n: "01", label: "Objective" },
+  { id: "specifications", n: "02", label: "Index specifications" },
+  { id: "eligibility", n: "03", label: "Eligibility & inclusion" },
+  { id: "rebalancing", n: "04", label: "Rebalancing & review" },
+  { id: "corporate-actions", n: "05", label: "Corporate actions & divisor" },
+  { id: "market-data", n: "06", label: "Market data & settlement" },
+  { id: "governance", n: "07", label: "Governance & policy" },
+];
+
 function DocSection({
+  id,
   n,
   title,
   children,
 }: {
+  id: string;
   n: string;
   title: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="nei-doc-section">
+    <section id={id} className="nei-doc-section">
       <h2 className="nei-heading">
         <span className="nei-doc-section-n nei-mono">{n}</span>
         {title}
@@ -89,7 +102,10 @@ export default function MethodologyPage() {
         </div>
       </header>
 
-      <main className="nei-doc-main">
+      <div className="nei-doc-layout">
+        <MethodologyToc items={TOC} />
+
+        <main className="nei-doc-body">
         <h1 className="nei-heading nei-doc-title">
           NEI Top 50 <span>methodology &amp; governance</span>
         </h1>
@@ -100,7 +116,7 @@ export default function MethodologyPage() {
           public companies listed on the National Stock Exchange (NSE).
         </p>
 
-        <DocSection n="01" title="Objective">
+        <DocSection id="objective" n="01" title="Objective">
           <p>
             The primary objective of the NEI Top 50 is to provide a transparent,
             continuous, and representative benchmark capturing performance of
@@ -108,7 +124,7 @@ export default function MethodologyPage() {
           </p>
         </DocSection>
 
-        <DocSection n="02" title="Index specifications">
+        <DocSection id="specifications" n="02" title="Index specifications">
           <div className="nei-doc-spec">
             {SPECS.map(([k, v]) => (
               <div key={k} className="nei-doc-spec-row">
@@ -119,7 +135,7 @@ export default function MethodologyPage() {
           </div>
         </DocSection>
 
-        <DocSection n="03" title="Eligibility & inclusion criteria">
+        <DocSection id="eligibility" n="03" title="Eligibility & inclusion criteria">
           <p>
             To qualify for inclusion in the NEI universe, a company must satisfy{" "}
             <strong>all</strong> of the following criteria on the official review
@@ -138,7 +154,7 @@ export default function MethodologyPage() {
           </div>
         </DocSection>
 
-        <DocSection n="04" title="Rebalancing & review framework">
+        <DocSection id="rebalancing" n="04" title="Rebalancing & review framework">
           <h3>4.1 Review triggers & schedule</h3>
           <p>
             The index universe, constituent selection, and market-capitalisation
@@ -206,7 +222,7 @@ export default function MethodologyPage() {
           </ul>
         </DocSection>
 
-        <DocSection n="05" title="Corporate actions & divisor maintenance">
+        <DocSection id="corporate-actions" n="05" title="Corporate actions & divisor maintenance">
           <p>
             The index uses a divisor methodology to maintain
             continuous historical levels across quarterly reconstitutions, stock
@@ -255,7 +271,7 @@ export default function MethodologyPage() {
           </ul>
         </DocSection>
 
-        <DocSection n="06" title="Market data, calculation & settlement">
+        <DocSection id="market-data" n="06" title="Market data, calculation & settlement">
           <ul>
             <li>
               <strong>Public data sourcing.</strong> Market data — stock prices,
@@ -279,7 +295,7 @@ export default function MethodologyPage() {
           </ul>
         </DocSection>
 
-        <DocSection n="07" title="Governance & policy updates">
+        <DocSection id="governance" n="07" title="Governance & policy updates">
           <p>
             The index framework is monitored on an ongoing basis and evaluated as
             deemed necessary to reflect evolving market structures, corporate
@@ -294,7 +310,8 @@ export default function MethodologyPage() {
           sell any security. Data is sourced from public feeds and may be delayed
           or subject to error. © {new Date().getFullYear()} Trifecta Capital.
         </p>
-      </main>
+        </main>
+      </div>
 
       <DashboardFooter />
     </div>
