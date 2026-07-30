@@ -17,6 +17,7 @@ import {
   useShortDayLabels,
 } from "@/components/index-chart/data";
 import { formatLabel } from "@/components/index-chart/format";
+import { BENCHMARK_KEYS } from "@/components/index-chart/constants";
 import type { ChartMode, ChartPoint, ChartRow, ComparePoint } from "@/components/index-chart/types";
 
 // The base is the year-end 2020 close; we label it as the Jan 2021 inception
@@ -94,7 +95,15 @@ export function useIndexChartModel({
     if (last.date >= getISTDate()) {
       return [...points.slice(0, -1), { ...last, value: live }];
     }
-    return [...points, { date: "now", label: "Now", value: live }];
+    // Carry the benchmark/portfolio values forward to the "Now" point (their
+    // last close) so every line reaches "Now" together — only the NEI has a
+    // live intraday value; the others are end-of-day.
+    const carried: Partial<Record<BenchmarkKey | "TRIFECTA", number>> = {};
+    for (const key of [...BENCHMARK_KEYS, "TRIFECTA"] as (BenchmarkKey | "TRIFECTA")[]) {
+      const v = last[key];
+      if (typeof v === "number") carried[key] = v;
+    }
+    return [...points, { date: "now", label: "Now", value: live, ...carried }];
   }, [historyData, portfolioData, benchmarks, liveValue, shortDayIndex]);
 
   // Sector sub-indices use the divisor engine; there's no client-side live
