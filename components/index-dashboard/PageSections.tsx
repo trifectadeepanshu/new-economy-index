@@ -173,8 +173,8 @@ export function DashboardFooter() {
               <div>
                 <strong>NEI Top 50</strong>
                 <Link href="/#performance">Performance</Link>
-                <Link href="/#constituents">Constituents</Link>
                 <Link href="/#sectors">Sectors</Link>
+                <Link href="/#constituents">Constituents</Link>
                 <Link href="/methodology">Methodology</Link>
               </div>
               <div>
