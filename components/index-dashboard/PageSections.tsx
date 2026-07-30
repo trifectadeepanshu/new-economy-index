@@ -69,7 +69,7 @@ export function PerformanceSection({
           The NEI Top 50<br />since day one.
         </>
       }
-      copy="Base 1,000, set in January 2021. Tracked live since."
+      copy="Base 1,000 set in January 2021. Tracked live since."
     >
       <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
     </ReferenceShell>
