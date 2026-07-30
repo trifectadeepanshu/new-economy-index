@@ -35,6 +35,8 @@ type ComparisonPoint = {
   indexRaw: number;
 };
 
+const COMPARISON_BASE_VALUE = 1000;
+
 function monthLabel(date: string): string {
   const d = new Date(date);
   return `${d.toLocaleDateString("en-US", { month: "short" })} '${String(d.getUTCFullYear()).slice(2)}`;
@@ -61,8 +63,8 @@ function buildComparisonSeries(
 
   return paired.map((point) => ({
     ...point,
-    sector: (point.sectorRaw / base.sectorRaw) * 100,
-    index: (point.indexRaw / base.indexRaw) * 100,
+    sector: (point.sectorRaw / base.sectorRaw) * COMPARISON_BASE_VALUE,
+    index: (point.indexRaw / base.indexRaw) * COMPARISON_BASE_VALUE,
   }));
 }
 
@@ -76,6 +78,47 @@ function comparisonChange(data: ComparisonPoint[], key: "sector" | "index"): num
 function formatChange(value: number | null): string {
   if (value == null) return "—";
   return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function formatIndexLevel(value: number): string {
+  return Math.round(value).toLocaleString("en-IN");
+}
+
+function chartTickStep(range: number): number {
+  if (range <= 600) return 100;
+  if (range <= 1200) return 200;
+  if (range <= 2500) return 500;
+  return 1000;
+}
+
+function comparisonTicks(data: ComparisonPoint[]): number[] {
+  const values = data
+    .flatMap((point) => [point.sector, point.index])
+    .filter((value) => Number.isFinite(value));
+
+  if (!values.length) return [800, 900, 1000, 1100, 1200];
+
+  const min = Math.min(...values, COMPARISON_BASE_VALUE);
+  const max = Math.max(...values, COMPARISON_BASE_VALUE);
+  const spread = Math.max(max - min, 1);
+  const paddedMin = min - spread * 0.06;
+  const paddedMax = max + spread * 0.06;
+  const step = chartTickStep(paddedMax - paddedMin);
+  let start = Math.floor(paddedMin / step) * step;
+  let end = Math.ceil(paddedMax / step) * step;
+
+  if (end - start < step * 4) {
+    start -= step;
+    end += step;
+  }
+
+  start = Math.max(0, start);
+
+  const ticks: number[] = [];
+  for (let value = start; value <= end; value += step) {
+    ticks.push(value);
+  }
+  return ticks;
 }
 
 function ComparisonSparkline({
@@ -283,6 +326,12 @@ function SectorPanel({
     }
     return ticks;
   }, [comparison]);
+  const yTicks = useMemo(() => comparisonTicks(comparison), [comparison]);
+  const yDomain = useMemo<[number, number]>(() => {
+    const firstTick = yTicks[0] ?? 0;
+    const lastTick = yTicks[yTicks.length - 1] ?? COMPARISON_BASE_VALUE;
+    return [firstTick, lastTick];
+  }, [yTicks]);
 
   const companies = useMemo(
     () =>
@@ -337,13 +386,13 @@ function SectorPanel({
         </div>
 
         <p className="sr-only">
-          The chart compares {comp.sector} to NEI Top 50 over the last year, with both series rebased to the
-          first common point in the selected period.
+          The chart compares {comp.sector} to NEI Top 50 over the last year, with both series rebased to 1,000
+          at the first common point in the selected period.
         </p>
 
         <div className="nei-sb-panel-chart">
           <div className="nei-sb-chart-topline">
-            <span className="nei-mono">1Y performance, rebased</span>
+            <span className="nei-mono">1Y performance, base 1,000</span>
             <SectorLegend sector={comp.sector} color={color} />
           </div>
           {comparison.length > 1 ? (
@@ -361,19 +410,20 @@ function SectorPanel({
                   minTickGap={44}
                 />
                 <YAxis
-                  domain={["auto", "auto"]}
+                  domain={yDomain}
+                  ticks={yTicks}
                   tick={{ fontSize: 11, fill: "rgba(11,15,25,0.45)", fontFamily: "var(--font-inter), ui-monospace, monospace" }}
                   axisLine={false}
                   tickLine={false}
-                  width={50}
-                  tickFormatter={(v: number) => v.toFixed(0)}
+                  width={58}
+                  tickFormatter={formatIndexLevel}
                 />
                 <Tooltip
                   contentStyle={{ background: "#0D1E3A", border: "1px solid rgba(232,235,240,0.12)", borderRadius: 8, fontSize: 12 }}
                   labelStyle={{ color: "rgba(232,235,240,0.55)", fontSize: 11 }}
                   itemStyle={{ color: "#FFFFFF" }}
                   formatter={(v, name) => [
-                    Number(v).toFixed(1),
+                    Number(v).toLocaleString("en-IN", { maximumFractionDigits: 1 }),
                     name === "sector" ? comp.sector : "NEI Top 50",
                   ]}
                 />
