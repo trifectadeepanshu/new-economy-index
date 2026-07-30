@@ -187,10 +187,11 @@ export default function MethodologyPage() {
               institutional-ownership criteria are eligible for immediate entry.
             </li>
             <li>
-              On its official listing day, if a company&apos;s full market
-              capitalisation (at its listing-day closing price) ranks within the
-              top 50 universe, it is added to the index effective at the close of
-              that listing day.
+              If a newly listed New Economy company&apos;s full market
+              capitalisation evaluated at its official IPO Offer Price ranks
+              within the Top 50 universe, it is added to the index effective at
+              the market open of its listing day, using its IPO Offer Price as
+              the base price to capture performance.
             </li>
             <li>
               Upon entry, all constituent weights are recalculated to reflect the
