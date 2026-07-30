@@ -154,7 +154,7 @@ function PriceHistoryChart({
       aria-label="Historical share price chart"
     >
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={series} margin={{ top: 10, right: 0, bottom: 0, left: 0 }}>
+        <AreaChart data={series} margin={{ top: 10, right: 4, bottom: 8, left: 4 }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--nei-pos)" stopOpacity={0.2} />
@@ -165,7 +165,7 @@ function PriceHistoryChart({
             dataKey="date"
             interval="preserveStartEnd"
             minTickGap={44}
-            height={18}
+            height={28}
             axisLine={false}
             tickLine={false}
             tick={<PriceAxisTick first={series[0]?.date} last={series[series.length - 1]?.date} />}
