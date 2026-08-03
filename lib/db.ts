@@ -97,11 +97,6 @@ export type LatestStockSnapshot = LatestStockPrice & {
   date: string;
 };
 
-export type ReferenceStockSnapshot = {
-  date: string;
-  price: number;
-};
-
 export type DivisorState = {
   divisor: number;
   members: LiveMember[];
@@ -883,28 +878,6 @@ export async function getLatestStockSnapshots(): Promise<Record<string, LatestSt
       date: String(row.date),
       price: toNumber(row.close_price),
       changePct: toNullableNumber(row.change_pct),
-    };
-  }
-  return prices;
-}
-
-/** Latest stored close per ticker on or before `date`, used for trailing returns. */
-export async function getStockSnapshotsOnOrBefore(
-  date: string
-): Promise<Record<string, ReferenceStockSnapshot>> {
-  const sql = getSql();
-  const rows = await sql`
-    SELECT DISTINCT ON (ticker) ticker, date::text, close_price::float
-    FROM stock_snapshots
-    WHERE date <= ${date}::date
-    ORDER BY ticker, date DESC
-  `;
-
-  const prices: Record<string, ReferenceStockSnapshot> = {};
-  for (const row of rows) {
-    prices[toTicker(row.ticker)] = {
-      date: String(row.date),
-      price: toNumber(row.close_price),
     };
   }
   return prices;

@@ -20,7 +20,6 @@ import type { IndexDashboardModel } from "@/components/index-dashboard/useIndexD
 const NAV_LINKS = [
   ["Performance", "#performance"],
   ["Sectors", "#sectors"],
-  ["Market Cap", "#market-cap"],
   ["Constituents", "#constituents"],
   ["Methodology", "/methodology"],
 ] as const;

@@ -4,7 +4,6 @@ import { HeroSection, TickerDrift } from "@/components/index-dashboard/HeroSecti
 import {
   ConstituentsSection,
   DashboardFooter,
-  MarketCapSection,
   PerformanceSection,
   SectorSection,
 } from "@/components/index-dashboard/PageSections";
@@ -36,13 +35,6 @@ function IndexDashboardInner() {
         sectorComposition={model.sectorComposition}
         stocks={model.stocks}
         currency={model.currency}
-      />
-
-      <MarketCapSection
-        stocks={model.stocks}
-        isLoading={model.isLoading}
-        currency={model.currency}
-        usdInr={model.usdInr}
       />
 
       <ConstituentsSection

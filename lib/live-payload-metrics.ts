@@ -19,14 +19,6 @@ export function getTrailingYearFromDate(toDate: string) {
   return format(subYears(parseISO(toDate), 1), "yyyy-MM-dd");
 }
 
-export function stockOneYearChangePct(
-  currentPrice: number | null,
-  referencePrice: number | null
-): number | null {
-  if (currentPrice == null || referencePrice == null || referencePrice <= 0) return null;
-  return round((currentPrice / referencePrice - 1) * 100, 2);
-}
-
 export function buildMarketStats(
   stocks: StockData[],
   rangeStats: IndexRangeStats,

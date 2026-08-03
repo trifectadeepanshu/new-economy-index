@@ -10,7 +10,6 @@ import {
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorBento } from "@/components/index-dashboard/SectorBento";
-import { MarketCapStrata } from "@/components/index-dashboard/MarketCapStrata";
 
 function ReferenceShell({
   id,
@@ -101,7 +100,7 @@ export function ConstituentsSection({
         padded={false}
       >
         <div className="nei-index-inner">
-          <SectionEyebrow number="05" label="Inside the Cohort" light />
+          <SectionEyebrow number="04" label="Inside the Cohort" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
               The full cohort,
@@ -147,35 +146,6 @@ export function SectorSection({
   );
 }
 
-export function MarketCapSection({
-  stocks,
-  isLoading,
-  currency,
-  usdInr,
-}: {
-  stocks: StockData[];
-  isLoading: boolean;
-  currency: Currency;
-  usdInr: number | null;
-}) {
-  return (
-    <ReferenceShell
-      id="market-cap"
-      eyebrow={{ number: "04", label: "By Market Cap" }}
-      title="The cohort,"
-      mutedTitle="stratified."
-      copy="Fifty companies, grouped by size so the market-cap curve is visible at a glance."
-    >
-      <MarketCapStrata
-        stocks={stocks}
-        currency={currency}
-        usdInr={usdInr}
-        isLoading={isLoading}
-      />
-    </ReferenceShell>
-  );
-}
-
 export function DashboardFooter() {
   const year = new Date().getFullYear();
   return (
@@ -204,7 +174,6 @@ export function DashboardFooter() {
                 <strong>NEI Top 50</strong>
                 <Link href="/#performance">Performance</Link>
                 <Link href="/#sectors">Sectors</Link>
-                <Link href="/#market-cap">Market Cap</Link>
                 <Link href="/#constituents">Constituents</Link>
                 <Link href="/methodology">Methodology</Link>
               </div>

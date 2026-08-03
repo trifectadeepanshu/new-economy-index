@@ -15,8 +15,6 @@ export type LiveStockPayload = {
   listedDate: string;
   price: number | null;
   changePct: number | null;
-  /** Price return vs the latest stored close on or before the trailing-year date. */
-  oneYearChangePct: number | null;
   marketCap: number | null;
   basePrice: number | null;
   ratio: number | null;

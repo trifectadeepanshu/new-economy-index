@@ -5,7 +5,6 @@ import {
   buildSectorComposition,
   getTrailingYearFromDate,
   staleTickersFor,
-  stockOneYearChangePct,
   stockSnapshotsToPricePoints,
 } from "../lib/live-payload-metrics";
 import type { StockData } from "../lib/index-api";
@@ -20,7 +19,6 @@ function stock(input: Partial<StockData> & Pick<StockData, "ticker" | "sector">)
     listedDate: input.listedDate ?? "2021-01-01",
     price: input.price ?? 100,
     changePct: input.changePct ?? null,
-    oneYearChangePct: input.oneYearChangePct ?? null,
     marketCap: input.marketCap ?? null,
     basePrice: input.basePrice ?? 100,
     ratio: input.ratio ?? 1,
@@ -96,11 +94,4 @@ test("sector composition is market-cap weighted, not listing-count weighted", ()
 
 test("trailing-year helper uses calendar dates", () => {
   assert.equal(getTrailingYearFromDate("2026-07-13"), "2025-07-13");
-});
-
-test("stock one-year return uses current price over trailing-year reference close", () => {
-  assert.equal(stockOneYearChangePct(125, 100), 25);
-  assert.equal(stockOneYearChangePct(75, 100), -25);
-  assert.equal(stockOneYearChangePct(100, 0), null);
-  assert.equal(stockOneYearChangePct(null, 100), null);
 });
