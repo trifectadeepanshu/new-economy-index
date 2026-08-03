@@ -38,18 +38,18 @@ function IndexDashboardInner() {
         currency={model.currency}
       />
 
-      <ConstituentsSection
-        stocks={model.stocks}
-        isLoading={model.isLoading}
-        numCompanies={model.numCompanies}
-        currency={model.currency}
-      />
-
       <MarketCapSection
         stocks={model.stocks}
         isLoading={model.isLoading}
         currency={model.currency}
         usdInr={model.usdInr}
+      />
+
+      <ConstituentsSection
+        stocks={model.stocks}
+        isLoading={model.isLoading}
+        numCompanies={model.numCompanies}
+        currency={model.currency}
       />
 
       <DashboardFooter />

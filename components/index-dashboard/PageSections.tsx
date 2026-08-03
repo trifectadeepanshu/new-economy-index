@@ -101,7 +101,7 @@ export function ConstituentsSection({
         padded={false}
       >
         <div className="nei-index-inner">
-          <SectionEyebrow number="04" label="Inside the Cohort" light />
+          <SectionEyebrow number="05" label="Inside the Cohort" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
               The full cohort,
@@ -161,7 +161,7 @@ export function MarketCapSection({
   return (
     <ReferenceShell
       id="market-cap"
-      eyebrow={{ number: "05", label: "By Market Cap" }}
+      eyebrow={{ number: "04", label: "By Market Cap" }}
       title="The cohort,"
       mutedTitle="stratified."
       copy="Fifty companies, grouped by size so the market-cap curve is visible at a glance."
@@ -204,6 +204,7 @@ export function DashboardFooter() {
                 <strong>NEI Top 50</strong>
                 <Link href="/#performance">Performance</Link>
                 <Link href="/#sectors">Sectors</Link>
+                <Link href="/#market-cap">Market Cap</Link>
                 <Link href="/#constituents">Constituents</Link>
                 <Link href="/methodology">Methodology</Link>
               </div>
