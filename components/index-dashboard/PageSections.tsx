@@ -10,6 +10,7 @@ import {
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorBento } from "@/components/index-dashboard/SectorBento";
+import { MarketCapStrata } from "@/components/index-dashboard/MarketCapStrata";
 
 function ReferenceShell({
   id,
@@ -142,6 +143,35 @@ export function SectorSection({
       copy="Deeper than fintech. Broader than consumer. Constantly evolving."
     >
       <SectorBento sectors={sectorComposition} stocks={stocks} currency={currency} />
+    </ReferenceShell>
+  );
+}
+
+export function MarketCapSection({
+  stocks,
+  isLoading,
+  currency,
+  usdInr,
+}: {
+  stocks: StockData[];
+  isLoading: boolean;
+  currency: Currency;
+  usdInr: number | null;
+}) {
+  return (
+    <ReferenceShell
+      id="market-cap"
+      eyebrow={{ number: "05", label: "By Market Cap" }}
+      title="The cohort,"
+      mutedTitle="stratified."
+      copy="Fifty companies, grouped by size so the market-cap curve is visible at a glance."
+    >
+      <MarketCapStrata
+        stocks={stocks}
+        currency={currency}
+        usdInr={usdInr}
+        isLoading={isLoading}
+      />
     </ReferenceShell>
   );
 }
