@@ -220,7 +220,7 @@
   }
 
   .nei-mcap-row {
-    --bucket-color: #26336F;
+    --bucket-color: #172C54;
     display: grid;
     grid-template-columns: minmax(190px, 0.9fr) minmax(90px, 120px) minmax(230px, 300px) minmax(360px, 1.65fr);
     align-items: center;
@@ -230,12 +230,13 @@
     border-bottom: 1px solid rgba(11,15,25,0.08);
   }
 
-  .nei-mcap-row:nth-child(1) { --bucket-color: #26336F; }
-  .nei-mcap-row:nth-child(2) { --bucket-color: #4F63D7; }
-  .nei-mcap-row:nth-child(3) { --bucket-color: #7B5AD1; }
-  .nei-mcap-row:nth-child(4) { --bucket-color: #1C9BC7; }
-  .nei-mcap-row:nth-child(5) { --bucket-color: #12A386; }
-  .nei-mcap-row:nth-child(6) { --bucket-color: #707A8C; }
+  /* Monochromatic navy → slate ramp: darkest = largest cap. */
+  .nei-mcap-row:nth-child(1) { --bucket-color: #172C54; }
+  .nei-mcap-row:nth-child(2) { --bucket-color: #294B7E; }
+  .nei-mcap-row:nth-child(3) { --bucket-color: #3D63A0; }
+  .nei-mcap-row:nth-child(4) { --bucket-color: #5E7EB2; }
+  .nei-mcap-row:nth-child(5) { --bucket-color: #8A9AB8; }
+  .nei-mcap-row:nth-child(6) { --bucket-color: #AEB7C6; }
 
   .nei-mcap-row-intro {
     display: flex;
@@ -255,10 +256,9 @@
   .nei-mcap-row-intro h3 {
     margin: 0;
     color: #0B0F19;
-    font-size: 22px;
-    font-weight: 700;
+    font: 600 21px var(--font-sora), var(--font-inter), system-ui, sans-serif;
     line-height: 1.05;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
   }
 
   .nei-mcap-row-intro p {

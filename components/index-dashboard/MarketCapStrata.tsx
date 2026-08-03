@@ -49,11 +49,9 @@ function isInBucket(valueUsdB: number, bucket: BucketDef) {
   return true;
 }
 
-function logoSize(stock: RankedStock, maxUsd: number) {
-  if (maxUsd <= 0) return 38;
-  const scaled = Math.sqrt(stock.marketCapUsd / maxUsd);
-  return Math.round(34 + scaled * 24);
-}
+// Uniform logo size — the bucket weight bars carry the size curve, so a clean
+// grid of equal logos reads better than market-cap-scaled ones.
+const LOGO_SIZE = 40;
 
 function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
@@ -85,7 +83,7 @@ export function MarketCapStrata({
   isLoading: boolean;
 }) {
   const [selected, setSelected] = useState<StockData | null>(null);
-  const { buckets, maxUsd, totalMarketCap, validCount } = useMemo(() => {
+  const { buckets, totalMarketCap, validCount } = useMemo(() => {
     const ranked = stocks
       .map((stock): RankedStock | null => {
         const marketCapUsd = stockMarketCapUsd(stock, currency, usdInr);
@@ -113,7 +111,6 @@ export function MarketCapStrata({
 
     return {
       buckets: rows,
-      maxUsd: ranked[0]?.marketCapUsd ?? 0,
       totalMarketCap: total,
       validCount: ranked.length,
     };
@@ -173,7 +170,7 @@ export function MarketCapStrata({
                 {bucket.stocks.map((stock) => {
                   const sectorColor = SECTOR_CHART_COLORS[stock.sector];
                   const up = (stock.changePct ?? 0) >= 0;
-                  const size = logoSize(stock, maxUsd);
+                  const size = LOGO_SIZE;
                   const label = `${stock.displayName}, ${stock.sector}, ${formatMarketCap(
                     stock.marketCap,
                     currency
