@@ -1,9 +1,7 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
-import { SECTORS, type Sector } from "@/lib/companies";
 import type { Currency, StockData } from "@/lib/index-api";
-import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import { CompanyModal } from "@/components/company-grid/CompanyModal";
 import { formatMarketCap, formatSignedPercent } from "@/components/company-grid/format";
@@ -191,7 +189,6 @@ export function MarketCapStrata({
 
               <div className="nei-mcap-logos" aria-label={`${bucket.label} companies`}>
                 {bucket.stocks.map((stock) => {
-                  const sectorColor = SECTOR_CHART_COLORS[stock.sector];
                   const up = (stock.changePct ?? 0) >= 0;
                   const size = LOGO_SIZE;
                   const label = `${stock.displayName}, ${stock.sector}, ${formatMarketCap(
@@ -205,7 +202,6 @@ export function MarketCapStrata({
                       key={stock.ticker}
                       className="nei-mcap-logo-button"
                       style={{
-                        "--sector-color": sectorColor,
                         "--logo-button-size": `${Math.max(44, size + 8)}px`,
                       } as CSSProperties}
                       onClick={() => setSelected(stock)}
@@ -227,16 +223,6 @@ export function MarketCapStrata({
             </section>
           );
         })}
-      </div>
-
-      <div className="nei-mcap-legend" aria-label="Sector legend">
-        <span className="nei-mono">Logo ring = sector</span>
-        {SECTORS.map((sector: Sector) => (
-          <span key={sector}>
-            <i style={{ background: SECTOR_CHART_COLORS[sector] }} />
-            {sector}
-          </span>
-        ))}
       </div>
 
       <p className="sr-only">

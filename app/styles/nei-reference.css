@@ -384,7 +384,6 @@
   }
 
   .nei-mcap-logo-button {
-    --sector-color: #2B62C4;
     --logo-button-size: 48px;
     position: relative;
     display: inline-flex;
@@ -402,18 +401,14 @@
   }
 
   .nei-mcap-logo-button .nei-company-logo-tile {
-    box-shadow:
-      0 0 0 2px color-mix(in oklab, var(--sector-color) 82%, #FFFFFF),
-      0 8px 18px rgba(11,15,25,0.08);
+    box-shadow: 0 6px 16px rgba(11,15,25,0.08);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   .nei-mcap-logo-button:hover .nei-company-logo-tile,
   .nei-mcap-logo-button:focus-visible .nei-company-logo-tile {
     transform: translateY(-2px);
-    box-shadow:
-      0 0 0 3px color-mix(in oklab, var(--sector-color) 84%, #FFFFFF),
-      0 12px 26px rgba(11,15,25,0.16);
+    box-shadow: 0 12px 26px rgba(11,15,25,0.16);
   }
 
   .nei-mcap-logo-button:focus-visible {
@@ -470,38 +465,6 @@
   .nei-mcap-logo-button:focus-visible .nei-mcap-tooltip {
     opacity: 1;
     transform: translate(-50%, 0);
-  }
-
-  .nei-mcap-legend {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px 16px;
-    margin-top: 24px;
-    padding-top: 18px;
-    border-top: 1px solid rgba(11,15,25,0.08);
-    color: rgba(11,15,25,0.58);
-    font: 600 12px var(--font-inter), system-ui, sans-serif;
-  }
-
-  .nei-mcap-legend .nei-mono {
-    color: rgba(11,15,25,0.45);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .nei-mcap-legend span:not(.nei-mono) {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .nei-mcap-legend i {
-    width: 9px;
-    height: 9px;
-    flex: 0 0 auto;
-    border-radius: 999px;
   }
 
   .nei-mcap-empty {
@@ -659,11 +622,6 @@
 
     .nei-mcap-tooltip {
       display: none;
-    }
-
-    .nei-mcap-legend {
-      gap: 8px 12px;
-      font-size: 11px;
     }
   }
 
