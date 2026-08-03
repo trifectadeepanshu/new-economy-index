@@ -25,6 +25,7 @@ type BucketRow = BucketDef & {
   stocks: RankedStock[];
   marketCap: number;
   weightPct: number;
+  avgOneYearChangePct: number | null;
 };
 
 const BUCKETS: BucketDef[] = [
@@ -55,6 +56,14 @@ const LOGO_SIZE = 40;
 
 function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
+}
+
+function averageOneYearChange(stocks: RankedStock[]) {
+  const values = stocks
+    .map((stock) => stock.oneYearChangePct)
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  if (!values.length) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function MarketCapSkeleton() {
@@ -106,6 +115,7 @@ export function MarketCapStrata({
         stocks: bucketStocks,
         marketCap,
         weightPct: total > 0 ? (marketCap / total) * 100 : 0,
+        avgOneYearChangePct: averageOneYearChange(bucketStocks),
       };
     });
 
@@ -164,6 +174,19 @@ export function MarketCapStrata({
                 <span className="nei-mcap-track" aria-hidden="true">
                   <i />
                 </span>
+              </div>
+
+              <div
+                className={`nei-mcap-return ${
+                  bucket.avgOneYearChangePct === null
+                    ? "is-empty"
+                    : bucket.avgOneYearChangePct < 0
+                      ? "is-negative"
+                      : "is-positive"
+                }`}
+              >
+                <strong className="nei-mono">{formatSignedPercent(bucket.avgOneYearChangePct, 1)}</strong>
+                <span className="nei-mono">Avg · 1Y</span>
               </div>
 
               <div className="nei-mcap-logos" aria-label={`${bucket.label} companies`}>
