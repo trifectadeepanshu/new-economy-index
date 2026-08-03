@@ -612,6 +612,8 @@
     background: rgba(6, 12, 26, 0.72);
     backdrop-filter: blur(4px);
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .nei-cm-panel {

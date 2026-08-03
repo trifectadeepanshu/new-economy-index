@@ -6,6 +6,10 @@
     position: relative;
   }
 
+  .nei-reference-section:has(.nei-dp-pop) {
+    z-index: 1300;
+  }
+
   .nei-reference-frame {
     width: min(100%, 1480px);
     margin: 0 auto;
@@ -761,6 +765,10 @@
     display: inline-flex;
   }
 
+  .nei-dp-scrim {
+    display: none;
+  }
+
   .nei-dp-trigger {
     display: inline-flex;
     align-items: center;
@@ -1403,6 +1411,7 @@
     background: rgba(11,15,25,0.52);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
+    overscroll-behavior: contain;
     animation: nei-sb-fade 0.16s ease-out;
   }
 
@@ -1623,7 +1632,13 @@
   @media (max-width: 720px) {
     .nei-sb-overlay {
       align-items: flex-start;
-      padding: 12px;
+      overflow-y: auto;
+      padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+      -webkit-overflow-scrolling: touch;
     }
 
     .nei-sb-grid {
@@ -1660,15 +1675,17 @@
     }
 
     .nei-sb-panel {
-      max-height: calc(100dvh - 24px);
+      width: 100%;
+      max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      box-sizing: border-box;
       padding: 18px 14px 16px;
     }
 
     .nei-sb-close {
-      top: 14px;
-      right: 14px;
-      width: 32px;
-      height: 32px;
+      top: 10px;
+      right: 10px;
+      width: 44px;
+      height: 44px;
     }
 
     .nei-sb-panel-head {

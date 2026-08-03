@@ -66,19 +66,29 @@ export function DateRangePicker({
   const [hover, setHover] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
-  // Close on outside click / Escape.
+  // Close on outside click / Escape. On phones the picker behaves like a
+  // bottom sheet, so lock the page underneath while it is open.
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
+    const onDown = (e: PointerEvent) => {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
-    document.addEventListener("mousedown", onDown);
+    const mobileQuery = window.matchMedia("(max-width: 640px)");
+    const prevOverflow = document.body.style.overflow;
+    const syncScrollLock = () => {
+      document.body.style.overflow = mobileQuery.matches ? "hidden" : prevOverflow;
+    };
+    syncScrollLock();
+    mobileQuery.addEventListener("change", syncScrollLock);
+    document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onDown);
+      mobileQuery.removeEventListener("change", syncScrollLock);
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -185,7 +195,15 @@ export function DateRangePicker({
       </button>
 
       {open && (
-        <div className="nei-dp-pop" role="dialog" aria-label="Select date range">
+        <>
+          <button
+            type="button"
+            className="nei-dp-scrim"
+            onClick={() => setOpen(false)}
+            aria-label="Close date picker"
+            tabIndex={-1}
+          />
+          <div className="nei-dp-pop" role="dialog" aria-label="Select date range">
           <div className="nei-dp-endpoints">
             <label className={`nei-dp-endpoint${!end ? " is-active" : ""}`}>
               <span>Start</span>
@@ -311,7 +329,8 @@ export function DateRangePicker({
           <div className="nei-dp-hint">
             {start && !end ? "Pick an end date, or type it above" : "Pick or type a start date"}
           </div>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -515,6 +515,7 @@
   .nei-reference-chart .nei-chart-controls {
     display: grid;
     grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .nei-reference-chart .nei-segmented-control {
@@ -1101,18 +1102,61 @@
     min-height: 44px;
   }
 
+  .nei-dp-trigger-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nei-dp-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1199;
+    display: block;
+    border: 0;
+    padding: 0;
+    background: rgba(11,15,25,0.32);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
   .nei-dp-pop {
     position: fixed;
-    inset: auto 12px max(12px, env(safe-area-inset-bottom)) 12px;
+    inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
     z-index: 1200;
     width: auto;
-    max-height: min(78dvh, 520px);
-    overflow: auto;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     border-radius: 12px;
   }
 
   .nei-dp-endpoints {
     gap: 8px;
+  }
+
+  .nei-dp-selects {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .nei-dp-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .nei-dp-nav {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+  }
+
+  .nei-dp-day {
+    height: 38px;
+    min-height: 38px;
   }
 
   .nei-index-section {
@@ -1173,12 +1217,15 @@
   .nei-cm-overlay {
     align-items: flex-end;
     padding: 0;
+    overflow-y: hidden;
   }
 
   .nei-cm-panel {
     max-width: none;
-    max-height: 94dvh;
+    max-height: calc(100dvh - 12px - env(safe-area-inset-top));
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     border-right: 0;
     border-bottom: 0;
     border-left: 0;
@@ -1318,6 +1365,19 @@
   .nei-series-cards,
   .nei-cm-cards {
     grid-template-columns: 1fr;
+  }
+
+  .nei-dp-pop {
+    padding: 12px 10px;
+  }
+
+  .nei-dp-endpoints {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .nei-dp-endpoints-arrow {
+    display: none;
   }
 }
 
