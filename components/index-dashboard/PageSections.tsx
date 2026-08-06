@@ -10,6 +10,7 @@ import {
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
 import { SectorBento } from "@/components/index-dashboard/SectorBento";
+import { MarketCapStrata } from "@/components/index-dashboard/MarketCapStrata";
 
 function ReferenceShell({
   id,
@@ -21,9 +22,9 @@ function ReferenceShell({
 }: {
   id: string;
   eyebrow: { number: string; label: string };
-  title: ReactNode;
+  title?: ReactNode;
   mutedTitle?: string;
-  copy: string;
+  copy?: string;
   children: ReactNode;
 }) {
   return (
@@ -39,13 +40,15 @@ function ReferenceShell({
       >
         <div className="nei-reference-inner">
           <SectionEyebrow number={eyebrow.number} label={eyebrow.label} />
-          <div className="nei-reference-header">
-            <h2 className="nei-heading nei-reference-title">
-              {title}
-              {mutedTitle ? <span> {mutedTitle}</span> : null}
-            </h2>
-            <p className="nei-reference-copy">{copy}</p>
-          </div>
+          {title ? (
+            <div className="nei-reference-header">
+              <h2 className="nei-heading nei-reference-title">
+                {title}
+                {mutedTitle ? <span> {mutedTitle}</span> : null}
+              </h2>
+              {copy ? <p className="nei-reference-copy">{copy}</p> : null}
+            </div>
+          ) : null}
           {children}
         </div>
       </TickFrame>
@@ -61,17 +64,13 @@ export function PerformanceSection({
   stocks: StockData[];
 }) {
   return (
-    <ReferenceShell
-      id="performance"
-      eyebrow={{ number: "02", label: "Performance" }}
-      title={
-        <>
-          The NEI Top 50<br />since day one.
-        </>
-      }
-      copy="Base 1,000 set in January 2021. Tracked live since."
-    >
-      <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
+    <ReferenceShell id="performance" eyebrow={{ number: "02", label: "Performance" }}>
+      <IndexChart
+        liveValue={indexValue}
+        stocks={stocks}
+        variant="reference"
+        heading="The NEI Top 50 since day one."
+      />
     </ReferenceShell>
   );
 }
@@ -100,7 +99,7 @@ export function ConstituentsSection({
         padded={false}
       >
         <div className="nei-index-inner">
-          <SectionEyebrow number="04" label="Inside the Cohort" light />
+          <SectionEyebrow number="05" label="Inside the Cohort" light />
           <div className="nei-index-header">
             <h2 className="nei-heading nei-index-title">
               The full cohort,
@@ -146,6 +145,35 @@ export function SectorSection({
   );
 }
 
+export function MarketCapSection({
+  stocks,
+  isLoading,
+  currency,
+  usdInr,
+}: {
+  stocks: StockData[];
+  isLoading: boolean;
+  currency: Currency;
+  usdInr: number | null;
+}) {
+  return (
+    <ReferenceShell
+      id="market-cap"
+      eyebrow={{ number: "04", label: "By Market Cap" }}
+      title="The cohort,"
+      mutedTitle="stratified."
+      copy="Fifty companies, grouped by size so the market-cap curve is visible at a glance."
+    >
+      <MarketCapStrata
+        stocks={stocks}
+        currency={currency}
+        usdInr={usdInr}
+        isLoading={isLoading}
+      />
+    </ReferenceShell>
+  );
+}
+
 export function DashboardFooter() {
   const year = new Date().getFullYear();
   return (
@@ -174,6 +202,7 @@ export function DashboardFooter() {
                 <strong>NEI Top 50</strong>
                 <Link href="/#performance">Performance</Link>
                 <Link href="/#sectors">Sectors</Link>
+                <Link href="/#market-cap">Market Cap</Link>
                 <Link href="/#constituents">Constituents</Link>
                 <Link href="/methodology">Methodology</Link>
               </div>

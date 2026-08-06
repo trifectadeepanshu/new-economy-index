@@ -11,6 +11,8 @@ import {
   getLiveIndexState,
   getReferenceIndexClose,
   getSharesMap,
+  getStockSnapshotsOnOrBefore,
+  type ReferenceStockSnapshot,
   type LatestStockSnapshot,
 } from "@/lib/db";
 import type {
@@ -30,6 +32,7 @@ import {
   buildSectorComposition,
   getTrailingYearFromDate,
   staleTickersFor,
+  stockOneYearChangePct,
   stockSnapshotsToPricePoints,
   type PricePoint,
 } from "@/lib/live-payload-metrics";
@@ -57,6 +60,7 @@ function ensureSchemaOnce() {
 function buildStocks(
   companies: Company[],
   prices: Record<string, PricePoint | undefined>,
+  trailingYearPrices: Record<string, ReferenceStockSnapshot | undefined>,
   basePrices: Record<string, number>,
   shares: Map<string, number>,
   usdInr: number | null
@@ -67,6 +71,7 @@ function buildStocks(
     const current = prices[ticker];
     const basePriceInr = basePrices[ticker] ?? null;
     const priceInr = current?.price ?? null;
+    const trailingYearPriceInr = trailingYearPrices[ticker]?.price ?? null;
     const sh = shares.get(ticker);
     const marketCapInr = priceInr != null && sh != null ? priceInr * sh : null;
 
@@ -79,6 +84,7 @@ function buildStocks(
       listedDate,
       price: conv(priceInr),
       changePct: current?.changePct ?? null,
+      oneYearChangePct: stockOneYearChangePct(priceInr, trailingYearPriceInr),
       marketCap: conv(marketCapInr),
       basePrice: conv(basePriceInr),
       ratio: priceRatio(priceInr, basePriceInr), // unitless — FX cancels
@@ -200,6 +206,7 @@ export async function GET(req: NextRequest) {
       liveState,
       prevClose,
       latestClose,
+      trailingYearPrices,
       fx,
       rangeStats,
     ] = await Promise.all([
@@ -209,6 +216,7 @@ export async function GET(req: NextRequest) {
       getLiveIndexState(),
       getReferenceIndexClose(today),
       getLatestStockSnapshots(),
+      getStockSnapshotsOnOrBefore(trailingYearFromDate),
       getFxRates(),
       getIndexRangeStats(trailingYearFromDate, today),
     ]);
@@ -241,7 +249,14 @@ export async function GET(req: NextRequest) {
     // Show only the index constituents (current top-50), not the full universe.
     const indexTickers = new Set(liveState.members.map((m) => m.ticker));
     const constituents = active.filter((c) => indexTickers.has(c.ticker));
-    const stocks = buildStocks(constituents, merged, basePrices, latestShares(shares), usd ? usdInr : null);
+    const stocks = buildStocks(
+      constituents,
+      merged,
+      trailingYearPrices,
+      basePrices,
+      latestShares(shares),
+      usd ? usdInr : null
+    );
     const tickerTape = buildTickerTape(active, merged, usd ? usdInr : null);
 
     // Extend the divisor chain with live prices. Quote completeness is checked
@@ -293,10 +308,11 @@ export async function GET(req: NextRequest) {
 
   // Fallback: serve last known data from DB
   try {
-    const [snapshot, latestClose, basePrices, shares, liveState, fx, rangeStats] =
+    const [snapshot, latestClose, trailingYearPrices, basePrices, shares, liveState, fx, rangeStats] =
       await Promise.all([
         getLatestIndexSnapshot(),
         getLatestStockSnapshots(),
+        getStockSnapshotsOnOrBefore(trailingYearFromDate),
         getEarliestPricesPerTicker(),
         getSharesMap(),
         getLiveIndexState(),
@@ -310,7 +326,14 @@ export async function GET(req: NextRequest) {
     // Show only the index constituents (current top-50), not the full universe.
     const indexTickers = new Set(liveState?.members.map((m) => m.ticker) ?? active.map((c) => c.ticker));
     const constituents = active.filter((c) => indexTickers.has(c.ticker));
-    const stocks = buildStocks(constituents, latestPrices, basePrices, latestShares(shares), usd ? usdInr : null);
+    const stocks = buildStocks(
+      constituents,
+      latestPrices,
+      trailingYearPrices,
+      basePrices,
+      latestShares(shares),
+      usd ? usdInr : null
+    );
     const tickerTape = buildTickerTape(active, latestPrices, usd ? usdInr : null);
 
     const closes = new Map<string, number>(

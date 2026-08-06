@@ -57,11 +57,11 @@ export function ChartCanvas({
             <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
               <stop
                 offset="0%"
-                style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.12 }}
+                style={{ stopColor: "var(--nei-fg)", stopOpacity: 0.08 }}
               />
               <stop
                 offset="100%"
-                style={{ stopColor: "var(--nei-accent)", stopOpacity: 0.01 }}
+                style={{ stopColor: "var(--nei-fg)", stopOpacity: 0.01 }}
               />
             </linearGradient>
           </defs>

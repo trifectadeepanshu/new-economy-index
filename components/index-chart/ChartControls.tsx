@@ -80,6 +80,51 @@ export function ChartState({
   return <div className={`nei-chart-state is-${tone}`}>{children}</div>;
 }
 
+/** Range segmented control (1W/1M/1Y/Max/Custom) + the custom date picker. */
+export function RangeControl({
+  isReference,
+  rangeKey,
+  onRangeKeyChange,
+  customRange,
+  onCustomRangeChange,
+  minDate,
+  maxDate,
+}: {
+  isReference: boolean;
+  rangeKey: RangeKey;
+  onRangeKeyChange: (key: RangeKey) => void;
+  customRange: CustomRange | null;
+  onCustomRangeChange: (next: CustomRange) => void;
+  minDate: string;
+  maxDate: string;
+}) {
+  return (
+    <div className="nei-chart-controls">
+      <div className="nei-segmented-control" role="group" aria-label="Date range">
+        {RANGE_OPTIONS.map((option) => (
+          <ControlButton
+            key={option.key}
+            active={rangeKey === option.key}
+            tone={isReference ? "ink" : "default"}
+            onClick={() => onRangeKeyChange(option.key)}
+          >
+            {option.label}
+          </ControlButton>
+        ))}
+      </div>
+
+      {rangeKey === "CUSTOM" && (
+        <DateRangePicker
+          value={customRange}
+          min={minDate}
+          max={maxDate}
+          onChange={onCustomRangeChange}
+        />
+      )}
+    </div>
+  );
+}
+
 export function ChartToolbar({
   isReference,
   latestPoint,
@@ -131,29 +176,15 @@ export function ChartToolbar({
         </div>
       )}
 
-      <div className="nei-chart-controls">
-        <div className="nei-segmented-control" role="group" aria-label="Date range">
-          {RANGE_OPTIONS.map((option) => (
-            <ControlButton
-              key={option.key}
-              active={rangeKey === option.key}
-              tone={isReference ? "ink" : "default"}
-              onClick={() => onRangeKeyChange(option.key)}
-            >
-              {option.label}
-            </ControlButton>
-          ))}
-        </div>
-
-        {rangeKey === "CUSTOM" && (
-          <DateRangePicker
-            value={customRange}
-            min={minDate}
-            max={maxDate}
-            onChange={onCustomRangeChange}
-          />
-        )}
-      </div>
+      <RangeControl
+        isReference={isReference}
+        rangeKey={rangeKey}
+        onRangeKeyChange={onRangeKeyChange}
+        customRange={customRange}
+        onCustomRangeChange={onCustomRangeChange}
+        minDate={minDate}
+        maxDate={maxDate}
+      />
     </div>
   );
 }
