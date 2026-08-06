@@ -94,6 +94,13 @@ export function MarketCapStrata({
   isLoading: boolean;
 }) {
   const [selected, setSelected] = useState<StockData | null>(null);
+  // Re-resolve against the live `stocks` prop every render so an open modal
+  // keeps tracking its company's price/change as the dashboard's 30s poll
+  // refreshes `stocks`, instead of showing the frozen object captured at
+  // click time.
+  const liveSelected = selected
+    ? (stocks.find((s) => s.ticker === selected.ticker) ?? selected)
+    : null;
   const [expandedBuckets, setExpandedBuckets] = useState<Set<string>>(new Set());
 
   function toggleBucketExpanded(key: string) {
@@ -265,7 +272,7 @@ export function MarketCapStrata({
         currency.
       </p>
 
-      <CompanyModal stock={selected} onClose={() => setSelected(null)} />
+      <CompanyModal stock={liveSelected} onClose={() => setSelected(null)} />
     </div>
   );
 }

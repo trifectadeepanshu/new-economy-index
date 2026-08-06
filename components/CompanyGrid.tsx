@@ -109,6 +109,14 @@ export function CompanyGrid({
   const showToggle = showToggleProp ?? externalView === undefined;
   const rows = useConstituentRows(stocks, sort, sector, query);
   const hasActiveFilters = query.trim().length > 0 || sector !== "All";
+  // Re-resolve against the live rows every render so an open modal keeps
+  // tracking its company's price/change as `stocks` refreshes on the 30s
+  // poll (useIndexData.ts), instead of showing the frozen object captured
+  // at click time. Falls back to the click-time snapshot if the ticker
+  // briefly isn't in `rows` (e.g. a search filter narrowed it out).
+  const liveSelected = selected
+    ? (rows.find((r) => r.ticker === selected.ticker) ?? selected)
+    : null;
 
   // Progressive disclosure applies in every view (grid or table, any
   // viewport) — reset to that view's initial page whenever the view itself
@@ -234,7 +242,7 @@ export function CompanyGrid({
         </>
       ) : null}
 
-      <CompanyModal stock={selected} onClose={() => setSelected(null)} />
+      <CompanyModal stock={liveSelected} onClose={() => setSelected(null)} />
     </div>
   );
 }

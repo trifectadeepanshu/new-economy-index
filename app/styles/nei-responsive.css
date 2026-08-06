@@ -837,28 +837,6 @@
   }
 }
 
-@media (max-width: 374px) {
-  .nei-v2-nav,
-  .nei-hero-inner {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  .nei-hero-title {
-    font-size: 34px;
-    line-height: 1.08;
-    white-space: normal;
-  }
-
-  .nei-hero-copy {
-    font-size: 14px;
-  }
-
-  .nei-index-value {
-    font-size: 42px;
-  }
-}
-
 @media (max-width: 640px) {
   .nei-dashboard {
     padding-top: 32px;
@@ -1330,6 +1308,33 @@
   .nei-footer-inner {
     padding-right: 14px;
     padding-left: 14px;
+  }
+}
+
+/* Was previously sandwiched between two max-width:640px blocks earlier in
+   this file, so at <=374px the later 640px block always won on shared
+   properties (same specificity, later source order) and silently
+   overrode this narrower tier's padding/font-size. Moved here so the
+   cascade narrows in order: 640px -> 374px -> 359px. */
+@media (max-width: 374px) {
+  .nei-v2-nav,
+  .nei-hero-inner {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .nei-hero-title {
+    font-size: 34px;
+    line-height: 1.08;
+    white-space: normal;
+  }
+
+  .nei-hero-copy {
+    font-size: 14px;
+  }
+
+  .nei-index-value {
+    font-size: 42px;
   }
 }
 
