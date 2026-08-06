@@ -158,6 +158,11 @@
     color: var(--nei-pos);
   }
 
+  .nei-admin-status.is-partial,
+  .nei-admin-pill.is-partial {
+    color: #E07A38;
+  }
+
   .nei-admin-status.is-failed,
   .nei-admin-pill.is-failed {
     color: var(--nei-neg);

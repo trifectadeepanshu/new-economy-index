@@ -112,7 +112,7 @@ export type LiveIndexState = DivisorState & {
   portfolio?: DivisorState;
 };
 
-export type CronRunStatus = "running" | "success" | "failed" | "skipped";
+export type CronRunStatus = "running" | "success" | "partial" | "failed" | "skipped";
 
 export type CronRunFinishInput = {
   status: Exclude<CronRunStatus, "running">;
