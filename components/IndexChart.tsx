@@ -244,7 +244,7 @@ export function IndexChart({ liveValue, stocks, variant = "default", heading }: 
             {/* Trifecta Capital shown first among toggles, then the benchmarks. */}
             {hasTrifecta && (
               <SeriesChip
-                label="Trifecta portfolio"
+                label="Trifecta Capital portfolio"
                 color="#E07A38"
                 ret={returns.TRIFECTA}
                 on={showTrifecta}
