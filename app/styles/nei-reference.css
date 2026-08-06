@@ -2,8 +2,15 @@
   /* Reference sections */
   .nei-reference-section {
     background: var(--nei-bg);
-    padding: 64px 32px 96px;
+    padding: 56px 32px 56px;
     position: relative;
+  }
+
+  /* A real boundary between back-to-back reference sections (§02→§03→§04) —
+     the corner brackets alone are decorative, low-opacity, and disappear on
+     mobile, so two same-background sections in a row had no visible seam. */
+  .nei-reference-section + .nei-reference-section {
+    border-top: 1px solid var(--nei-grid-strong);
   }
 
   .nei-reference-section:has(.nei-dp-pop) {
@@ -553,6 +560,29 @@
   .nei-mcap-logo-button .nei-company-logo-tile {
     box-shadow: 0 6px 16px rgba(11,15,25,0.08);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  /* "+N more" / "Less" chip that expands a bucket row in place. */
+  .nei-mcap-more-chip {
+    border: 1px solid color-mix(in oklab, var(--bucket-color) 38%, rgba(11,15,25,0.14));
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--bucket-color) 8%, #FFFFFF);
+    color: var(--bucket-color);
+    font: 700 12px var(--font-inter), ui-monospace, monospace;
+    letter-spacing: 0;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .nei-mcap-more-chip:hover,
+  .nei-mcap-more-chip:focus-visible {
+    transform: translateY(-2px);
+    background: color-mix(in oklab, var(--bucket-color) 14%, #FFFFFF);
+  }
+
+  .nei-mcap-more-chip.is-collapse {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .nei-mcap-logo-button:hover .nei-company-logo-tile,

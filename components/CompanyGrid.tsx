@@ -24,6 +24,42 @@ const INITIAL_SORT: SortState = { key: "marketCap", dir: -1 };
 const MOBILE_CARD_VIEW = "(max-width: 1100px)";
 const INITIAL_CARD_COUNT = 4;
 const EXPANDED_CARD_COUNT = 8;
+// Table rows are far shorter than cards, so a "page" holds more of them.
+const INITIAL_TABLE_COUNT = 10;
+const EXPANDED_TABLE_COUNT = 25;
+
+function initialCountFor(view: CompanyGridView) {
+  return view === "table" ? INITIAL_TABLE_COUNT : INITIAL_CARD_COUNT;
+}
+
+function expandedCountFor(view: CompanyGridView) {
+  return view === "table" ? EXPANDED_TABLE_COUNT : EXPANDED_CARD_COUNT;
+}
+
+function LoadMoreBar({
+  visibleCount,
+  total,
+  onLoadMore,
+}: {
+  visibleCount: number;
+  total: number;
+  onLoadMore: () => void;
+}) {
+  return (
+    <div className="nei-company-list-more">
+      <button
+        type="button"
+        onClick={onLoadMore}
+        aria-label={`Load more companies. Showing ${Math.min(visibleCount, total)} of ${total}.`}
+      >
+        Load more
+      </button>
+      <span className="nei-mono">
+        {Math.min(visibleCount, total)} / {total} shown
+      </span>
+    </div>
+  );
+}
 
 function EmptyCompanyState({
   hasActiveFilters,
@@ -64,7 +100,7 @@ export function CompanyGrid({
   const [sort, setSort] = useState<SortState>(INITIAL_SORT);
   const [query, setQuery] = useState("");
   const [sector, setSector] = useState<SectorFilter>("All");
-  const [visibleCardCount, setVisibleCardCount] = useState(INITIAL_CARD_COUNT);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_CARD_COUNT);
   const [selected, setSelected] = useState<StockData | null>(null);
 
   const view = externalView ?? internalView ?? "grid";
@@ -72,9 +108,23 @@ export function CompanyGrid({
   const hasResolvedViewport = isMobileCardViewport !== null;
   const showToggle = showToggleProp ?? externalView === undefined;
   const rows = useConstituentRows(stocks, sort, sector, query);
-  const shouldLimitCards = view === "grid" && isMobileCardViewport === true;
-  const visibleRows = shouldLimitCards ? rows.slice(0, visibleCardCount) : rows;
   const hasActiveFilters = query.trim().length > 0 || sector !== "All";
+
+  // Progressive disclosure applies in every view (grid or table, any
+  // viewport) — reset to that view's initial page whenever the view itself
+  // changes (including the very first auto-detected view). Adjusted during
+  // render (React's recommended pattern) rather than in an effect, since it's
+  // pure derived state and doesn't need an extra render pass.
+  const [prevView, setPrevView] = useState(view);
+  let effectiveVisibleCount = visibleCount;
+  if (view !== prevView) {
+    effectiveVisibleCount = initialCountFor(view);
+    setPrevView(view);
+    setVisibleCount(effectiveVisibleCount);
+  }
+
+  const visibleRows = rows.slice(0, effectiveVisibleCount);
+  const canLoadMore = effectiveVisibleCount < rows.length;
 
   useEffect(() => {
     const media = window.matchMedia(MOBILE_CARD_VIEW);
@@ -94,7 +144,7 @@ export function CompanyGrid({
 
   function handleViewChange(nextView: CompanyGridView) {
     setHasChosenView(true);
-    setVisibleCardCount(INITIAL_CARD_COUNT);
+    setVisibleCount(initialCountFor(nextView));
 
     if (onViewChange) {
       onViewChange(nextView);
@@ -105,30 +155,29 @@ export function CompanyGrid({
   }
 
   function handleSort(key: SortKey) {
-    setVisibleCardCount(INITIAL_CARD_COUNT);
+    setVisibleCount(initialCountFor(view));
     setSort((current) => nextSort(current, key));
   }
 
   function handleQueryChange(nextQuery: string) {
-    setVisibleCardCount(INITIAL_CARD_COUNT);
+    setVisibleCount(initialCountFor(view));
     setQuery(nextQuery);
   }
 
   function handleSectorChange(nextSector: SectorFilter) {
-    setVisibleCardCount(INITIAL_CARD_COUNT);
+    setVisibleCount(initialCountFor(view));
     setSector(nextSector);
   }
 
-  function handleLoadMoreCards() {
-    setVisibleCardCount((current) =>
-      current < EXPANDED_CARD_COUNT ? EXPANDED_CARD_COUNT : rows.length
-    );
+  function handleLoadMore() {
+    const expanded = expandedCountFor(view);
+    setVisibleCount((current) => (current < expanded ? expanded : rows.length));
   }
 
   function handleResetFilters() {
     setQuery("");
     setSector("All");
-    setVisibleCardCount(INITIAL_CARD_COUNT);
+    setVisibleCount(initialCountFor(view));
   }
 
   if (!hasResolvedViewport || !hasResolvedAutoView || (isLoading && stocks.length === 0)) {
@@ -163,33 +212,24 @@ export function CompanyGrid({
         />
       ) : null}
       {rows.length > 0 && view === "table" ? (
-        <ConstituentTable
-          rows={rows}
-          sort={sort}
-          onSort={handleSort}
-          variant={variant}
-          currency={currency}
-          onSelect={setSelected}
-        />
+        <>
+          <ConstituentTable
+            rows={visibleRows}
+            sort={sort}
+            onSort={handleSort}
+            variant={variant}
+            currency={currency}
+            onSelect={setSelected}
+          />
+          {canLoadMore && (
+            <LoadMoreBar visibleCount={effectiveVisibleCount} total={rows.length} onLoadMore={handleLoadMore} />
+          )}
+        </>
       ) : rows.length > 0 ? (
         <>
           <CompanyCards stocks={visibleRows} currency={currency} onSelect={setSelected} />
-          {shouldLimitCards && visibleCardCount < rows.length && (
-            <div className="nei-company-card-more">
-              <button
-                type="button"
-                onClick={handleLoadMoreCards}
-                aria-label={`Load more companies. Showing ${Math.min(
-                  visibleCardCount,
-                  rows.length
-                )} of ${rows.length}.`}
-              >
-                Load more
-              </button>
-              <span className="nei-mono">
-                {Math.min(visibleCardCount, rows.length)} / {rows.length} shown
-              </span>
-            </div>
+          {canLoadMore && (
+            <LoadMoreBar visibleCount={effectiveVisibleCount} total={rows.length} onLoadMore={handleLoadMore} />
           )}
         </>
       ) : null}

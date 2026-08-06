@@ -52,6 +52,10 @@ function isInBucket(valueUsdB: number, bucket: BucketDef) {
 // grid of equal logos reads better than market-cap-scaled ones.
 const LOGO_SIZE = 40;
 
+// Cap logos per row so a 1-company bucket and a 16-company bucket don't wrap
+// to wildly different heights; a "+N" chip reveals the rest in place.
+const MAX_VISIBLE_LOGOS = 8;
+
 function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
 }
@@ -90,6 +94,17 @@ export function MarketCapStrata({
   isLoading: boolean;
 }) {
   const [selected, setSelected] = useState<StockData | null>(null);
+  const [expandedBuckets, setExpandedBuckets] = useState<Set<string>>(new Set());
+
+  function toggleBucketExpanded(key: string) {
+    setExpandedBuckets((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
   const { buckets, totalMarketCap, validCount } = useMemo(() => {
     const ranked = stocks
       .map((stock): RankedStock | null => {
@@ -149,6 +164,10 @@ export function MarketCapStrata({
             "--mcap-row-width": `${Math.max(3, bucket.weightPct)}%`,
           } as CSSProperties;
 
+          const isExpanded = expandedBuckets.has(bucket.key);
+          const visibleStocks = isExpanded ? bucket.stocks : bucket.stocks.slice(0, MAX_VISIBLE_LOGOS);
+          const hiddenCount = bucket.stocks.length - visibleStocks.length;
+
           return (
             <section key={bucket.key} className="nei-mcap-row" style={rowStyle}>
               <div className="nei-mcap-row-intro">
@@ -187,7 +206,7 @@ export function MarketCapStrata({
               </div>
 
               <div className="nei-mcap-logos" aria-label={`${bucket.label} companies`}>
-                {bucket.stocks.map((stock) => {
+                {visibleStocks.map((stock) => {
                   const up = (stock.changePct ?? 0) >= 0;
                   const size = LOGO_SIZE;
                   const label = `${stock.displayName}, ${stock.sector}, ${formatMarketCap(
@@ -218,6 +237,26 @@ export function MarketCapStrata({
                     </button>
                   );
                 })}
+                {hiddenCount > 0 && (
+                  <button
+                    type="button"
+                    className="nei-mcap-logo-button nei-mcap-more-chip"
+                    onClick={() => toggleBucketExpanded(bucket.key)}
+                    aria-label={`Show ${hiddenCount} more ${bucket.label} companies`}
+                  >
+                    +{hiddenCount}
+                  </button>
+                )}
+                {isExpanded && bucket.stocks.length > MAX_VISIBLE_LOGOS && (
+                  <button
+                    type="button"
+                    className="nei-mcap-logo-button nei-mcap-more-chip is-collapse"
+                    onClick={() => toggleBucketExpanded(bucket.key)}
+                    aria-label={`Show fewer ${bucket.label} companies`}
+                  >
+                    Less
+                  </button>
+                )}
               </div>
             </section>
           );
