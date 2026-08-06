@@ -8,11 +8,12 @@ type ApiPayload = {
   error?: string;
 };
 
-const STATUS_VALUES: CronRunStatus[] = ["running", "success", "failed", "skipped"];
+const STATUS_VALUES: CronRunStatus[] = ["running", "success", "partial", "failed", "skipped"];
 
 const STATUS_LABELS: Record<CronRunStatus, string> = {
   running: "Running",
   success: "Success",
+  partial: "Partial",
   failed: "Failed",
   skipped: "Skipped",
 };
@@ -21,6 +22,7 @@ function emptySummary(): Record<CronRunStatus, number> {
   return {
     running: 0,
     success: 0,
+    partial: 0,
     failed: 0,
     skipped: 0,
   };
@@ -75,7 +77,7 @@ function formatDuration(start: string, end: string | null) {
 }
 
 function isProblemStatus(status: CronRunStatus) {
-  return status === "failed" || status === "running";
+  return status === "failed" || status === "partial" || status === "running";
 }
 
 export function CronRunsAdmin() {

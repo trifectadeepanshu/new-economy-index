@@ -51,6 +51,19 @@ test("quote completeness rejects missing constituent prices", () => {
   assert.deepEqual(missingQuoteTickers(companies, quoteMap), ["BETA"]);
 });
 
+test("quote completeness rejects non-positive prices, not just missing ones", () => {
+  const quoteMap = quotesByTicker([quote("ALPHA", 0), quote("BETA", -5)]);
+
+  assert.deepEqual(missingQuoteTickers(companies, quoteMap).sort(), ["ALPHA", "BETA"]);
+});
+
+test("Yahoo stock snapshots reject non-positive prices", () => {
+  const quoteMap = quotesByTicker([quote("ALPHA", 0), quote("BETA", -5)]);
+
+  assert.equal(toYahooStockSnapshotInput("2026-07-13", companies[0], quoteMap), null);
+  assert.equal(toYahooStockSnapshotInput("2026-07-13", companies[1], quoteMap), null);
+});
+
 test("Yahoo stock snapshots carry source metadata", () => {
   const quoteMap = quotesByTicker([quote("ALPHA", 101)]);
   const row = toYahooStockSnapshotInput("2026-07-13", companies[0], quoteMap);

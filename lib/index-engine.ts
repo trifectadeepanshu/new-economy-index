@@ -176,7 +176,9 @@ export function computeIndexSeries(
     for (const t of flags) {
       const s = sh.get(t);
       const p = px.get(t);
-      if (s != null && p != null) total += s * p;
+      // Exclude, don't zero-fill: a bad (non-positive) price would otherwise
+      // poison this quarter's chain-linked divisor for every day after it.
+      if (s != null && p != null && s * p > 0) total += s * p;
     }
     return total;
   };

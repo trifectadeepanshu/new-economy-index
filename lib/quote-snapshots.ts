@@ -18,7 +18,10 @@ export function missingQuoteTickers(
   quotes: Record<string, QuoteResult | undefined>
 ) {
   return companies
-    .filter((company) => quotes[company.ticker]?.price == null)
+    .filter((company) => {
+      const price = quotes[company.ticker]?.price;
+      return price == null || price <= 0;
+    })
     .map((company) => company.ticker);
 }
 
@@ -28,7 +31,7 @@ export function toYahooStockSnapshotInput(
   quotes: Record<string, QuoteResult | undefined>
 ): StockSnapshotInput | null {
   const quote = quotes[company.ticker];
-  if (quote?.price == null) return null;
+  if (quote?.price == null || quote.price <= 0) return null;
 
   return {
     date,

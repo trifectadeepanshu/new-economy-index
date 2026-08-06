@@ -65,8 +65,15 @@ async function runRefresh() {
     const summary = await refreshConstituentData(active);
     const warning = summarizeRefreshFailures(summary.failures);
     const failedTickers = [...new Set(summary.failures.map((f) => f.ticker))];
-    const allFetchesFailed = summary.failures.length > 0 && summary.dataRowsWritten === 0;
-    const status = allFetchesFailed ? "failed" : "success";
+    // Any failure at all means it wasn't a clean success — "partial" makes a
+    // mostly-broken refresh visible instead of silently reporting success
+    // just because *something* got written.
+    const status =
+      summary.dataRowsWritten === 0 && summary.failures.length > 0
+        ? "failed"
+        : summary.failures.length > 0
+          ? "partial"
+          : "success";
     const indexValue = summary.indexValue == null ? null : round(summary.indexValue);
 
     await finishRefreshRun(runId, {
@@ -78,9 +85,16 @@ async function runRefresh() {
       error: warning,
     });
 
+    const message =
+      status === "success"
+        ? "Refresh completed"
+        : status === "partial"
+          ? "Refresh completed with failures"
+          : "Refresh failed";
+
     return NextResponse.json(
       {
-        message: status === "success" ? "Refresh completed" : "Refresh failed",
+        message,
         date: summary.latestDate ?? today,
         indexValue,
         numCompanies: summary.numCompanies,
@@ -92,7 +106,7 @@ async function runRefresh() {
         analysts: summary.analysts,
         failures: summary.failures,
       },
-      { status: status === "failed" ? 502 : 200, headers: HEADERS }
+      { status: status === "success" ? 200 : status === "partial" ? 207 : 502, headers: HEADERS }
     );
   } catch (err) {
     const detail = errorDetail(err);

@@ -62,4 +62,19 @@ jobs:
           }
 
           console.log(`Snapshot cron recorded cleanly for ${today}: ${run.stockRows} rows.`);
+
+          // The quarterly refresh (shares/financials/profiles) runs 1 Jan/Apr/Jul/Oct
+          // (vercel.json: "0 3 1 1,4,7,10 *", 08:30 IST) — only check on those dates.
+          const [, month, day] = today.split("-");
+          const isRefreshDay = day === "01" && ["01", "04", "07", "10"].includes(month);
+          if (isRefreshDay) {
+            const refreshRun = runs.find((item) => item.job === "refresh" && item.date === today);
+            if (!refreshRun) {
+              throw new Error(`No refresh cron_run row found for ${today}`);
+            }
+            if (refreshRun.status !== "success") {
+              throw new Error(`Refresh cron for ${today} ended with status ${refreshRun.status}`);
+            }
+            console.log(`Refresh cron recorded cleanly for ${today}.`);
+          }
           NODE
