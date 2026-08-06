@@ -108,7 +108,16 @@ export function DateRangePicker({
   function toggle() {
     setOpen((o) => {
       const next = !o;
-      if (next) setMonth(startOfMonth(parseISO(value?.from ?? max)));
+      if (next) {
+        // Resync to the committed value — an abandoned partial pick from a
+        // previous open (closed via outside-click/Escape, never applied)
+        // shouldn't reappear out of sync with what the trigger shows.
+        setMonth(startOfMonth(parseISO(value?.from ?? max)));
+        setStart(value?.from ?? null);
+        setEnd(value?.to ?? null);
+        setStartText(pretty(value?.from));
+        setEndText(pretty(value?.to));
+      }
       return next;
     });
   }

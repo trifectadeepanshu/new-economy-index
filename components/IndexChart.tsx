@@ -129,7 +129,10 @@ export function IndexChart({ liveValue, stocks, variant = "default", heading }: 
   );
   const [showTrifecta, setShowTrifecta] = useState(true);
 
-  const maxDate = useMemo(() => todayISO(), []);
+  // Not memoized: it's a cheap string read, and freezing it at mount pinned
+  // the custom-range upper bound to yesterday for any tab left open past
+  // midnight.
+  const maxDate = todayISO();
   const { historyData, sectorData, portfolioData, benchmarks, loading, error } = useChartHistory(
     rangeKey,
     customRange

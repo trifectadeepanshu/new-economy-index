@@ -238,7 +238,7 @@ function SectorTile({
       style={{ "--sector-color": color } as CSSProperties}
       onClick={onOpen}
       aria-label={label}
-      aria-expanded={false}
+      aria-haspopup="dialog"
     >
       <div className="nei-sb-tile-head">
         <span className="nei-sb-dot" style={{ background: color }} />
@@ -292,12 +292,16 @@ function SectorPanel({
   onClose: () => void;
 }) {
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const comparison = useMemo(() => buildComparisonSeries(series, indexSeries), [indexSeries, series]);
   const sectorChange = comparisonChange(comparison, "sector");
   const indexChange = comparisonChange(comparison, "index");
   const color = SECTOR_CHART_COLORS[comp.sector];
 
   useEffect(() => {
+    const active = document.activeElement;
+    previouslyFocusedRef.current = active instanceof HTMLElement ? active : null;
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
@@ -311,6 +315,7 @@ function SectorPanel({
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
+      previouslyFocusedRef.current?.focus();
     };
   }, [onClose]);
 

@@ -202,11 +202,21 @@ export function computeIndexSeries(
   }
 
   // Daily index — carry forward closes; value with the effective quarter's state.
+  // A price only carries forward for STALE_CUTOFF_TRADING_DAYS before it's
+  // treated as unusable (excluded, same as a missing price) — otherwise one
+  // permanently broken single-ticker feed would keep contributing a frozen
+  // price to the index forever with no signal anywhere.
+  const STALE_CUTOFF_TRADING_DAYS = 10; // ~2 weeks; wider than known 1-day feed gaps
   const lastClose = new Map<string, number>();
+  const lastFreshIndex = new Map<string, number>(); // ticker -> trading-day index last priced
   const out: IndexPoint[] = [];
   let qi = 0;
-  for (const date of dates) {
-    for (const [t, c] of prices.get(date)!) lastClose.set(t, c);
+  for (let di = 0; di < dates.length; di++) {
+    const date = dates[di];
+    for (const [t, c] of prices.get(date)!) {
+      lastClose.set(t, c);
+      lastFreshIndex.set(t, di);
+    }
     if (date < quarters[0]) continue; // before inception
     while (qi + 1 < quarters.length && quarters[qi + 1] <= date) qi++;
     const q = quarters[qi];
@@ -217,7 +227,9 @@ export function computeIndexSeries(
     const flags = qFlag.get(q)!;
     let total = 0;
     for (const t of flags) {
-      const px = lastClose.get(t);
+      const freshIdx = lastFreshIndex.get(t);
+      const isFresh = freshIdx != null && di - freshIdx <= STALE_CUTOFF_TRADING_DAYS;
+      const px = isFresh ? lastClose.get(t) : undefined;
       const s = sh.get(t);
       if (px != null && s != null) total += px * s;
     }

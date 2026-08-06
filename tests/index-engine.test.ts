@@ -76,3 +76,48 @@ test("a corrupted (negative) price at a rebalance can't poison the chain-linked 
   assert.equal(result.points[1].numCompanies, 1);
   assert.equal(result.points[2].value, 605);
 });
+
+test("a stale price carries forward for a short gap but drops out past the cutoff", () => {
+  // ALPHA is priced every day. BETA is priced through day 1, then its feed
+  // goes dark for good — it should keep contributing its last close for a
+  // short gap (matching known 1-day Yahoo data-lag behavior) but stop
+  // contributing once that gap exceeds the staleness cutoff.
+  const prices: DailyPrices = new Map([
+    ["2021-03-31", new Map([["ALPHA", 100], ["BETA", 100]])],
+  ]);
+  for (let day = 1; day <= 12; day++) {
+    const date = `2021-04-${String(day).padStart(2, "0")}`;
+    const dayPrices = new Map([["ALPHA", 110]]);
+    if (day === 1) dayPrices.set("BETA", 100); // BETA's last real price
+    prices.set(date, dayPrices);
+  }
+  const shares: QuarterlySharesMap = new Map([
+    ["ALPHA", [{ asOf: "2021-03-31", shares: 1 }]],
+    ["BETA", [{ asOf: "2021-03-31", shares: 1 }]],
+  ]);
+  const members: EngineMember[] = [
+    { ticker: "ALPHA", listedDate: "2020-01-01" },
+    { ticker: "BETA", listedDate: "2020-01-01" },
+  ];
+
+  const result = computeIndexSeries(prices, shares, members, {
+    baseValue: 1000,
+    baseDate: "2021-03-31",
+    topN: Number.POSITIVE_INFINITY,
+  });
+  const byDate = new Map(result.points.map((p) => [p.date, p]));
+
+  // Both companies stay flagged in (membership is set at the rebalance, not
+  // re-evaluated day to day) even after BETA's feed goes stale.
+  assert.equal(byDate.get("2021-04-01")?.numCompanies, 2);
+  assert.equal(byDate.get("2021-04-12")?.numCompanies, 2);
+
+  // Within the 10-trading-day cutoff, BETA's carried-forward price still
+  // counts: total = 110 (ALPHA) + 100 (BETA, day 1) = 210 -> 210 / 0.2.
+  assert.equal(byDate.get("2021-04-01")?.value, 1050);
+  assert.equal(byDate.get("2021-04-11")?.value, 1050); // 10 trading days since day 1
+
+  // One trading day past the cutoff, BETA's stale price is excluded:
+  // total = 110 (ALPHA only) -> 110 / 0.2.
+  assert.equal(byDate.get("2021-04-12")?.value, 550);
+});
