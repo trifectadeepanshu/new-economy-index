@@ -94,6 +94,13 @@ export function MarketCapStrata({
   isLoading: boolean;
 }) {
   const [selected, setSelected] = useState<StockData | null>(null);
+  // Re-resolve against the live `stocks` prop every render so an open modal
+  // keeps tracking its company's price/change as the dashboard's 30s poll
+  // refreshes `stocks`, instead of showing the frozen object captured at
+  // click time.
+  const liveSelected = selected
+    ? (stocks.find((s) => s.ticker === selected.ticker) ?? selected)
+    : null;
   const [expandedBuckets, setExpandedBuckets] = useState<Set<string>>(new Set());
 
   function toggleBucketExpanded(key: string) {
@@ -166,7 +173,6 @@ export function MarketCapStrata({
 
           const isExpanded = expandedBuckets.has(bucket.key);
           const visibleStocks = isExpanded ? bucket.stocks : bucket.stocks.slice(0, MAX_VISIBLE_LOGOS);
-          const hiddenCount = bucket.stocks.length - visibleStocks.length;
 
           return (
             <section key={bucket.key} className="nei-mcap-row" style={rowStyle}>
@@ -237,24 +243,22 @@ export function MarketCapStrata({
                     </button>
                   );
                 })}
-                {hiddenCount > 0 && (
+                {bucket.stocks.length > MAX_VISIBLE_LOGOS && (
+                  // One persistent button (not two swapped on `isExpanded`) so
+                  // keyboard focus survives the toggle instead of dropping to
+                  // <body> when the "+N" node would otherwise unmount.
                   <button
                     type="button"
-                    className="nei-mcap-logo-button nei-mcap-more-chip"
+                    className={`nei-mcap-logo-button nei-mcap-more-chip${isExpanded ? " is-collapse" : ""}`}
                     onClick={() => toggleBucketExpanded(bucket.key)}
-                    aria-label={`Show ${hiddenCount} more ${bucket.label} companies`}
+                    aria-expanded={isExpanded}
+                    aria-label={
+                      isExpanded
+                        ? `Show fewer ${bucket.label} companies`
+                        : `Show ${bucket.stocks.length - MAX_VISIBLE_LOGOS} more ${bucket.label} companies`
+                    }
                   >
-                    +{hiddenCount}
-                  </button>
-                )}
-                {isExpanded && bucket.stocks.length > MAX_VISIBLE_LOGOS && (
-                  <button
-                    type="button"
-                    className="nei-mcap-logo-button nei-mcap-more-chip is-collapse"
-                    onClick={() => toggleBucketExpanded(bucket.key)}
-                    aria-label={`Show fewer ${bucket.label} companies`}
-                  >
-                    Less
+                    {isExpanded ? "Less" : `+${bucket.stocks.length - MAX_VISIBLE_LOGOS}`}
                   </button>
                 )}
               </div>
@@ -268,7 +272,7 @@ export function MarketCapStrata({
         currency.
       </p>
 
-      <CompanyModal stock={selected} onClose={() => setSelected(null)} />
+      <CompanyModal stock={liveSelected} onClose={() => setSelected(null)} />
     </div>
   );
 }

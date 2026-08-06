@@ -1016,6 +1016,10 @@
     background: rgba(23,44,84,0.05);
   }
 
+  .nei-dp-endpoint:has(.is-invalid) {
+    border-color: var(--nei-neg);
+  }
+
   .nei-dp-endpoint span {
     color: rgba(11,15,25,0.45);
     font: 700 9px var(--font-inter), ui-monospace, monospace;
@@ -1036,6 +1040,10 @@
 
   .nei-dp-field:focus {
     outline: none;
+  }
+
+  .nei-dp-field.is-invalid {
+    color: var(--nei-neg);
   }
 
   .nei-dp-field::placeholder {
@@ -1174,6 +1182,11 @@
     color: rgba(11,15,25,0.45);
     font-size: 11px;
     text-align: center;
+  }
+
+  .nei-dp-hint.is-error {
+    color: var(--nei-neg);
+    font-weight: 600;
   }
 
   .nei-sector-single {

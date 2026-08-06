@@ -713,9 +713,19 @@ export async function recomputeAndPersistIndex(): Promise<{
     num: p.numCompanies,
   }));
 
+  // Submit every write as one atomic, non-interactive transaction — a
+  // concurrent invocation (cron vs. an admin-triggered recompute) can no
+  // longer interleave mid-sequence, and a failure partway through rolls
+  // back the whole recompute instead of leaving the DB half-updated.
+  const state: LiveIndexState = {
+    divisor,
+    members,
+    portfolio: { divisor: portfolio.divisor, members: portfolio.members },
+  };
+  const writes = [];
   for (let i = 0; i < rows.length; i += STOCK_BATCH_SIZE) {
     const chunk = rows.slice(i, i + STOCK_BATCH_SIZE);
-    await sql`
+    writes.push(sql`
       INSERT INTO index_snapshots (date, value, change_pct, num_companies)
       SELECT * FROM unnest(
         ${chunk.map((r) => r.date)}::date[],
@@ -727,27 +737,21 @@ export async function recomputeAndPersistIndex(): Promise<{
         SET value = EXCLUDED.value,
             change_pct = EXCLUDED.change_pct,
             num_companies = EXCLUDED.num_companies
-    `;
+    `);
   }
-
   // Drop stale rows for dates the engine no longer produces (e.g. a non-trading
   // day that briefly had partial live prices), so history stays in sync.
-  await sql`
+  writes.push(sql`
     DELETE FROM index_snapshots
     WHERE date <> ALL(${rows.map((r) => r.date)}::date[])
-  `;
-
-  const state: LiveIndexState = {
-    divisor,
-    members,
-    portfolio: { divisor: portfolio.divisor, members: portfolio.members },
-  };
-  await sql`
+  `);
+  writes.push(sql`
     INSERT INTO settings (key, value, updated_at)
     VALUES (${LIVE_STATE_KEY}, ${JSON.stringify(state)}, now())
     ON CONFLICT (key) DO UPDATE
       SET value = EXCLUDED.value, updated_at = now()
-  `;
+  `);
+  await sql.transaction(writes);
 
   const last = points[points.length - 1];
   return { latestDate: last.date, latestValue: last.value, numCompanies: last.numCompanies };

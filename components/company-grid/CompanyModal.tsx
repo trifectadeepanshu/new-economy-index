@@ -313,7 +313,13 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
       document.body.style.overflow = previousOverflow;
       previouslyFocusedRef.current?.focus();
     };
-  }, [stock, onClose]);
+    // Keyed on the ticker, not the whole `stock` object: `stock` gets a new
+    // reference every live-data poll (same company), and re-running this on
+    // every poll would re-capture "previously focused" as whatever's
+    // current inside the modal and yank focus to the close button on a
+    // timer instead of only when the modal actually opens/closes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stock?.ticker, onClose]);
 
   useEffect(() => {
     if (!stock) return;
@@ -337,7 +343,12 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [stock, currency, retryKey]);
+    // Keyed on the ticker, not the whole `stock` object, for the same
+    // reason as the effect above — `stock` gets a new reference every live
+    // poll for the same company, and this should only re-fetch on an
+    // actual company/currency/retry change, not every 30s.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stock?.ticker, currency, retryKey]);
 
   if (!stock) return null;
   const isPortfolio = stock.isPortfolio;

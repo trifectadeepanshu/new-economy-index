@@ -64,6 +64,7 @@ export function DateRangePicker({
   const [startText, setStartText] = useState(pretty(value?.from));
   const [endText, setEndText] = useState(pretty(value?.to));
   const [hover, setHover] = useState<string | null>(null);
+  const [invalidField, setInvalidField] = useState<"start" | "end" | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   // Close on outside click / Escape. On phones the picker behaves like a
@@ -108,7 +109,17 @@ export function DateRangePicker({
   function toggle() {
     setOpen((o) => {
       const next = !o;
-      if (next) setMonth(startOfMonth(parseISO(value?.from ?? max)));
+      if (next) {
+        // Resync to the committed value — an abandoned partial pick from a
+        // previous open (closed via outside-click/Escape, never applied)
+        // shouldn't reappear out of sync with what the trigger shows.
+        setMonth(startOfMonth(parseISO(value?.from ?? max)));
+        setStart(value?.from ?? null);
+        setEnd(value?.to ?? null);
+        setStartText(pretty(value?.from));
+        setEndText(pretty(value?.to));
+        setInvalidField(null);
+      }
       return next;
     });
   }
@@ -145,11 +156,14 @@ export function DateRangePicker({
   function commitTyped(which: "start" | "end", text: string) {
     const parsed = parseTyped(text);
     if (!parsed || parsed < min || parsed > max) {
-      // Unrecognised or out of range → revert to the last good value.
+      // Unrecognised or out of range → revert to the last good value, but
+      // say so — reverting silently gave no sign anything was wrong.
       if (which === "start") setStartText(pretty(start));
       else setEndText(pretty(end));
+      setInvalidField(which);
       return;
     }
+    setInvalidField(null);
     setMonth(startOfMonth(parseISO(parsed)));
     const other = which === "start" ? end : start;
     if (!other) {
@@ -208,11 +222,15 @@ export function DateRangePicker({
             <label className={`nei-dp-endpoint${!end ? " is-active" : ""}`}>
               <span>Start</span>
               <input
-                className="nei-dp-field nei-mono"
+                className={`nei-dp-field nei-mono${invalidField === "start" ? " is-invalid" : ""}`}
                 value={startText}
                 placeholder="DD MMM YYYY"
                 aria-label="Start date"
-                onChange={(e) => setStartText(e.target.value)}
+                aria-invalid={invalidField === "start"}
+                onChange={(e) => {
+                  setStartText(e.target.value);
+                  setInvalidField(null);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -226,11 +244,15 @@ export function DateRangePicker({
             <label className={`nei-dp-endpoint${start && !end ? " is-active" : ""}`}>
               <span>End</span>
               <input
-                className="nei-dp-field nei-mono"
+                className={`nei-dp-field nei-mono${invalidField === "end" ? " is-invalid" : ""}`}
                 value={endText}
                 placeholder="DD MMM YYYY"
                 aria-label="End date"
-                onChange={(e) => setEndText(e.target.value)}
+                aria-invalid={invalidField === "end"}
+                onChange={(e) => {
+                  setEndText(e.target.value);
+                  setInvalidField(null);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -326,8 +348,12 @@ export function DateRangePicker({
             })}
           </div>
 
-          <div className="nei-dp-hint">
-            {start && !end ? "Pick an end date, or type it above" : "Pick or type a start date"}
+          <div className={`nei-dp-hint${invalidField ? " is-error" : ""}`} role={invalidField ? "alert" : undefined}>
+            {invalidField
+              ? "Not a valid date — try DD MMM YYYY, e.g. 15 Jul 2026"
+              : start && !end
+                ? "Pick an end date, or type it above"
+                : "Pick or type a start date"}
           </div>
           </div>
         </>
