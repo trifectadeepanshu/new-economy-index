@@ -152,7 +152,6 @@ export function MarketCapStrata({
           return (
             <section key={bucket.key} className="nei-mcap-row" style={rowStyle}>
               <div className="nei-mcap-row-intro">
-                <span className="nei-mcap-rail" aria-hidden="true" />
                 <div>
                   <h3>{bucket.label}</h3>
                   <p className="nei-mono">{bucket.range}</p>
