@@ -22,8 +22,7 @@ import type {
 
 const INITIAL_SORT: SortState = { key: "marketCap", dir: -1 };
 const MOBILE_CARD_VIEW = "(max-width: 1100px)";
-const INITIAL_CARD_COUNT = 4;
-const EXPANDED_CARD_COUNT = 8;
+const INITIAL_CARD_COUNT = 12; // a full 3 rows at the grid's usual 4-column width
 // Table rows are far shorter than cards, so a "page" holds more of them.
 const INITIAL_TABLE_COUNT = 10;
 const EXPANDED_TABLE_COUNT = 25;
@@ -32,8 +31,10 @@ function initialCountFor(view: CompanyGridView) {
   return view === "table" ? INITIAL_TABLE_COUNT : INITIAL_CARD_COUNT;
 }
 
+// Only the table view steps through a middle tier (10 -> 25 -> all); card
+// view reveals the rest in one click straight from the initial 12.
 function expandedCountFor(view: CompanyGridView) {
-  return view === "table" ? EXPANDED_TABLE_COUNT : EXPANDED_CARD_COUNT;
+  return view === "table" ? EXPANDED_TABLE_COUNT : null;
 }
 
 function LoadMoreBar({
@@ -179,6 +180,10 @@ export function CompanyGrid({
 
   function handleLoadMore() {
     const expanded = expandedCountFor(view);
+    if (expanded === null) {
+      setVisibleCount(rows.length);
+      return;
+    }
     setVisibleCount((current) => (current < expanded ? expanded : rows.length));
   }
 
