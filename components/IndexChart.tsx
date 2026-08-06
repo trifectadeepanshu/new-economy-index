@@ -102,7 +102,6 @@ function SeriesChip({
       <span className={`nei-chip-return nei-mono ${on ? tone : "is-off"}`}>
         {ret !== null ? formatSignedPct(ret) : "—"}
       </span>
-      {hero && <span className="nei-chip-hero">Hero</span>}
     </>
   );
 

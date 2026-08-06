@@ -247,17 +247,6 @@
   .nei-chip.is-hero .nei-chip-return.is-positive { color: #7DD89B; }
   .nei-chip.is-hero .nei-chip-return.is-negative { color: #E89175; }
 
-  .nei-chip-hero {
-    margin-left: 2px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(255,255,255,0.14);
-    color: rgba(255,255,255,0.72);
-    font: 700 8.5px var(--font-inter), ui-monospace, monospace;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
   @media (max-width: 720px) {
     .nei-cmd-value { margin-left: 0; text-align: left; }
     .nei-cmd-value-row { justify-content: flex-start; }
