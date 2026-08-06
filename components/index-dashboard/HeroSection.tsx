@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { LiveTickerPayload } from "@/lib/index-api";
 import {
   KineticBackdrop,
@@ -90,9 +90,32 @@ function HeroNav({
 }: Pick<IndexDashboardModel, "selectedCurrency" | "setCurrency">) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const closeMenu = () => setIsMenuOpen(false);
+  const navRef = useRef<HTMLElement | null>(null);
+
+  // Match the site's other overlays (date picker, sector detail panel):
+  // Escape closes, a tap/click outside closes, and the page underneath is
+  // locked while the menu is open.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) closeMenu();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isMenuOpen]);
 
   return (
-    <header className="nei-v2-nav">
+    <header className="nei-v2-nav" ref={navRef}>
       <div className="nei-brand-lockup">
         <Link href="/" className="nei-brand-link" aria-label="NEI home">
           <Image

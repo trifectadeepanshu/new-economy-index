@@ -184,7 +184,7 @@
   }
 
   .nei-reference-section {
-    padding: 48px 18px 72px;
+    padding: 42px 18px 42px;
   }
 
   .nei-reference-inner {
@@ -504,7 +504,7 @@
   }
 
   .nei-reference-section {
-    padding: 44px 16px 64px;
+    padding: 40px 16px 40px;
   }
 
   .nei-reference-chart .nei-chart-toolbar {
@@ -711,13 +711,13 @@
     align-items: flex-start;
   }
 
-  .nei-company-card-more {
+  .nei-company-list-more {
     flex-direction: column;
     gap: 8px;
     padding-top: 16px;
   }
 
-  .nei-company-card-more button {
+  .nei-company-list-more button {
     width: 100%;
   }
 
@@ -1018,7 +1018,7 @@
   }
 
   .nei-reference-section {
-    padding: 40px 14px 56px;
+    padding: 36px 14px 36px;
   }
 
   .nei-reference-frame,

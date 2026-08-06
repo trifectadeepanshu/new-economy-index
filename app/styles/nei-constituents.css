@@ -494,7 +494,7 @@
     text-align: right;
   }
 
-  .nei-company-card-more {
+  .nei-company-list-more {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -502,7 +502,7 @@
     padding: 18px 0 6px;
   }
 
-  .nei-company-card-more button {
+  .nei-company-list-more button {
     min-height: 44px;
     border: 1px solid var(--nei-fg);
     border-radius: 8px;
@@ -514,16 +514,16 @@
     transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
   }
 
-  .nei-company-card-more button:hover {
+  .nei-company-list-more button:hover {
     transform: translateY(-1px);
   }
 
-  .nei-company-card-more button:focus-visible {
+  .nei-company-list-more button:focus-visible {
     outline: 3px solid color-mix(in oklab, var(--nei-accent) 42%, transparent);
     outline-offset: 3px;
   }
 
-  .nei-company-card-more span {
+  .nei-company-list-more span {
     color: var(--nei-muted);
     font-size: 11px;
   }
