@@ -178,10 +178,10 @@
     flex: 0 0 auto;
   }
 
-  /* Range toggles sit directly in the bar — no nested pill background. */
+  /* Range toggles get their own bordered container, like the chips. */
   .nei-cmd-bar .nei-segmented-control {
-    padding: 0;
-    background: transparent;
+    background: #FFFFFF;
+    border: 1px solid rgba(11,15,25,0.12);
   }
 
   .nei-chip {
