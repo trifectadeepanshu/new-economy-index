@@ -22,9 +22,9 @@ function ReferenceShell({
 }: {
   id: string;
   eyebrow: { number: string; label: string };
-  title: ReactNode;
+  title?: ReactNode;
   mutedTitle?: string;
-  copy: string;
+  copy?: string;
   children: ReactNode;
 }) {
   return (
@@ -40,13 +40,15 @@ function ReferenceShell({
       >
         <div className="nei-reference-inner">
           <SectionEyebrow number={eyebrow.number} label={eyebrow.label} />
-          <div className="nei-reference-header">
-            <h2 className="nei-heading nei-reference-title">
-              {title}
-              {mutedTitle ? <span> {mutedTitle}</span> : null}
-            </h2>
-            <p className="nei-reference-copy">{copy}</p>
-          </div>
+          {title ? (
+            <div className="nei-reference-header">
+              <h2 className="nei-heading nei-reference-title">
+                {title}
+                {mutedTitle ? <span> {mutedTitle}</span> : null}
+              </h2>
+              {copy ? <p className="nei-reference-copy">{copy}</p> : null}
+            </div>
+          ) : null}
           {children}
         </div>
       </TickFrame>
@@ -62,17 +64,13 @@ export function PerformanceSection({
   stocks: StockData[];
 }) {
   return (
-    <ReferenceShell
-      id="performance"
-      eyebrow={{ number: "02", label: "Performance" }}
-      title={
-        <>
-          The NEI Top 50<br />since day one.
-        </>
-      }
-      copy="Base 1,000 set in January 2021. Tracked live since."
-    >
-      <IndexChart liveValue={indexValue} stocks={stocks} variant="reference" />
+    <ReferenceShell id="performance" eyebrow={{ number: "02", label: "Performance" }}>
+      <IndexChart
+        liveValue={indexValue}
+        stocks={stocks}
+        variant="reference"
+        heading="The NEI Top 50 since day one."
+      />
     </ReferenceShell>
   );
 }

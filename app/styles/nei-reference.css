@@ -93,6 +93,166 @@
     color: var(--nei-neg);
   }
 
+  /* ── Command-bar performance header ───────────────────────────────── */
+  .nei-cmd-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    margin-bottom: 22px;
+  }
+
+  .nei-cmd-title {
+    margin: 0;
+    max-width: 640px;
+    color: #0B0F19;
+    font: 500 clamp(26px, 3vw, 40px)/1.04 var(--font-sora), system-ui, sans-serif;
+    letter-spacing: 0;
+  }
+
+  .nei-cmd-value {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .nei-cmd-value-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .nei-cmd-number {
+    color: #0B0F19;
+    font-size: clamp(30px, 3.4vw, 46px);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .nei-cmd-change {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .nei-cmd-change.is-positive { color: var(--nei-pos); }
+  .nei-cmd-change.is-negative { color: var(--nei-neg); }
+
+  .nei-cmd-sub {
+    margin-top: 6px;
+    color: rgba(11,15,25,0.5);
+    font: 500 12px var(--font-inter), system-ui, sans-serif;
+  }
+
+  .nei-cmd-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin-bottom: 16px;
+  }
+
+  .nei-cmd-series {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .nei-cmd-series-label {
+    margin-right: 4px;
+    color: rgba(11,15,25,0.4);
+    font: 700 10px var(--font-inter), ui-monospace, monospace;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .nei-cmd-bar .nei-chart-controls {
+    flex: 0 0 auto;
+  }
+
+  .nei-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border: 1px solid rgba(11,15,25,0.12);
+    border-radius: 999px;
+    background: #FFFFFF;
+    cursor: pointer;
+    transition: border-color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .nei-chip.is-on {
+    box-shadow: 0 1px 2px rgba(16,24,38,0.05);
+  }
+
+  .nei-chip:not(.is-on) {
+    opacity: 0.5;
+  }
+
+  button.nei-chip:hover {
+    border-color: rgba(11,15,25,0.3);
+  }
+
+  .nei-chip.is-hero {
+    background: #0B0F19;
+    border-color: #0B0F19;
+    cursor: default;
+  }
+
+  .nei-chip-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+  }
+
+  .nei-chip.is-hero .nei-chip-dot {
+    background: #FFFFFF !important;
+  }
+
+  .nei-chip-name {
+    color: #0B0F19;
+    font: 600 12px var(--font-inter), system-ui, sans-serif;
+    white-space: nowrap;
+  }
+
+  .nei-chip.is-hero .nei-chip-name {
+    color: #FFFFFF;
+  }
+
+  .nei-chip-return {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .nei-chip-return.is-positive { color: #16A34A; }
+  .nei-chip-return.is-negative { color: #DC3A2E; }
+  .nei-chip-return.is-off { color: rgba(11,15,25,0.4); }
+
+  .nei-chip.is-hero .nei-chip-return.is-positive { color: #7DD89B; }
+  .nei-chip.is-hero .nei-chip-return.is-negative { color: #E89175; }
+
+  .nei-chip-hero {
+    margin-left: 2px;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.72);
+    font: 700 8.5px var(--font-inter), ui-monospace, monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 720px) {
+    .nei-cmd-value { margin-left: 0; text-align: left; }
+    .nei-cmd-value-row { justify-content: flex-start; }
+  }
+
   .nei-sector-composition {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

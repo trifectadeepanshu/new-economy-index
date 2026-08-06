@@ -38,4 +38,6 @@ export type IndexChartProps = {
   liveValue: number | null;
   stocks: StockData[];
   variant?: ChartVariant;
+  /** Command-bar heading rendered inside the reference chart (left of the value). */
+  heading?: string;
 };
