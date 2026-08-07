@@ -121,8 +121,8 @@ function HeroNav({
           <Image
             src="/trifecta-capital-logo.png"
             alt="Trifecta Capital"
-            width={166}
-            height={48}
+            width={317}
+            height={241}
             priority
             className="nei-brand-logo"
           />
