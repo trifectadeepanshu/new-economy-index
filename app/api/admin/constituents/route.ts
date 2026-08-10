@@ -7,10 +7,12 @@ import {
   type ConstituentInput,
 } from "@/lib/db";
 import { onboardConstituent, type OnboardSummary } from "@/lib/onboard";
+import { refreshConstituentData } from "@/lib/data-refresh";
 import { isBearerAuthorized } from "@/lib/http-auth";
 import { SECTORS } from "@/lib/companies";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 const HEADERS = { "Cache-Control": "no-store" };
 
@@ -80,7 +82,8 @@ export async function POST(req: NextRequest) {
     // Onboard (price/share/detail backfill) when the ticker is new, or when a
     // re-backfill is explicitly requested. Do it before adding a new ticker so a
     // bad symbol is rejected up front rather than breaking the daily cron.
-    const isNew = !(await listConstituents()).some((r) => r.ticker === parsed.ticker);
+    const existingConstituents = await listConstituents();
+    const isNew = !existingConstituents.some((r) => r.ticker === parsed.ticker);
     const shouldOnboard = isNew || body?.backfill === true;
 
     let onboard: OnboardSummary | null = null;
@@ -96,7 +99,24 @@ export async function POST(req: NextRequest) {
     }
 
     await upsertConstituent(parsed);
-    await recomputeAndPersistIndex();
+
+    // A genuinely new ticker creates a new rebalance date (its first-priced day),
+    // which the divisor engine chain-links from the rest of the universe's
+    // point-in-time shares *at that same date*. Without refreshing everyone
+    // else's shares here too, they'd silently carry forward whatever their last
+    // known figure was — sometimes months stale — permanently distorting the
+    // divisor from this rebalance onward. (recomputeAndPersistIndex runs inside
+    // refreshConstituentData, so only call it separately on the backfill-only path.)
+    if (isNew) {
+      const others = existingConstituents.filter((r) => r.isActive);
+      await refreshConstituentData(others, {
+        includeShares: true,
+        includeFinancials: false,
+        includeMeta: false,
+      });
+    } else {
+      await recomputeAndPersistIndex();
+    }
 
     return NextResponse.json(
       { ok: true, ticker: parsed.ticker, onboard, constituents: await listConstituents() },

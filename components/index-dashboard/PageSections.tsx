@@ -186,8 +186,8 @@ export function DashboardFooter() {
                 <Image
                   src="/trifecta-capital-logo.png"
                   alt="Trifecta Capital"
-                  width={166}
-                  height={48}
+                  width={317}
+                  height={241}
                   className="nei-footer-logo"
                 />
               </div>
