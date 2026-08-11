@@ -77,6 +77,7 @@ export function ChartCanvas({
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
+            allowDuplicatedCategory={false}
           />
           <YAxis
             domain={["auto", "auto"]}
