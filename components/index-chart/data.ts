@@ -51,6 +51,47 @@ export function getSeriesReturn(rows: ChartRow[], key: string): number | null {
   return first !== null && last !== null && first !== 0 ? (last / first - 1) * 100 : null;
 }
 
+/**
+ * Which "label" values the x-axis should render as ticks. The label is set
+ * per row (e.g. per trading day), so once the axis is at month granularity
+ * many consecutive rows share the same text — Recharts' own width-based
+ * thinning picks candidates by row position, not by text, so it can still
+ * land on several rows in a row that all say "Aug '25". Deduping here (first
+ * occurrence, evenly thinned) and passing the result via <XAxis ticks=.../>
+ * fixes the display without touching the axis's scale/domain, which is what
+ * spaces the actual line points and must stay one-slot-per-row.
+ */
+export function getAxisTicks(rows: { label: string }[], maxTicks = 14): string[] {
+  if (!rows.length) return [];
+  const firstIndexOf = new Map<string, number>();
+  rows.forEach((row, i) => {
+    if (!firstIndexOf.has(row.label)) firstIndexOf.set(row.label, i);
+  });
+  const uniqueLabels = [...firstIndexOf.keys()];
+
+  const picked =
+    uniqueLabels.length <= maxTicks
+      ? uniqueLabels
+      : (() => {
+          const step = (uniqueLabels.length - 1) / (maxTicks - 1);
+          return Array.from({ length: maxTicks }, (_, i) => uniqueLabels[Math.round(i * step)]);
+        })();
+
+  // A pick like "Now" — appended as a single synthetic row right after the
+  // last real trading day — can land almost on top of the preceding month's
+  // tick. Walk back from the end (always keeping the last tick) and drop any
+  // earlier pick whose row is too close to the nearest kept tick, rather than
+  // letting their text overlap.
+  const minGap = (rows.length / maxTicks) * 0.4;
+  const kept = [picked[picked.length - 1]];
+  for (let i = picked.length - 2; i >= 0; i--) {
+    if (firstIndexOf.get(kept[0])! - firstIndexOf.get(picked[i])! >= minGap) {
+      kept.unshift(picked[i]);
+    }
+  }
+  return kept;
+}
+
 export function getChartTitle(mode: ChartMode, sector: Sector) {
   if (mode === "detail") return `${sector} performance`;
   return mode === "compare" ? "Sector compare" : "NEI Top 50 performance";
