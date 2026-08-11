@@ -81,8 +81,8 @@ export default function MethodologyPage() {
           <Image
             src="/trifecta-capital-logo.png"
             alt="Trifecta Capital"
-            width={317}
-            height={241}
+            width={1800}
+            height={517}
             className="nei-doc-logo"
             priority
           />
