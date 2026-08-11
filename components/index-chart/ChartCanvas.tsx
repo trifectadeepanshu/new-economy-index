@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
 import { BENCHMARK_META, SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
+import { getAxisTicks } from "@/components/index-chart/data";
 import { formatValue } from "@/components/index-chart/format";
 import { ChartTooltip } from "@/components/index-chart/ChartTooltip";
 import type { ChartMode, ChartPoint, ChartRow } from "@/components/index-chart/types";
@@ -46,6 +47,8 @@ export function ChartCanvas({
   showTrifecta,
   showBaseLine,
 }: ChartCanvasProps) {
+  const axisTicks = getAxisTicks(data);
+
   return (
     <div className="nei-chart-canvas">
       <ResponsiveContainer width="100%" height="100%">
@@ -76,8 +79,8 @@ export function ChartCanvas({
             }}
             axisLine={false}
             tickLine={false}
-            interval="preserveStartEnd"
-            allowDuplicatedCategory={false}
+            ticks={axisTicks}
+            interval={0}
           />
           <YAxis
             domain={["auto", "auto"]}

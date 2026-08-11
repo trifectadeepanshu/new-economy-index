@@ -51,6 +51,30 @@ export function getSeriesReturn(rows: ChartRow[], key: string): number | null {
   return first !== null && last !== null && first !== 0 ? (last / first - 1) * 100 : null;
 }
 
+/**
+ * Which "label" values the x-axis should render as ticks. The label is set
+ * per row (e.g. per trading day), so once the axis is at month granularity
+ * many consecutive rows share the same text — Recharts' own width-based
+ * thinning picks candidates by row position, not by text, so it can still
+ * land on several rows in a row that all say "Aug '25". Deduping here (first
+ * occurrence, evenly thinned) and passing the result via <XAxis ticks=.../>
+ * fixes the display without touching the axis's scale/domain, which is what
+ * spaces the actual line points and must stay one-slot-per-row.
+ */
+export function getAxisTicks(rows: { label: string }[], maxTicks = 14): string[] {
+  const uniqueLabels: string[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    if (!seen.has(row.label)) {
+      seen.add(row.label);
+      uniqueLabels.push(row.label);
+    }
+  }
+  if (uniqueLabels.length <= maxTicks) return uniqueLabels;
+  const step = (uniqueLabels.length - 1) / (maxTicks - 1);
+  return Array.from({ length: maxTicks }, (_, i) => uniqueLabels[Math.round(i * step)]);
+}
+
 export function getChartTitle(mode: ChartMode, sector: Sector) {
   if (mode === "detail") return `${sector} performance`;
   return mode === "compare" ? "Sector compare" : "NEI Top 50 performance";
