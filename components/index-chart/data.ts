@@ -62,17 +62,34 @@ export function getSeriesReturn(rows: ChartRow[], key: string): number | null {
  * spaces the actual line points and must stay one-slot-per-row.
  */
 export function getAxisTicks(rows: { label: string }[], maxTicks = 14): string[] {
-  const uniqueLabels: string[] = [];
-  const seen = new Set<string>();
-  for (const row of rows) {
-    if (!seen.has(row.label)) {
-      seen.add(row.label);
-      uniqueLabels.push(row.label);
+  if (!rows.length) return [];
+  const firstIndexOf = new Map<string, number>();
+  rows.forEach((row, i) => {
+    if (!firstIndexOf.has(row.label)) firstIndexOf.set(row.label, i);
+  });
+  const uniqueLabels = [...firstIndexOf.keys()];
+
+  const picked =
+    uniqueLabels.length <= maxTicks
+      ? uniqueLabels
+      : (() => {
+          const step = (uniqueLabels.length - 1) / (maxTicks - 1);
+          return Array.from({ length: maxTicks }, (_, i) => uniqueLabels[Math.round(i * step)]);
+        })();
+
+  // A pick like "Now" — appended as a single synthetic row right after the
+  // last real trading day — can land almost on top of the preceding month's
+  // tick. Walk back from the end (always keeping the last tick) and drop any
+  // earlier pick whose row is too close to the nearest kept tick, rather than
+  // letting their text overlap.
+  const minGap = (rows.length / maxTicks) * 0.4;
+  const kept = [picked[picked.length - 1]];
+  for (let i = picked.length - 2; i >= 0; i--) {
+    if (firstIndexOf.get(kept[0])! - firstIndexOf.get(picked[i])! >= minGap) {
+      kept.unshift(picked[i]);
     }
   }
-  if (uniqueLabels.length <= maxTicks) return uniqueLabels;
-  const step = (uniqueLabels.length - 1) / (maxTicks - 1);
-  return Array.from({ length: maxTicks }, (_, i) => uniqueLabels[Math.round(i * step)]);
+  return kept;
 }
 
 export function getChartTitle(mode: ChartMode, sector: Sector) {
