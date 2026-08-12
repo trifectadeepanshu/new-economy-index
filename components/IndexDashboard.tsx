@@ -10,17 +10,26 @@ import {
 } from "@/components/index-dashboard/PageSections";
 import { useIndexDashboardModel } from "@/components/index-dashboard/useIndexDashboardModel";
 import { CurrencyProvider } from "@/components/index-dashboard/CurrencyContext";
+import type { LiveIndexPayload } from "@/lib/index-api";
 
-export function IndexDashboard() {
+export function IndexDashboard({
+  initialLiveData,
+}: {
+  initialLiveData?: LiveIndexPayload | null;
+}) {
   return (
     <CurrencyProvider>
-      <IndexDashboardInner />
+      <IndexDashboardInner initialLiveData={initialLiveData} />
     </CurrencyProvider>
   );
 }
 
-function IndexDashboardInner() {
-  const model = useIndexDashboardModel();
+function IndexDashboardInner({
+  initialLiveData,
+}: {
+  initialLiveData?: LiveIndexPayload | null;
+}) {
+  const model = useIndexDashboardModel(initialLiveData);
 
   return (
     <div className="nei-dashboard">

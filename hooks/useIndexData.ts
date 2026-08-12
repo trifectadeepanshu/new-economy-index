@@ -111,8 +111,12 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown error";
 }
 
-export function useIndexData(currency: Currency) {
-  const [state, setState] = useState<LiveIndexState>(INITIAL_STATE);
+export function useIndexData(currency: Currency, initialLiveData?: LiveIndexPayload | null) {
+  const [state, setState] = useState<LiveIndexState>(() =>
+    initialLiveData
+      ? { data: normalizeLiveData(initialLiveData), isLoading: false, error: null }
+      : INITIAL_STATE
+  );
   const lastSuccessfulFetchRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 

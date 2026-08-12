@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { CompanyCards } from "@/components/company-grid/CompanyCards";
 import { CompanyGridSkeleton } from "@/components/company-grid/CompanyGridSkeleton";
 import { ConstituentTools } from "@/components/company-grid/ConstituentTools";
@@ -10,7 +11,13 @@ import {
   useConstituentRows,
 } from "@/components/company-grid/useConstituentRows";
 import { ViewToggle } from "@/components/company-grid/ViewToggle";
-import { CompanyModal } from "@/components/company-grid/CompanyModal";
+
+// Deferred: only needed after a user clicks a company card, and it pulls in
+// recharts — no reason to block initial hydration on its JS.
+const CompanyModal = dynamic(
+  () => import("@/components/company-grid/CompanyModal").then((m) => m.CompanyModal),
+  { ssr: false }
+);
 import type { StockData } from "@/lib/index-api";
 import type {
   CompanyGridProps,

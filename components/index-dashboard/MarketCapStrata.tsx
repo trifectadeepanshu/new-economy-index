@@ -1,10 +1,17 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
+import dynamic from "next/dynamic";
 import type { Currency, StockData } from "@/lib/index-api";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
-import { CompanyModal } from "@/components/company-grid/CompanyModal";
 import { formatMarketCap, formatSignedPercent } from "@/components/company-grid/format";
+
+// Deferred: only needed after a user clicks a company row, and it pulls in
+// recharts — no reason to block initial hydration on its JS.
+const CompanyModal = dynamic(
+  () => import("@/components/company-grid/CompanyModal").then((m) => m.CompanyModal),
+  { ssr: false }
+);
 
 type BucketDef = {
   key: string;
