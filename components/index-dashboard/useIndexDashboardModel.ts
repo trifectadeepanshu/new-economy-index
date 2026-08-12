@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useIndexData } from "@/hooks/useIndexData";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
-import type { IndexHistoryPayload, LiveTickerPayload, StockData } from "@/lib/index-api";
+import type {
+  IndexHistoryPayload,
+  LiveIndexPayload,
+  LiveTickerPayload,
+  StockData,
+} from "@/lib/index-api";
 import { INDEX_BASE_VALUE, INDEX_SIZE } from "@/lib/companies";
 import { getISTDate, isMarketOpen } from "@/lib/market-hours";
 import { formatNumber } from "@/components/index-dashboard/format";
@@ -131,9 +136,9 @@ function useValueFlash(indexValue: number | null) {
   return flash;
 }
 
-export function useIndexDashboardModel() {
+export function useIndexDashboardModel(initialLiveData?: LiveIndexPayload | null) {
   const { currency, setCurrency } = useCurrency();
-  const { data, isLoading, error, refresh } = useIndexData(currency);
+  const { data, isLoading, error, refresh } = useIndexData(currency, initialLiveData);
   const sparkSeries = useSparkSeries();
   const todayDate = getISTDate();
   const marketOpen = isMarketOpen();
