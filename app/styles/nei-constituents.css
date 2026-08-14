@@ -245,6 +245,59 @@
     text-decoration: underline;
   }
 
+  .nei-cagr-range {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .nei-cagr-range select,
+  .nei-cagr-range input[type="date"] {
+    height: 22px;
+    border: 1px solid var(--nei-grid-strong);
+    border-radius: 5px;
+    background: var(--nei-chip);
+    color: var(--nei-fg);
+    padding: 0 4px;
+    font: 600 10px var(--font-inter), ui-monospace, monospace;
+    text-transform: none;
+    cursor: pointer;
+  }
+
+  .nei-cagr-range select:focus,
+  .nei-cagr-range input[type="date"]:focus {
+    outline: none;
+    border-color: var(--nei-accent);
+  }
+
+  .nei-company-grid.is-terminal .nei-cagr-range select,
+  .nei-company-grid.is-terminal .nei-cagr-range input[type="date"],
+  .nei-constituents.is-terminal .nei-cagr-range select,
+  .nei-constituents.is-terminal .nei-cagr-range input[type="date"] {
+    background: rgba(232, 235, 240, 0.07);
+    border-color: rgba(232, 235, 240, 0.15);
+    color-scheme: dark;
+  }
+
+  .nei-cagr-range-loading {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--nei-accent);
+    animation: nei-cagr-pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes nei-cagr-pulse {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
   .nei-constituent-table th.is-right,
   .nei-constituent-table td.is-right {
     text-align: right;

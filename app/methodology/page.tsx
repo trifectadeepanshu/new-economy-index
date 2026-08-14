@@ -307,7 +307,14 @@ export default function MethodologyPage() {
               annualised from its IPO Offer Price, not its first-day opening or
               closing price, consistent with the IPO fast-entry treatment in
               Section 4.4, so the listing-day move is captured as part of the
-              constituent&apos;s tracked return.
+              constituent&apos;s tracked return. As with 1Y %, the figure is left
+              blank where the underlying window is under roughly three months,
+              since annualising a very short window produces a rate that is not
+              meaningful. A dropdown above the CAGR column lets a viewer switch
+              this default window to a fixed 1, 3, or 5 year lookback, or a
+              custom start date. In that case CAGR is annualised between the
+              selected date&apos;s closing price and the current price for every
+              constituent, subject to the same minimum-window floor.
             </li>
           </ul>
         </DocSection>

@@ -1,3 +1,4 @@
+import { CagrRangeControl } from "@/components/company-grid/CagrRangeControl";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import {
   formatMarketCap,
@@ -5,6 +6,7 @@ import {
   formatSignedPercent,
 } from "@/components/company-grid/format";
 import type {
+  CagrRangeMode,
   CompanyGridVariant,
   ConstituentRow,
   SortKey,
@@ -45,7 +47,7 @@ const COLUMNS: Array<{
     key: "cagr",
     label: "CAGR",
     align: "right",
-    title: "Since Base, annualized.",
+    title: "Since Base, annualized. Pick a different window from the dropdown below.",
     note: { n: 2, anchor: "note-cagr" },
   },
 ];
@@ -77,9 +79,19 @@ function SortButton({
 function TableHeader({
   sort,
   onSort,
+  cagrMode,
+  onCagrModeChange,
+  customCagrDate,
+  onCustomCagrDateChange,
+  cagrLoading,
 }: {
   sort: SortState;
   onSort: (key: SortKey) => void;
+  cagrMode: CagrRangeMode;
+  onCagrModeChange: (mode: CagrRangeMode) => void;
+  customCagrDate: string | null;
+  onCustomCagrDateChange: (date: string) => void;
+  cagrLoading: boolean;
 }) {
   return (
     <thead>
@@ -111,6 +123,15 @@ function TableHeader({
                   {column.note.n}
                 </a>
               </sup>
+            )}
+            {column.key === "cagr" && (
+              <CagrRangeControl
+                mode={cagrMode}
+                onModeChange={onCagrModeChange}
+                customDate={customCagrDate}
+                onCustomDateChange={onCustomCagrDateChange}
+                isLoading={cagrLoading}
+              />
             )}
           </th>
         ))}
@@ -161,6 +182,11 @@ export function ConstituentTable({
   variant = "default",
   currency = "inr",
   onSelect,
+  cagrMode,
+  onCagrModeChange,
+  customCagrDate,
+  onCustomCagrDateChange,
+  cagrLoading = false,
 }: {
   rows: ConstituentRow[];
   sort: SortState;
@@ -168,6 +194,11 @@ export function ConstituentTable({
   variant?: CompanyGridVariant;
   currency?: Currency;
   onSelect?: (row: ConstituentRow) => void;
+  cagrMode: CagrRangeMode;
+  onCagrModeChange: (mode: CagrRangeMode) => void;
+  customCagrDate: string | null;
+  onCustomCagrDateChange: (date: string) => void;
+  cagrLoading?: boolean;
 }) {
   const isTerminal = variant === "terminal";
 
@@ -175,7 +206,15 @@ export function ConstituentTable({
     <div className={`nei-constituents ${isTerminal ? "is-terminal" : ""}`}>
       <div className="nei-constituent-table-wrap">
         <table className="nei-constituent-table">
-          <TableHeader sort={sort} onSort={onSort} />
+          <TableHeader
+            sort={sort}
+            onSort={onSort}
+            cagrMode={cagrMode}
+            onCagrModeChange={onCagrModeChange}
+            customCagrDate={customCagrDate}
+            onCustomCagrDateChange={onCustomCagrDateChange}
+            cagrLoading={cagrLoading}
+          />
           <tbody>
             {rows.map((row, index) => {
               const isPortfolio = row.isPortfolio;

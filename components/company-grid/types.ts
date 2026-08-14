@@ -14,6 +14,7 @@ export type SortKey =
   | "ratio"
   | "cagr";
 export type SectorFilter = "All" | string;
+export type CagrRangeMode = "sinceBase" | "1y" | "3y" | "5y" | "custom";
 
 export type CompanyGridProps = {
   stocks: StockData[];
