@@ -11,7 +11,8 @@ export type SortKey =
   | "marketCap"
   | "changePct"
   | "oneYearChangePct"
-  | "ratio";
+  | "ratio"
+  | "cagr";
 export type SectorFilter = "All" | string;
 
 export type CompanyGridProps = {
@@ -31,4 +32,7 @@ export type SortState = {
 
 export type ConstituentRow = StockData & {
   sinceBase: number | null;
+  /** Annualized version of sinceBase (CAGR since index entry). Null for
+   * constituents that entered too recently for annualizing to be meaningful. */
+  cagr: number | null;
 };

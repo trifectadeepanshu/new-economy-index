@@ -36,6 +36,12 @@ const COLUMNS: Array<{
     title:
       "Return since the constituent's index-entry price — the index base (31 Dec 2020) for names already listed then, or the IPO price for later listings.",
   },
+  {
+    key: "cagr",
+    label: "CAGR",
+    align: "right",
+    title: "Since Base, annualized. Blank for constituents that entered too recently to annualize meaningfully.",
+  },
 ];
 
 function SortButton({
@@ -184,6 +190,13 @@ export function ConstituentTable({
                     }`}
                   >
                     {formatSignedPercent(row.sinceBase, 1)}
+                  </td>
+                  <td
+                    className={`is-right nei-mono ${
+                      (row.cagr ?? 0) >= 0 ? "is-positive" : "is-negative"
+                    }`}
+                  >
+                    {formatSignedPercent(row.cagr, 1)}
                   </td>
                 </tr>
               );
