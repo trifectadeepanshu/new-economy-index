@@ -52,7 +52,33 @@ const COLUMNS: Array<{
   },
 ];
 
+// Split into a labeled button plus a separate arrow button (both trigger the
+// same sort) so a footnote <sup><a> can sit between them in reading order —
+// right after the label, before the arrow — without nesting an <a> inside a
+// <button>, which is invalid HTML.
 function SortButton({
+  column,
+  sort,
+  onSort,
+}: {
+  column: (typeof COLUMNS)[number];
+  sort: SortState;
+  onSort: (key: SortKey) => void;
+}) {
+  const active = sort.key === column.key;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(column.key)}
+      className={active ? "is-active" : ""}
+    >
+      {column.label}
+    </button>
+  );
+}
+
+function SortArrow({
   column,
   sort,
   onSort,
@@ -67,11 +93,12 @@ function SortButton({
   return (
     <button
       type="button"
+      className={`nei-sort-arrow${active ? " is-active" : ""}`}
       onClick={() => onSort(column.key)}
-      className={active ? "is-active" : ""}
+      tabIndex={-1}
+      aria-hidden="true"
     >
-      {column.label}
-      <span aria-hidden="true">{icon}</span>
+      {icon}
     </button>
   );
 }
@@ -124,6 +151,7 @@ function TableHeader({
                 </a>
               </sup>
             )}
+            <SortArrow column={column} sort={sort} onSort={onSort} />
             {column.key === "cagr" && (
               <CagrRangeControl
                 mode={cagrMode}

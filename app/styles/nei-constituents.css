@@ -230,14 +230,32 @@
     color: var(--nei-fg);
   }
 
+  .nei-sort-arrow {
+    margin-left: 4px;
+    min-height: 32px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    opacity: 0.55;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .nei-sort-arrow.is-active {
+    opacity: 1;
+    color: var(--nei-fg);
+  }
+
   .nei-doc-note-ref {
-    margin-left: 2px;
+    margin-left: 3px;
   }
 
   .nei-doc-note-ref a {
-    color: var(--nei-muted);
+    color: var(--nei-fg);
     text-decoration: none;
-    font-weight: 700;
+    font-size: 1.05em;
+    font-weight: 800;
   }
 
   .nei-doc-note-ref a:hover {
@@ -248,12 +266,12 @@
   .nei-cagr-range {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 4px;
     margin-top: 6px;
   }
 
-  .nei-cagr-range select,
-  .nei-cagr-range input[type="date"] {
+  .nei-cagr-range select {
     height: 22px;
     border: 1px solid var(--nei-grid-strong);
     border-radius: 5px;
@@ -265,19 +283,22 @@
     cursor: pointer;
   }
 
-  .nei-cagr-range select:focus,
-  .nei-cagr-range input[type="date"]:focus {
+  .nei-cagr-range select:focus {
     outline: none;
     border-color: var(--nei-accent);
   }
 
   .nei-company-grid.is-terminal .nei-cagr-range select,
-  .nei-company-grid.is-terminal .nei-cagr-range input[type="date"],
-  .nei-constituents.is-terminal .nei-cagr-range select,
-  .nei-constituents.is-terminal .nei-cagr-range input[type="date"] {
+  .nei-constituents.is-terminal .nei-cagr-range select {
     background: rgba(232, 235, 240, 0.07);
     border-color: rgba(232, 235, 240, 0.15);
     color-scheme: dark;
+  }
+
+  .nei-cagr-range .nei-dp-trigger {
+    min-height: 22px;
+    padding: 2px 8px;
+    font-size: 10px;
   }
 
   .nei-cagr-range-loading {

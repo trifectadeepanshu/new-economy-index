@@ -1,5 +1,6 @@
 import { INDEX_BASE_DATE } from "@/lib/companies";
 import { getISTDate } from "@/lib/market-hours";
+import { SingleDatePicker } from "@/components/company-grid/SingleDatePicker";
 import type { CagrRangeMode } from "@/components/company-grid/types";
 
 const OPTIONS: { value: CagrRangeMode; label: string }[] = [
@@ -37,13 +38,12 @@ export function CagrRangeControl({
         ))}
       </select>
       {mode === "custom" && (
-        <input
-          type="date"
-          value={customDate ?? ""}
+        <SingleDatePicker
+          value={customDate}
           min={INDEX_BASE_DATE}
           max={getISTDate()}
-          onChange={(e) => onCustomDateChange(e.target.value)}
-          aria-label="Custom CAGR start date"
+          onChange={onCustomDateChange}
+          placeholder="Pick a date"
         />
       )}
       {isLoading && (
