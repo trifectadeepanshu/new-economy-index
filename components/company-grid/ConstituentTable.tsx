@@ -4,7 +4,6 @@ import {
   formatPrice,
   formatSignedPercent,
 } from "@/components/company-grid/format";
-import { RowSparkline } from "@/components/company-grid/RowSparkline";
 import type {
   CompanyGridVariant,
   ConstituentRow,
@@ -24,7 +23,12 @@ const COLUMNS: Array<{
   { key: "sector", label: "Sector", align: "left" },
   { key: "price", label: "Price", align: "right" },
   { key: "marketCap", label: "Market Cap", align: "right" },
-  { key: "changePct", label: "Day %", align: "right" },
+  {
+    key: "oneYearChangePct",
+    label: "1Y %",
+    align: "right",
+    title: "Trailing 12-month price return.",
+  },
   {
     key: "ratio",
     label: "Since Base",
@@ -85,7 +89,6 @@ function TableHeader({
             <SortButton column={column} sort={sort} onSort={onSort} />
           </th>
         ))}
-        <th className="is-right">30D</th>
       </tr>
     </thead>
   );
@@ -170,10 +173,10 @@ export function ConstituentTable({
                   <td className="is-right nei-mono">{formatMarketCap(row.marketCap, currency)}</td>
                   <td
                     className={`is-right nei-mono ${
-                      (row.changePct ?? 0) >= 0 ? "is-positive" : "is-negative"
+                      (row.oneYearChangePct ?? 0) >= 0 ? "is-positive" : "is-negative"
                     }`}
                   >
-                    {formatSignedPercent(row.changePct)}
+                    {formatSignedPercent(row.oneYearChangePct)}
                   </td>
                   <td
                     className={`is-right nei-mono ${
@@ -181,9 +184,6 @@ export function ConstituentTable({
                     }`}
                   >
                     {formatSignedPercent(row.sinceBase, 1)}
-                  </td>
-                  <td className="is-right">
-                    <RowSparkline row={row} />
                   </td>
                 </tr>
               );

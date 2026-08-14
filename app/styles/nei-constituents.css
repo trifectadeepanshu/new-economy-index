@@ -358,19 +358,6 @@
     font-weight: 700;
   }
 
-  .nei-constituent-spark {
-    display: inline-block;
-    width: 118px;
-    height: 34px;
-    opacity: 0.58;
-    transition: opacity 160ms ease, transform 160ms ease;
-  }
-
-  .nei-constituent-table tbody tr:hover .nei-constituent-spark {
-    opacity: 1;
-    transform: translateY(-1px);
-  }
-
   .nei-company-grid.is-terminal .nei-constituent-search,
   .nei-constituents.is-terminal .nei-constituent-search {
     background: rgba(232,235,240,0.07);

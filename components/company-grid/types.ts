@@ -10,6 +10,7 @@ export type SortKey =
   | "price"
   | "marketCap"
   | "changePct"
+  | "oneYearChangePct"
   | "ratio";
 export type SectorFilter = "All" | string;
 
