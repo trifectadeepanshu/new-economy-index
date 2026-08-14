@@ -230,6 +230,21 @@
     color: var(--nei-fg);
   }
 
+  .nei-doc-note-ref {
+    margin-left: 2px;
+  }
+
+  .nei-doc-note-ref a {
+    color: var(--nei-muted);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .nei-doc-note-ref a:hover {
+    color: var(--nei-accent);
+    text-decoration: underline;
+  }
+
   .nei-constituent-table th.is-right,
   .nei-constituent-table td.is-right {
     text-align: right;

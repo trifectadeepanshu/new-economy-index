@@ -292,6 +292,23 @@ export default function MethodologyPage() {
               refreshed on a quarterly basis, keeping market-capitalisation
               weights current between reviews.
             </li>
+            <li id="note-1y-return">
+              <strong>1Y % is blank for recent listings.</strong> This figure
+              requires a full year of trading history to be meaningful. For a
+              constituent that has not completed a year since listing, the field
+              is left blank rather than showing an approximate or partial-year
+              figure.
+            </li>
+            <li id="note-cagr">
+              <strong>CAGR uses different entry points by listing date.</strong>{" "}
+              For a constituent listed before the index base date (31 December
+              2020), CAGR is annualised from the index base price on that date.
+              For a constituent listed after the index base date, CAGR is
+              annualised from its IPO Offer Price, not its first-day opening or
+              closing price, consistent with the IPO fast-entry treatment in
+              Section 4.4, so the listing-day move is captured as part of the
+              constituent&apos;s tracked return.
+            </li>
           </ul>
         </DocSection>
 

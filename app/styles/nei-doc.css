@@ -160,6 +160,18 @@
     scroll-margin-top: 88px;
   }
 
+  /* Footnote targets deep-linked from the constituent table (e.g. #note-cagr)
+     need their own offset — they're not section-level anchors. */
+  .nei-doc-section li[id] {
+    scroll-margin-top: 88px;
+    transition: background 400ms ease;
+  }
+
+  .nei-doc-section li[id]:target {
+    background: rgba(224, 122, 56, 0.1);
+    border-radius: 6px;
+  }
+
   .nei-doc-section h2 {
     display: flex;
     align-items: baseline;

@@ -13,11 +13,15 @@ import type {
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 import type { Currency } from "@/lib/index-api";
 
+/** Deep-links a column header to its explanation in the methodology page. */
+type ColumnNote = { n: number; anchor: string };
+
 const COLUMNS: Array<{
   key: SortKey;
   label: string;
   align: "left" | "right";
   title?: string;
+  note?: ColumnNote;
 }> = [
   { key: "name", label: "Company", align: "left" },
   { key: "sector", label: "Sector", align: "left" },
@@ -28,6 +32,7 @@ const COLUMNS: Array<{
     label: "1Y %",
     align: "right",
     title: "Trailing 12-month price return.",
+    note: { n: 1, anchor: "note-1y-return" },
   },
   {
     key: "ratio",
@@ -40,7 +45,8 @@ const COLUMNS: Array<{
     key: "cagr",
     label: "CAGR",
     align: "right",
-    title: "Since Base, annualized. Blank for constituents that entered too recently to annualize meaningfully.",
+    title: "Since Base, annualized.",
+    note: { n: 2, anchor: "note-cagr" },
   },
 ];
 
@@ -93,6 +99,19 @@ function TableHeader({
             title={column.title}
           >
             <SortButton column={column} sort={sort} onSort={onSort} />
+            {column.note && (
+              <sup className="nei-doc-note-ref">
+                <a
+                  href={`/methodology#${column.note.anchor}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`Footnote ${column.note.n}: how ${column.label} is calculated`}
+                >
+                  {column.note.n}
+                </a>
+              </sup>
+            )}
           </th>
         ))}
       </tr>
