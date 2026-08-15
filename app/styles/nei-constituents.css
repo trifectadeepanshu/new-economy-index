@@ -271,7 +271,7 @@
     margin-top: 8px;
   }
 
-  .nei-cagr-range select {
+  .nei-cagr-range > select {
     height: 38px;
     border: 1px solid var(--nei-grid-strong);
     border-radius: 8px;
@@ -283,13 +283,13 @@
     cursor: pointer;
   }
 
-  .nei-cagr-range select:focus {
+  .nei-cagr-range > select:focus {
     outline: none;
     border-color: var(--nei-accent);
   }
 
-  .nei-company-grid.is-terminal .nei-cagr-range select,
-  .nei-constituents.is-terminal .nei-cagr-range select {
+  .nei-company-grid.is-terminal .nei-cagr-range > select,
+  .nei-constituents.is-terminal .nei-cagr-range > select {
     background: rgba(232, 235, 240, 0.07);
     border-color: rgba(232, 235, 240, 0.15);
     color-scheme: dark;
