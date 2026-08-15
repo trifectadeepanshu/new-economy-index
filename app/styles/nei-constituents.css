@@ -212,7 +212,7 @@
     text-transform: uppercase;
   }
 
-  .nei-constituent-table th button {
+  .nei-constituent-table thead th > button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -226,7 +226,7 @@
     cursor: pointer;
   }
 
-  .nei-constituent-table th button.is-active {
+  .nei-constituent-table thead th > button.is-active {
     color: var(--nei-fg);
   }
 
@@ -267,18 +267,18 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 4px;
-    margin-top: 6px;
+    gap: 6px;
+    margin-top: 8px;
   }
 
   .nei-cagr-range select {
-    height: 22px;
+    height: 38px;
     border: 1px solid var(--nei-grid-strong);
-    border-radius: 5px;
+    border-radius: 8px;
     background: var(--nei-chip);
     color: var(--nei-fg);
-    padding: 0 4px;
-    font: 600 10px var(--font-inter), ui-monospace, monospace;
+    padding: 0 28px 0 10px;
+    font: 600 12px var(--font-inter), ui-monospace, monospace;
     text-transform: none;
     cursor: pointer;
   }
@@ -296,9 +296,9 @@
   }
 
   .nei-cagr-range .nei-dp-trigger {
-    min-height: 22px;
-    padding: 2px 8px;
-    font-size: 10px;
+    min-height: 38px;
+    padding: 6px 12px;
+    font-size: 12px;
   }
 
   .nei-cagr-range-loading {
