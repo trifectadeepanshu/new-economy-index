@@ -933,6 +933,7 @@
   .nei-dp {
     position: relative;
     display: inline-flex;
+    text-transform: none;
   }
 
   .nei-dp-scrim {

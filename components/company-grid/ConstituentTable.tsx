@@ -1,11 +1,12 @@
+import { CagrRangeControl } from "@/components/company-grid/CagrRangeControl";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import {
   formatMarketCap,
   formatPrice,
   formatSignedPercent,
 } from "@/components/company-grid/format";
-import { RowSparkline } from "@/components/company-grid/RowSparkline";
 import type {
+  CagrRangeMode,
   CompanyGridVariant,
   ConstituentRow,
   SortKey,
@@ -14,17 +15,27 @@ import type {
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 import type { Currency } from "@/lib/index-api";
 
+/** Deep-links a column header to its explanation in the methodology page. */
+type ColumnNote = { n: number; anchor: string };
+
 const COLUMNS: Array<{
   key: SortKey;
   label: string;
   align: "left" | "right";
   title?: string;
+  note?: ColumnNote;
 }> = [
   { key: "name", label: "Company", align: "left" },
   { key: "sector", label: "Sector", align: "left" },
   { key: "price", label: "Price", align: "right" },
   { key: "marketCap", label: "Market Cap", align: "right" },
-  { key: "changePct", label: "Day %", align: "right" },
+  {
+    key: "oneYearChangePct",
+    label: "1Y %",
+    align: "right",
+    title: "Trailing 12-month price return.",
+    note: { n: 1, anchor: "note-1y-return" },
+  },
   {
     key: "ratio",
     label: "Since Base",
@@ -32,9 +43,42 @@ const COLUMNS: Array<{
     title:
       "Return since the constituent's index-entry price — the index base (31 Dec 2020) for names already listed then, or the IPO price for later listings.",
   },
+  {
+    key: "cagr",
+    label: "CAGR",
+    align: "right",
+    title: "Since Base, annualized. Pick a different window from the dropdown below.",
+    note: { n: 2, anchor: "note-cagr" },
+  },
 ];
 
+// Split into a labeled button plus a separate arrow button (both trigger the
+// same sort) so a footnote <sup><a> can sit between them in reading order —
+// right after the label, before the arrow — without nesting an <a> inside a
+// <button>, which is invalid HTML.
 function SortButton({
+  column,
+  sort,
+  onSort,
+}: {
+  column: (typeof COLUMNS)[number];
+  sort: SortState;
+  onSort: (key: SortKey) => void;
+}) {
+  const active = sort.key === column.key;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(column.key)}
+      className={active ? "is-active" : ""}
+    >
+      {column.label}
+    </button>
+  );
+}
+
+function SortArrow({
   column,
   sort,
   onSort,
@@ -49,11 +93,12 @@ function SortButton({
   return (
     <button
       type="button"
+      className={`nei-sort-arrow${active ? " is-active" : ""}`}
       onClick={() => onSort(column.key)}
-      className={active ? "is-active" : ""}
+      tabIndex={-1}
+      aria-hidden="true"
     >
-      {column.label}
-      <span aria-hidden="true">{icon}</span>
+      {icon}
     </button>
   );
 }
@@ -61,9 +106,19 @@ function SortButton({
 function TableHeader({
   sort,
   onSort,
+  cagrMode,
+  onCagrModeChange,
+  customCagrDate,
+  onCustomCagrDateChange,
+  cagrLoading,
 }: {
   sort: SortState;
   onSort: (key: SortKey) => void;
+  cagrMode: CagrRangeMode;
+  onCagrModeChange: (mode: CagrRangeMode) => void;
+  customCagrDate: string | null;
+  onCustomCagrDateChange: (date: string) => void;
+  cagrLoading: boolean;
 }) {
   return (
     <thead>
@@ -83,9 +138,31 @@ function TableHeader({
             title={column.title}
           >
             <SortButton column={column} sort={sort} onSort={onSort} />
+            {column.note && (
+              <sup className="nei-doc-note-ref">
+                <a
+                  href={`/methodology#${column.note.anchor}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`Footnote ${column.note.n}: how ${column.label} is calculated`}
+                >
+                  {column.note.n}
+                </a>
+              </sup>
+            )}
+            <SortArrow column={column} sort={sort} onSort={onSort} />
+            {column.key === "cagr" && (
+              <CagrRangeControl
+                mode={cagrMode}
+                onModeChange={onCagrModeChange}
+                customDate={customCagrDate}
+                onCustomDateChange={onCustomCagrDateChange}
+                isLoading={cagrLoading}
+              />
+            )}
           </th>
         ))}
-        <th className="is-right">30D</th>
       </tr>
     </thead>
   );
@@ -133,6 +210,11 @@ export function ConstituentTable({
   variant = "default",
   currency = "inr",
   onSelect,
+  cagrMode,
+  onCagrModeChange,
+  customCagrDate,
+  onCustomCagrDateChange,
+  cagrLoading = false,
 }: {
   rows: ConstituentRow[];
   sort: SortState;
@@ -140,6 +222,11 @@ export function ConstituentTable({
   variant?: CompanyGridVariant;
   currency?: Currency;
   onSelect?: (row: ConstituentRow) => void;
+  cagrMode: CagrRangeMode;
+  onCagrModeChange: (mode: CagrRangeMode) => void;
+  customCagrDate: string | null;
+  onCustomCagrDateChange: (date: string) => void;
+  cagrLoading?: boolean;
 }) {
   const isTerminal = variant === "terminal";
 
@@ -147,7 +234,15 @@ export function ConstituentTable({
     <div className={`nei-constituents ${isTerminal ? "is-terminal" : ""}`}>
       <div className="nei-constituent-table-wrap">
         <table className="nei-constituent-table">
-          <TableHeader sort={sort} onSort={onSort} />
+          <TableHeader
+            sort={sort}
+            onSort={onSort}
+            cagrMode={cagrMode}
+            onCagrModeChange={onCagrModeChange}
+            customCagrDate={customCagrDate}
+            onCustomCagrDateChange={onCustomCagrDateChange}
+            cagrLoading={cagrLoading}
+          />
           <tbody>
             {rows.map((row, index) => {
               const isPortfolio = row.isPortfolio;
@@ -170,10 +265,10 @@ export function ConstituentTable({
                   <td className="is-right nei-mono">{formatMarketCap(row.marketCap, currency)}</td>
                   <td
                     className={`is-right nei-mono ${
-                      (row.changePct ?? 0) >= 0 ? "is-positive" : "is-negative"
+                      (row.oneYearChangePct ?? 0) >= 0 ? "is-positive" : "is-negative"
                     }`}
                   >
-                    {formatSignedPercent(row.changePct)}
+                    {formatSignedPercent(row.oneYearChangePct)}
                   </td>
                   <td
                     className={`is-right nei-mono ${
@@ -182,8 +277,12 @@ export function ConstituentTable({
                   >
                     {formatSignedPercent(row.sinceBase, 1)}
                   </td>
-                  <td className="is-right">
-                    <RowSparkline row={row} />
+                  <td
+                    className={`is-right nei-mono ${
+                      (row.cagr ?? 0) >= 0 ? "is-positive" : "is-negative"
+                    }`}
+                  >
+                    {formatSignedPercent(row.cagr, 1)}
                   </td>
                 </tr>
               );
