@@ -59,6 +59,7 @@ function IndexDashboardInner({
         isLoading={model.isLoading}
         numCompanies={model.numCompanies}
         currency={model.currency}
+        usdInr={model.usdInr}
       />
 
       <DashboardFooter />

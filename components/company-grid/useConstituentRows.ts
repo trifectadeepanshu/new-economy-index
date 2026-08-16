@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { StockData } from "@/lib/index-api";
+import type { Currency, StockData } from "@/lib/index-api";
 import { INDEX_BASE_DATE } from "@/lib/companies";
 import { getISTDate } from "@/lib/market-hours";
 import type { CagrPricePoint } from "@/components/company-grid/useCustomCagr";
@@ -50,6 +50,14 @@ function computeCustomCagr(
   return (Math.pow(currentPrice / fromPrice, 365.25 / days) - 1) * 100;
 }
 
+/** /api/index/prices-on-date always returns raw INR closes, but `row.price`
+ * is in whatever currency the user has selected — convert the fetched price
+ * into that same currency before comparing them, or the ratio is meaningless
+ * (dividing a USD price by an INR one lands the "return" around -98%). */
+function toDisplayCurrency(inrPrice: number, currency: Currency, usdInr: number | null) {
+  return currency === "usd" && usdInr && usdInr > 0 ? inrPrice / usdInr : inrPrice;
+}
+
 function getSortDirection(key: SortKey) {
   return key === "ticker" || key === "name" || key === "sector" ? 1 : -1;
 }
@@ -91,7 +99,9 @@ export function useConstituentRows(
   sort: SortState,
   sector: SectorFilter,
   query: string,
-  customCagr?: CustomCagrWindow | null
+  customCagr?: CustomCagrWindow | null,
+  currency: Currency = "inr",
+  usdInr: number | null = null
 ) {
   return useMemo(() => {
     const today = getISTDate();
@@ -100,12 +110,18 @@ export function useConstituentRows(
       .filter((row) => matchesSearch(row, query))
       .map<ConstituentRow>((row) => {
         const sinceBase = row.ratio === null ? null : (row.ratio - 1) * 100;
-        const cagr = customCagr
-          ? computeCustomCagr(row.price, customCagr.prices[row.ticker]?.price, customCagr.fromDate, today)
-          : computeCagr(sinceBase, row.listedDate, today);
+        let cagr: number | null;
+        if (customCagr) {
+          const fromPriceInr = customCagr.prices[row.ticker]?.price;
+          const fromPrice =
+            fromPriceInr != null ? toDisplayCurrency(fromPriceInr, currency, usdInr) : undefined;
+          cagr = computeCustomCagr(row.price, fromPrice, customCagr.fromDate, today);
+        } else {
+          cagr = computeCagr(sinceBase, row.listedDate, today);
+        }
         return { ...row, sinceBase, cagr };
       });
 
     return rows.sort(compareRows(sort));
-  }, [query, sector, sort, stocks, customCagr]);
+  }, [query, sector, sort, stocks, customCagr, currency, usdInr]);
 }

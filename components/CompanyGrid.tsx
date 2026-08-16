@@ -112,6 +112,7 @@ export function CompanyGrid({
   stocks,
   isLoading,
   currency = "inr",
+  usdInr = null,
   view: externalView,
   onViewChange,
   showToggle: showToggleProp,
@@ -140,7 +141,7 @@ export function CompanyGrid({
   const { prices: cagrPrices, isLoading: cagrLoading } = useCustomCagrPrices(cagrFromDate);
   const customCagr = cagrFromDate && cagrPrices ? { fromDate: cagrFromDate, prices: cagrPrices } : null;
 
-  const rows = useConstituentRows(stocks, sort, sector, query, customCagr);
+  const rows = useConstituentRows(stocks, sort, sector, query, customCagr, currency, usdInr);
   const hasActiveFilters = query.trim().length > 0 || sector !== "All";
   // Re-resolve against the live rows every render so an open modal keeps
   // tracking its company's price/change as `stocks` refreshes on the 30s
