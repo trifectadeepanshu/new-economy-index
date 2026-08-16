@@ -20,6 +20,9 @@ export type CompanyGridProps = {
   stocks: StockData[];
   isLoading: boolean;
   currency?: Currency;
+  /** Live USD/INR rate — needed to convert the (always-INR) custom-CAGR
+   * lookup price into the display currency before comparing it to `price`. */
+  usdInr?: number | null;
   view?: CompanyGridView;
   onViewChange?: (view: CompanyGridView) => void;
   showToggle?: boolean;

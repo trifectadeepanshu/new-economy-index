@@ -80,11 +80,13 @@ export function ConstituentsSection({
   isLoading,
   numCompanies,
   currency,
+  usdInr,
 }: {
   stocks: StockData[];
   isLoading: boolean;
   numCompanies: number;
   currency: Currency;
+  usdInr: number | null;
 }) {
   return (
     <section id="constituents" className="nei-index-section nei-dark-section-vars">
@@ -115,6 +117,7 @@ export function ConstituentsSection({
               isLoading={isLoading}
               variant="terminal"
               currency={currency}
+              usdInr={usdInr}
             />
           </div>
         </div>
