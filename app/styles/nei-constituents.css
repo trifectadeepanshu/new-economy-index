@@ -267,11 +267,13 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 6px;
     margin-top: 8px;
   }
 
   .nei-cagr-range > select {
+    min-width: 124px;
     height: 38px;
     border: 1px solid var(--nei-grid-strong);
     border-radius: 8px;
@@ -296,6 +298,7 @@
   }
 
   .nei-cagr-range .nei-dp-trigger {
+    min-width: 134px;
     min-height: 38px;
     padding: 6px 12px;
     font-size: 12px;
