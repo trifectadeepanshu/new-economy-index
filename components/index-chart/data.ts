@@ -52,22 +52,21 @@ export function getSeriesReturn(rows: ChartRow[], key: string): number | null {
 }
 
 /**
- * Which "label" values the x-axis should render as ticks. The label is set
- * per row (e.g. per trading day), so once the axis is at month granularity
- * many consecutive rows share the same text — Recharts' own width-based
- * thinning picks candidates by row position, not by text, so it can still
- * land on several rows in a row that all say "Aug '25". Deduping here (first
- * occurrence, evenly thinned) and passing the result via <XAxis ticks=.../>
- * fixes the display without touching the axis's scale/domain, which is what
- * spaces the actual line points and must stay one-slot-per-row.
+ * Which x-axis values should render as ticks. The chart uses unique `date`
+ * values for positioning, while `label` is display text. For long ranges many
+ * rows share the same month label, so choose one date per visible label.
  */
-export function getAxisTicks(rows: { label: string }[], maxTicks = 14): string[] {
+export function getAxisTicks(rows: { date: string; label: string }[], maxTicks = 14): string[] {
   if (!rows.length) return [];
-  const firstIndexOf = new Map<string, number>();
+  const firstDateOfLabel = new Map<string, string>();
+  const firstIndexOfLabel = new Map<string, number>();
   rows.forEach((row, i) => {
-    if (!firstIndexOf.has(row.label)) firstIndexOf.set(row.label, i);
+    if (!firstDateOfLabel.has(row.label)) {
+      firstDateOfLabel.set(row.label, row.date);
+      firstIndexOfLabel.set(row.label, i);
+    }
   });
-  const uniqueLabels = [...firstIndexOf.keys()];
+  const uniqueLabels = [...firstDateOfLabel.keys()];
 
   const picked =
     uniqueLabels.length <= maxTicks
@@ -85,11 +84,11 @@ export function getAxisTicks(rows: { label: string }[], maxTicks = 14): string[]
   const minGap = (rows.length / maxTicks) * 0.4;
   const kept = [picked[picked.length - 1]];
   for (let i = picked.length - 2; i >= 0; i--) {
-    if (firstIndexOf.get(kept[0])! - firstIndexOf.get(picked[i])! >= minGap) {
+    if (firstIndexOfLabel.get(kept[0])! - firstIndexOfLabel.get(picked[i])! >= minGap) {
       kept.unshift(picked[i]);
     }
   }
-  return kept;
+  return kept.map((label) => firstDateOfLabel.get(label)!);
 }
 
 export function getChartTitle(mode: ChartMode, sector: Sector) {

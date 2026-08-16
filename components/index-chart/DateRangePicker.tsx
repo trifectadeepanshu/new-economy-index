@@ -219,7 +219,7 @@ export function DateRangePicker({
           />
           <div className="nei-dp-pop" role="dialog" aria-label="Select date range">
           <div className="nei-dp-endpoints">
-            <label className={`nei-dp-endpoint${!end ? " is-active" : ""}`}>
+            <label className={`nei-dp-endpoint${!start || Boolean(end) ? " is-active" : ""}`}>
               <span>Start</span>
               <input
                 className={`nei-dp-field nei-mono${invalidField === "start" ? " is-invalid" : ""}`}

@@ -77,7 +77,12 @@ export function ChartState({
   tone: "loading" | "error" | "empty";
   children?: ReactNode;
 }) {
-  return <div className={`nei-chart-state is-${tone}`}>{children}</div>;
+  const role = tone === "error" ? "alert" : "status";
+  return (
+    <div className={`nei-chart-state is-${tone}`} role={role} aria-live="polite">
+      {children ?? (tone === "loading" ? <span className="sr-only">Loading chart data...</span> : null)}
+    </div>
+  );
 }
 
 /** Range segmented control (1W/1M/1Y/Max/Custom) + the custom date picker. */
