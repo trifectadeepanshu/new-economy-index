@@ -6,8 +6,10 @@ import { isMarketOpen } from "@/lib/market-hours";
 
 const LIVE_ENDPOINT = "/api/index/live";
 const POLL_INTERVAL_MS = 30 * 1000;
-const MARKET_CHECK_INTERVAL_MS = 15 * 1000;
 const FX_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+const MAX_BACKOFF_MS = 5 * 60 * 1000;
+const HIDDEN_RECHECK_MS = 60 * 1000;
+const POLL_JITTER_RATIO = 0.2;
 
 export type LiveIndexData = Omit<LiveIndexPayload, "lastUpdated"> & {
   lastUpdated: Date;
@@ -111,21 +113,38 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown error";
 }
 
+export function getNextPollDelay({
+  marketOpen,
+  failureCount,
+  random = Math.random,
+}: {
+  marketOpen: boolean;
+  failureCount: number;
+  random?: () => number;
+}) {
+  const base = marketOpen
+    ? Math.min(POLL_INTERVAL_MS * 2 ** Math.max(0, failureCount), MAX_BACKOFF_MS)
+    : FX_REFRESH_INTERVAL_MS;
+  const jitter = (random() * 2 - 1) * POLL_JITTER_RATIO;
+  return Math.round(base * (1 + jitter));
+}
+
 export function useIndexData(currency: Currency, initialLiveData?: LiveIndexPayload | null) {
   const [state, setState] = useState<LiveIndexState>(() =>
     initialLiveData
       ? { data: normalizeLiveData(initialLiveData), isLoading: false, error: null }
       : INITIAL_STATE
   );
-  const lastSuccessfulFetchRef = useRef(0);
+  const lastSuccessfulFetchRef = useRef(initialLiveData ? Date.now() : 0);
+  const consecutiveFailuresRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Non-forced calls are throttled; forced calls (mount, visibility) always run
-  // and abort any in-flight request so the newest wins. Display-currency changes
-  // are converted locally from the same live snapshot to keep the unitless index
-  // level stable while toggling INR/USD.
+  // Successful requests throttle ordinary polling for 30 seconds. Explicit
+  // refreshes abort any in-flight request so the newest wins. Display-currency
+  // changes are converted locally from the same live snapshot to keep the
+  // unitless index level stable while toggling INR/USD.
   const fetchData = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
-    if (!force && Date.now() - lastSuccessfulFetchRef.current < POLL_INTERVAL_MS) return;
+    if (!force && Date.now() - lastSuccessfulFetchRef.current < POLL_INTERVAL_MS) return true;
 
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -135,43 +154,61 @@ export function useIndexData(currency: Currency, initialLiveData?: LiveIndexPayl
       const data = await fetchLiveIndex("inr", controller.signal);
       if (controller.signal.aborted) return;
       lastSuccessfulFetchRef.current = Date.now();
+      consecutiveFailuresRef.current = 0;
       setState({ data, isLoading: false, error: null });
+      return true;
     } catch (error) {
       if (!isAbortError(error)) {
+        consecutiveFailuresRef.current += 1;
         setState((current) => ({
           ...current,
           isLoading: false,
           error: getErrorMessage(error),
         }));
       }
+      return false;
+    } finally {
+      if (abortRef.current === controller) abortRef.current = null;
     }
   }, []);
 
-  const refreshIfDue = useCallback(() => {
-    if (!isMarketOpen()) return;
-    void fetchData();
-  }, [fetchData]);
-
   useEffect(() => {
-    void fetchData({ force: true });
+    let stopped = false;
+    let pollTimer: number | null = null;
 
-    const marketCheck = window.setInterval(refreshIfDue, MARKET_CHECK_INTERVAL_MS);
-    // Always refresh at least every 15 minutes so the live USD/INR rate (and the
-    // USD-converted values) stay current even when the equity market is closed.
-    const fxRefresh = window.setInterval(() => void fetchData({ force: true }), FX_REFRESH_INTERVAL_MS);
+    const scheduleNextPoll = () => {
+      if (stopped) return;
+      const delay = document.visibilityState === "hidden"
+        ? HIDDEN_RECHECK_MS
+        : getNextPollDelay({
+            marketOpen: isMarketOpen(),
+            failureCount: consecutiveFailuresRef.current,
+          });
+
+      pollTimer = window.setTimeout(async () => {
+        if (!stopped && document.visibilityState === "visible") {
+          await fetchData({ force: !isMarketOpen() });
+        }
+        scheduleNextPoll();
+      }, delay);
+    };
+
+    if (!initialLiveData) void fetchData({ force: true });
+    scheduleNextPoll();
+
     const handleVisibility = () => {
-      if (document.visibilityState === "visible") void fetchData({ force: true });
+      if (document.visibilityState === "visible") void fetchData();
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      window.clearInterval(marketCheck);
-      window.clearInterval(fxRefresh);
+      stopped = true;
+      if (pollTimer !== null) window.clearTimeout(pollTimer);
       document.removeEventListener("visibilitychange", handleVisibility);
       abortRef.current?.abort();
     };
-  }, [fetchData, refreshIfDue]);
+  }, [fetchData, initialLiveData]);
 
   const refresh = useCallback(() => {
     void fetchData({ force: true });

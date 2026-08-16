@@ -9,7 +9,6 @@ import { type Company } from "@/lib/companies";
 import { getUniverse } from "@/lib/universe";
 import { fetchAllQuotes, type QuoteResult } from "@/lib/yahoo-finance";
 import {
-  ensureSchema,
   getEarliestPricesPerTicker,
   getIndexRangeStats,
   getLatestIndexSnapshot,
@@ -48,12 +47,6 @@ function latestShares(shares: QuarterlySharesMap): Map<string, number> {
   const out = new Map<string, number>();
   for (const [ticker, pts] of shares) if (pts.length) out.set(ticker, pts[pts.length - 1].shares);
   return out;
-}
-
-let schemaReady: Promise<void> | null = null;
-function ensureSchemaOnce() {
-  schemaReady ??= ensureSchema();
-  return schemaReady;
 }
 
 // usdInr === null → return native INR values; a number → convert to USD.
@@ -184,8 +177,6 @@ function toPayload({
 }
 
 export async function getLiveIndexPayload(currency: Currency): Promise<LiveIndexPayload> {
-  await ensureSchemaOnce();
-
   const usd = currency === "usd";
   const today = getISTDate();
   const trailingYearFromDate = getTrailingYearFromDate(today);

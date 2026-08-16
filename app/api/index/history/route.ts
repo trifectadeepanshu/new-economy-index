@@ -7,12 +7,19 @@ import {
 } from "@/lib/index-api";
 import { resolveHistoryWindow } from "@/lib/index-history-window";
 import { getISTDate } from "@/lib/market-hours";
+import { createAsyncTtlCache } from "@/lib/async-ttl-cache";
 
 export const dynamic = "force-dynamic";
 
 const HISTORY_CACHE_HEADERS = {
-  "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
+  "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400",
 };
+
+const historyCache = createAsyncTtlCache<IndexHistoryPayload>({
+  freshForMs: 60 * 60 * 1000,
+  staleForMs: 24 * 60 * 60 * 1000,
+  maxEntries: 100,
+});
 
 export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams;
@@ -35,25 +42,30 @@ export async function GET(req: NextRequest) {
   const includeSectors = req.nextUrl.searchParams.get("includeSectors") === "1";
   const includePortfolio = req.nextUrl.searchParams.get("portfolio") === "1";
   const includeBenchmarks = req.nextUrl.searchParams.get("benchmarks") === "1";
+  const cacheKey = [range, fromDate, toDate, includeSectors, includePortfolio, includeBenchmarks].join(":");
 
   try {
-    const [{ data, sectorData, portfolioData }, benchmarks] = await Promise.all([
-      getIndexHistoryBundle(fromDate, toDate, {
-        sectors: includeSectors,
-        portfolio: includePortfolio,
-      }),
-      includeBenchmarks ? getBenchmarkSeries(fromDate, toDate) : Promise.resolve([]),
-    ]);
+    const { value: payload, status } = await historyCache.get(cacheKey, async () => {
+      const [{ data, sectorData, portfolioData }, benchmarks] = await Promise.all([
+        getIndexHistoryBundle(fromDate, toDate, {
+          sectors: includeSectors,
+          portfolio: includePortfolio,
+        }),
+        includeBenchmarks ? getBenchmarkSeries(fromDate, toDate) : Promise.resolve([]),
+      ]);
 
-    const payload: IndexHistoryPayload = {
-      range,
-      data,
-      ...(includeSectors ? { sectorData } : {}),
-      ...(includePortfolio ? { portfolioData } : {}),
-      ...(includeBenchmarks ? { benchmarks } : {}),
-    };
+      return {
+        range,
+        data,
+        ...(includeSectors ? { sectorData } : {}),
+        ...(includePortfolio ? { portfolioData } : {}),
+        ...(includeBenchmarks ? { benchmarks } : {}),
+      };
+    });
 
-    return NextResponse.json(payload, { headers: HISTORY_CACHE_HEADERS });
+    return NextResponse.json(payload, {
+      headers: { ...HISTORY_CACHE_HEADERS, "X-NEI-Origin-Cache": status },
+    });
   } catch (err) {
     console.error("[/api/index/history]", err);
     return NextResponse.json({ error: "Failed to fetch history" }, { status: 500 });
