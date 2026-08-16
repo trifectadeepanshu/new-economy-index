@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Area,
   CartesianGrid,
@@ -12,7 +13,7 @@ import {
 } from "recharts";
 import { INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
 import { BENCHMARK_META, SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
-import { getAxisTicks } from "@/components/index-chart/data";
+import { getAxisTicks, getChartLayout } from "@/components/index-chart/data";
 import { formatValue } from "@/components/index-chart/format";
 import { ChartTooltip } from "@/components/index-chart/ChartTooltip";
 import type { ChartMode, ChartPoint, ChartRow } from "@/components/index-chart/types";
@@ -47,14 +48,23 @@ export function ChartCanvas({
   showTrifecta,
   showBaseLine,
 }: ChartCanvasProps) {
-  const axisTicks = getAxisTicks(data);
+  const [canvasWidth, setCanvasWidth] = useState(0);
+  const layout = getChartLayout(canvasWidth);
+  const axisTicks = getAxisTicks(data, layout.maxXTicks);
+  const labelByDate = new Map(data.map((row) => [row.date, row.label]));
 
   return (
-    <div className="nei-chart-canvas">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className={`nei-chart-canvas is-${layout.size}`} data-chart-size={layout.size}>
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        initialDimension={{ width: 360, height: 260 }}
+        debounce={80}
+        onResize={(width) => setCanvasWidth(width)}
+      >
         <ComposedChart<ChartRow>
           data={data}
-          margin={{ top: 16, right: 38, bottom: 0, left: 0 }}
+          margin={layout.margin}
         >
           <defs>
             <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
@@ -71,30 +81,35 @@ export function ChartCanvas({
 
           <CartesianGrid strokeDasharray="3 3" stroke="var(--nei-grid)" vertical={false} />
           <XAxis
-            dataKey="label"
+            dataKey="date"
             tick={{
               fill: "var(--nei-muted)",
-              fontSize: 11,
+              fontSize: layout.tickFontSize,
               fontFamily: "var(--font-inter), system-ui",
             }}
             axisLine={false}
             tickLine={false}
             ticks={axisTicks}
+            tickFormatter={(value: string | number) =>
+              labelByDate.get(String(value)) ?? String(value)
+            }
+            tickMargin={8}
             interval={0}
           />
           <YAxis
             domain={["auto", "auto"]}
             tick={{
               fill: "var(--nei-muted)",
-              fontSize: 11,
+              fontSize: layout.tickFontSize,
               fontFamily: "var(--font-inter), ui-monospace, monospace",
             }}
             axisLine={false}
             tickLine={false}
+            tickCount={layout.yTickCount}
             tickFormatter={(value: number) =>
               value.toLocaleString("en-IN", { maximumFractionDigits: 0 })
             }
-            width={54}
+            width={layout.yAxisWidth}
           />
           <Tooltip content={<ChartTooltip />} />
           {showBaseLine && (
@@ -138,6 +153,7 @@ export function ChartCanvas({
                 areaGradientId={areaGradientId}
                 latestColor={latestColor}
                 latestPoint={latestPoint}
+                showLatestLabel={layout.showLatestLabel}
                 selectedSector={selectedSector}
               />
             </>
@@ -214,12 +230,14 @@ function IndexLine({
   areaGradientId,
   latestColor,
   latestPoint,
+  showLatestLabel,
   selectedSector,
 }: {
   activeMode: ChartMode;
   areaGradientId: string;
   latestColor: string;
   latestPoint?: ChartPoint;
+  showLatestLabel: boolean;
   selectedSector: Sector;
 }) {
   return (
@@ -248,20 +266,22 @@ function IndexLine({
       />
       {latestPoint && (
         <ReferenceDot
-          x={latestPoint.label}
+          x={latestPoint.date}
           y={latestPoint.value}
           r={5}
           fill={latestColor}
           stroke="#FFFFFF"
           strokeWidth={2}
-          label={{
-            value: formatValue(latestPoint.value),
-            position: "right",
-            fill: "var(--nei-fg)",
-            fontSize: 11,
-            fontWeight: 600,
-            fontFamily: "var(--font-inter), ui-monospace, monospace",
-          }}
+          label={showLatestLabel
+            ? {
+              value: formatValue(latestPoint.value),
+              position: "right",
+              fill: "var(--nei-fg)",
+              fontSize: 11,
+              fontWeight: 600,
+              fontFamily: "var(--font-inter), ui-monospace, monospace",
+            }
+            : undefined}
         />
       )}
     </>

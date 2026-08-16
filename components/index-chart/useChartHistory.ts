@@ -22,14 +22,23 @@ function isAbortError(error: unknown) {
 }
 
 /** Build the history query + a stable signature for a preset or custom window. */
-function buildRequest(rangeKey: RangeKey, custom: CustomRange | null) {
-  const base = "includeSectors=1&benchmarks=1&portfolio=1";
+export function buildHistoryRequest(rangeKey: RangeKey, custom: CustomRange | null) {
+  const params = new URLSearchParams({
+    includeSectors: "1",
+    benchmarks: "1",
+    portfolio: "1",
+  });
   if (rangeKey === "CUSTOM" && custom) {
-    const qs = `from=${custom.from}&to=${custom.to}&${base}`;
-    return { url: `/api/index/history?${qs}`, signature: `CUSTOM:${custom.from}:${custom.to}` };
+    params.set("from", custom.from);
+    params.set("to", custom.to);
+    return {
+      url: `/api/index/history?${params.toString()}`,
+      signature: `CUSTOM:${custom.from}:${custom.to}`,
+    };
   }
   const apiRange = RANGE_KEY_TO_API[rangeKey === "CUSTOM" ? "1Y" : rangeKey];
-  return { url: `/api/index/history?range=${apiRange}&${base}`, signature: apiRange };
+  params.set("range", apiRange);
+  return { url: `/api/index/history?${params.toString()}`, signature: apiRange };
 }
 
 export function useChartHistory(rangeKey: RangeKey, custom: CustomRange | null) {
@@ -37,7 +46,7 @@ export function useChartHistory(rangeKey: RangeKey, custom: CustomRange | null) 
 
   // A CUSTOM selection without both dates yet shouldn't fire a request.
   const pendingCustom = rangeKey === "CUSTOM" && (!custom?.from || !custom?.to);
-  const { url, signature } = buildRequest(rangeKey, custom);
+  const { url, signature } = buildHistoryRequest(rangeKey, custom);
 
   useEffect(() => {
     if (pendingCustom) return;

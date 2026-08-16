@@ -17,7 +17,6 @@ import {
   useShortDayLabels,
 } from "@/components/index-chart/data";
 import { formatLabel } from "@/components/index-chart/format";
-import { BENCHMARK_KEYS } from "@/components/index-chart/constants";
 import type { ChartMode, ChartPoint, ChartRow, ComparePoint } from "@/components/index-chart/types";
 
 // The base is the year-end 2020 close; we label it as the Jan 2021 inception
@@ -33,6 +32,7 @@ type ChartModelInput = {
   activeMode: ChartMode;
   focusedSector: Sector | null;
   historyData: IndexHistoryPoint[];
+  includeLivePoint: boolean;
   portfolioData: IndexHistoryPoint[];
   benchmarks: BenchmarkSeries[];
   liveValue: number | null;
@@ -41,10 +41,89 @@ type ChartModelInput = {
   stocks: StockData[];
 };
 
+type OverlayKey = BenchmarkKey | "TRIFECTA";
+
+export function buildIndexChartData({
+  historyData,
+  portfolioData,
+  benchmarks,
+  liveValue,
+  shortDayIndex,
+  includeLivePoint,
+  todayDate = getISTDate(),
+}: {
+  historyData: IndexHistoryPoint[];
+  portfolioData: IndexHistoryPoint[];
+  benchmarks: BenchmarkSeries[];
+  liveValue: number | null;
+  shortDayIndex: boolean;
+  includeLivePoint: boolean;
+  todayDate?: string;
+}): ChartPoint[] {
+  const round2 = (value: number) => Math.round(value * 100) / 100;
+  const neiByDate = new Map(historyData.map((point) => [point.date, Number(point.value)]));
+  const overlayByDate = new Map<string, Partial<Record<OverlayKey, number>>>();
+  const latestOverlayValues: Partial<Record<OverlayKey, number>> = {};
+
+  const addOverlay = (key: OverlayKey, points: { date: string; value: number }[]) => {
+    const firstShared = points.find((point) => {
+      const neiValue = neiByDate.get(point.date);
+      return (
+        point.value > 0 &&
+        Number.isFinite(point.value) &&
+        typeof neiValue === "number" &&
+        neiValue > 0
+      );
+    });
+    if (!firstShared) return;
+
+    const factor = neiByDate.get(firstShared.date)! / firstShared.value;
+    for (const point of points) {
+      if (!(point.value > 0) || !Number.isFinite(point.value)) continue;
+
+      const scaled = round2(point.value * factor);
+      latestOverlayValues[key] = scaled;
+      if (!neiByDate.has(point.date)) continue;
+
+      const entry = overlayByDate.get(point.date) ?? {};
+      entry[key] = scaled;
+      overlayByDate.set(point.date, entry);
+    }
+  };
+
+  for (const benchmark of benchmarks) addOverlay(benchmark.symbol, benchmark.points);
+  addOverlay("TRIFECTA", portfolioData);
+
+  const points = historyData.map((point) => {
+    const chartPoint = toChartPoint(point, shortDayIndex);
+    const label =
+      point.date === INDEX_ANCHOR_DATE
+        ? formatLabel(INCEPTION_LABEL_DATE, shortDayIndex)
+        : chartPoint.label;
+    return {
+      ...chartPoint,
+      label,
+      value: round2(chartPoint.value),
+      ...overlayByDate.get(point.date),
+    };
+  });
+
+  if (!includeLivePoint || liveValue === null || !points.length) return points;
+
+  const live = round2(liveValue);
+  const last = points[points.length - 1];
+  if (last.date >= todayDate) {
+    return [...points.slice(0, -1), { ...latestOverlayValues, ...last, value: live }];
+  }
+
+  return [...points, { date: "now", label: "Now", value: live, ...latestOverlayValues }];
+}
+
 export function useIndexChartModel({
   activeMode,
   focusedSector,
   historyData,
+  includeLivePoint,
   portfolioData,
   benchmarks,
   liveValue,
@@ -54,57 +133,18 @@ export function useIndexChartModel({
   const shortDayIndex = useShortDayLabels(historyData);
   const shortDaySector = useShortDayLabels(sectorData);
 
-  const indexData = useMemo<ChartPoint[]>(() => {
-    // The NEI line keeps its true index level (so the chart headline matches the
-    // index value shown elsewhere). Benchmarks and the Trifecta Capital portfolio are
-    // rebased to meet the NEI at the range start, so every line starts together
-    // at that level and the chart reads as relative performance from there.
-    const round2 = (v: number) => Math.round(v * 100) / 100;
-    const neiFirst = historyData[0]?.value ?? null;
-
-    const overlayByDate = new Map<string, Partial<Record<BenchmarkKey | "TRIFECTA", number>>>();
-    const addOverlay = (key: BenchmarkKey | "TRIFECTA", pts: { date: string; value: number }[]) => {
-      const first = pts[0];
-      if (!first || !first.value || !neiFirst) return;
-      const factor = neiFirst / first.value;
-      for (const pt of pts) {
-        const entry = overlayByDate.get(pt.date) ?? {};
-        entry[key] = round2(pt.value * factor);
-        overlayByDate.set(pt.date, entry);
-      }
-    };
-    for (const b of benchmarks) addOverlay(b.symbol, b.points);
-    addOverlay("TRIFECTA", portfolioData);
-
-    const points = historyData.map((point) => {
-      const cp = toChartPoint(point, shortDayIndex);
-      const label =
-        point.date === INDEX_ANCHOR_DATE ? formatLabel(INCEPTION_LABEL_DATE, shortDayIndex) : cp.label;
-      return { ...cp, label, value: round2(cp.value), ...overlayByDate.get(point.date) };
-    });
-
-    if (liveValue === null || !points.length) return points;
-
-    // Stitch the live value onto the right edge. If today's close is already the
-    // last point (post-snapshot), update it in place instead of appending a
-    // separate "Now" point — appending both left a duplicate dangling past the
-    // real end date (the 1M "end date doesn't align" bug).
-    const live = round2(liveValue);
-    const last = points[points.length - 1];
-    if (Math.abs(last.value - live) < 0.01) return points;
-    if (last.date >= getISTDate()) {
-      return [...points.slice(0, -1), { ...last, value: live }];
-    }
-    // Carry the benchmark/portfolio values forward to the "Now" point (their
-    // last close) so every line reaches "Now" together — only the NEI has a
-    // live intraday value; the others are end-of-day.
-    const carried: Partial<Record<BenchmarkKey | "TRIFECTA", number>> = {};
-    for (const key of [...BENCHMARK_KEYS, "TRIFECTA"] as (BenchmarkKey | "TRIFECTA")[]) {
-      const v = last[key];
-      if (typeof v === "number") carried[key] = v;
-    }
-    return [...points, { date: "now", label: "Now", value: live, ...carried }];
-  }, [historyData, portfolioData, benchmarks, liveValue, shortDayIndex]);
+  const indexData = useMemo<ChartPoint[]>(
+    () =>
+      buildIndexChartData({
+        historyData,
+        portfolioData,
+        benchmarks,
+        liveValue,
+        shortDayIndex,
+        includeLivePoint,
+      }),
+    [historyData, portfolioData, benchmarks, liveValue, shortDayIndex, includeLivePoint]
+  );
 
   // Sector sub-indices use the divisor engine; there's no client-side live
   // value for them, so the lines end at the latest close (no fake "Now" point).

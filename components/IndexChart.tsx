@@ -1,8 +1,10 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
+import { format, parseISO, subYears } from "date-fns";
 import { INDEX_ANCHOR_DATE } from "@/lib/companies";
 import type { BenchmarkKey } from "@/lib/index-api";
+import { getISTDate } from "@/lib/market-hours";
 import { ChartCanvas } from "@/components/index-chart/ChartCanvas";
 import { ChartState, ChartToolbar, RangeControl } from "@/components/index-chart/ChartControls";
 import {
@@ -17,14 +19,30 @@ import { useChartHistory, type CustomRange } from "@/components/index-chart/useC
 import { useIndexChartModel, type SeriesReturns } from "@/components/index-chart/useIndexChartModel";
 import type { IndexChartProps } from "@/components/index-chart/types";
 
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+function oneYearAgoISO(toDate: string): string {
+  return format(subYears(parseISO(toDate), 1), "yyyy-MM-dd");
 }
 
-function oneYearAgoISO(): string {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() - 1);
-  return d.toISOString().slice(0, 10);
+function displayDate(date: string): string {
+  return format(parseISO(date), "dd MMM yyyy");
+}
+
+function getRangeLabel(key: RangeKey): string {
+  return RANGE_OPTIONS.find((option) => option.key === key)?.label ?? key;
+}
+
+function getReferenceSubtitle(rangeKey: RangeKey, customRange: CustomRange | null): string {
+  if (rangeKey === "MAX") return "Base 1,000 · Jan 2021 → today";
+  if (rangeKey === "CUSTOM") {
+    if (customRange?.from && customRange.to) {
+      return `${displayDate(customRange.from)} → ${displayDate(customRange.to)}`;
+    }
+    return "Pick a custom date range";
+  }
+
+  const label =
+    rangeKey === "1W" ? "Last 1 week" : rangeKey === "1M" ? "Last 1 month" : "Last 1 year";
+  return `${label} · ending today`;
 }
 
 /** A legend entry showing the series' return over the selected window. */
@@ -122,7 +140,9 @@ function SeriesChip({
 
 export function IndexChart({ liveValue, stocks, variant = "default", heading }: IndexChartProps) {
   const areaGradientId = `nei-area-${useId().replace(/:/g, "")}`;
-  const [rangeKey, setRangeKey] = useState<RangeKey>("1Y");
+  const [rangeKey, setRangeKey] = useState<RangeKey>(() =>
+    variant === "reference" ? "MAX" : "1Y"
+  );
   const [customRange, setCustomRange] = useState<CustomRange | null>(null);
   const [visibleBenchmarks, setVisibleBenchmarks] = useState<Set<BenchmarkKey>>(
     () => new Set(BENCHMARK_KEYS)
@@ -132,7 +152,9 @@ export function IndexChart({ liveValue, stocks, variant = "default", heading }: 
   // Not memoized: it's a cheap string read, and freezing it at mount pinned
   // the custom-range upper bound to yesterday for any tab left open past
   // midnight.
-  const maxDate = todayISO();
+  const maxDate = getISTDate();
+  const includeLivePoint =
+    rangeKey !== "CUSTOM" || Boolean(customRange?.to && customRange.to >= maxDate);
   const { historyData, sectorData, portfolioData, benchmarks, loading, error } = useChartHistory(
     rangeKey,
     customRange
@@ -143,6 +165,7 @@ export function IndexChart({ liveValue, stocks, variant = "default", heading }: 
     activeMode: "index",
     focusedSector: null,
     historyData,
+    includeLivePoint,
     portfolioData,
     benchmarks,
     liveValue,
@@ -170,11 +193,12 @@ export function IndexChart({ liveValue, stocks, variant = "default", heading }: 
   const rangeLabel =
     rangeKey === "CUSTOM"
       ? "Custom Range"
-      : `${RANGE_OPTIONS.find((o) => o.key === rangeKey)?.label} Range`;
+      : `${getRangeLabel(rangeKey)} Range`;
+  const referenceSubtitle = getReferenceSubtitle(rangeKey, customRange);
 
   function handleRangeKeyChange(key: RangeKey) {
     if (key === "CUSTOM" && !customRange) {
-      setCustomRange({ from: oneYearAgoISO(), to: maxDate });
+      setCustomRange({ from: oneYearAgoISO(maxDate), to: maxDate });
     }
     setRangeKey(key);
   }
@@ -226,7 +250,7 @@ export function IndexChart({ liveValue, stocks, variant = "default", heading }: 
                 {returns.NE50 !== null ? formatSignedPct(returns.NE50) : "—"}
               </strong>
             </div>
-            <div className="nei-cmd-sub">Base 1,000 · Jan 2021 → today</div>
+            <div className="nei-cmd-sub">{referenceSubtitle}</div>
           </div>
         </div>
 

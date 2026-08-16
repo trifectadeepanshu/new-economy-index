@@ -54,6 +54,21 @@
     min-height: 220px;
   }
 
+  /* Container-driven chart tiers keep axes legible when the chart sits in a
+     narrow column, even if the browser viewport itself is wide. */
+  .nei-chart-canvas.is-large {
+    height: 330px;
+  }
+
+  .nei-chart-canvas.is-medium {
+    height: 300px;
+  }
+
+  .nei-chart-canvas.is-small {
+    height: 260px;
+    margin-left: 0;
+  }
+
   .nei-control-button {
     min-height: 38px;
     padding: 7px 12px;

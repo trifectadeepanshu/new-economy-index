@@ -51,23 +51,78 @@ export function getSeriesReturn(rows: ChartRow[], key: string): number | null {
   return first !== null && last !== null && first !== 0 ? (last / first - 1) * 100 : null;
 }
 
+export type ChartSize = "small" | "medium" | "large";
+
+export type ChartLayout = {
+  size: ChartSize;
+  maxXTicks: number;
+  yTickCount: number;
+  yAxisWidth: number;
+  tickFontSize: number;
+  showLatestLabel: boolean;
+  margin: { top: number; right: number; bottom: number; left: number };
+};
+
+const CHART_LAYOUTS: Record<ChartSize, ChartLayout> = {
+  small: {
+    size: "small",
+    maxXTicks: 4,
+    yTickCount: 4,
+    yAxisWidth: 42,
+    tickFontSize: 10,
+    showLatestLabel: false,
+    margin: { top: 12, right: 10, bottom: 4, left: -6 },
+  },
+  medium: {
+    size: "medium",
+    maxXTicks: 7,
+    yTickCount: 5,
+    yAxisWidth: 50,
+    tickFontSize: 10,
+    showLatestLabel: true,
+    margin: { top: 14, right: 58, bottom: 2, left: -2 },
+  },
+  large: {
+    size: "large",
+    maxXTicks: 11,
+    yTickCount: 6,
+    yAxisWidth: 58,
+    tickFontSize: 11,
+    showLatestLabel: true,
+    margin: { top: 16, right: 42, bottom: 0, left: 0 },
+  },
+};
+
+/** Chart density follows the rendered container, not the whole viewport. */
+export function getChartLayout(width: number): ChartLayout {
+  if (width <= 640) return CHART_LAYOUTS.small;
+  if (width <= 1024) return CHART_LAYOUTS.medium;
+  return CHART_LAYOUTS.large;
+}
+
 /**
- * Which "label" values the x-axis should render as ticks. The label is set
- * per row (e.g. per trading day), so once the axis is at month granularity
- * many consecutive rows share the same text — Recharts' own width-based
- * thinning picks candidates by row position, not by text, so it can still
- * land on several rows in a row that all say "Aug '25". Deduping here (first
- * occurrence, evenly thinned) and passing the result via <XAxis ticks=.../>
- * fixes the display without touching the axis's scale/domain, which is what
- * spaces the actual line points and must stay one-slot-per-row.
+ * Choose unique date keys for the x-axis while deduplicating their display
+ * labels. Using labels as data keys collapses every day in a month onto the
+ * same category and causes the mobile axis pile-up seen on long ranges.
  */
-export function getAxisTicks(rows: { label: string }[], maxTicks = 14): string[] {
-  if (!rows.length) return [];
-  const firstIndexOf = new Map<string, number>();
+export function getAxisTicks(
+  rows: { date: string; label: string }[],
+  maxTicks = 14
+): string[] {
+  if (!rows.length || maxTicks <= 0) return [];
+  const firstDateOfLabel = new Map<string, string>();
+  const firstIndexOfLabel = new Map<string, number>();
   rows.forEach((row, i) => {
-    if (!firstIndexOf.has(row.label)) firstIndexOf.set(row.label, i);
+    if (!firstDateOfLabel.has(row.label)) {
+      firstDateOfLabel.set(row.label, row.date);
+      firstIndexOfLabel.set(row.label, i);
+    }
   });
-  const uniqueLabels = [...firstIndexOf.keys()];
+  const uniqueLabels = [...firstDateOfLabel.keys()];
+
+  if (maxTicks === 1) {
+    return [firstDateOfLabel.get(uniqueLabels[uniqueLabels.length - 1])!];
+  }
 
   const picked =
     uniqueLabels.length <= maxTicks
@@ -85,11 +140,11 @@ export function getAxisTicks(rows: { label: string }[], maxTicks = 14): string[]
   const minGap = (rows.length / maxTicks) * 0.4;
   const kept = [picked[picked.length - 1]];
   for (let i = picked.length - 2; i >= 0; i--) {
-    if (firstIndexOf.get(kept[0])! - firstIndexOf.get(picked[i])! >= minGap) {
+    if (firstIndexOfLabel.get(kept[0])! - firstIndexOfLabel.get(picked[i])! >= minGap) {
       kept.unshift(picked[i]);
     }
   }
-  return kept;
+  return kept.map((label) => firstDateOfLabel.get(label)!);
 }
 
 export function getChartTitle(mode: ChartMode, sector: Sector) {

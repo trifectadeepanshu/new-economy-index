@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getSeriesReturn } from "../components/index-chart/data";
+import {
+  getAxisTicks,
+  getChartLayout,
+  getSeriesReturn,
+} from "../components/index-chart/data";
+import { buildIndexChartData } from "../components/index-chart/useIndexChartModel";
 import type { ChartRow } from "../components/index-chart/types";
 
 // Max runs from the base (1,000 at inception) through the live "now" point, so
@@ -24,4 +29,129 @@ test("getSeriesReturn ignores missing/non-numeric points at the edges", () => {
   ];
   assert.equal(getSeriesReturn(rows, "TRIFECTA"), null); // no such series
   assert.equal(getSeriesReturn(rows, "value"), 50);
+});
+
+test("small chart layout limits both axes and hides the trailing value label", () => {
+  assert.deepEqual(getChartLayout(390), {
+    size: "small",
+    maxXTicks: 4,
+    yTickCount: 4,
+    yAxisWidth: 42,
+    tickFontSize: 10,
+    showLatestLabel: false,
+    margin: { top: 12, right: 10, bottom: 4, left: -6 },
+  });
+});
+
+test("medium chart layout uses tablet density", () => {
+  const layout = getChartLayout(768);
+  assert.equal(layout.size, "medium");
+  assert.equal(layout.maxXTicks, 7);
+  assert.equal(layout.yTickCount, 5);
+  assert.equal(layout.margin.right, 58);
+});
+
+test("large chart layout preserves desktop detail", () => {
+  const layout = getChartLayout(1280);
+  assert.equal(layout.size, "large");
+  assert.equal(layout.maxXTicks, 11);
+  assert.equal(layout.showLatestLabel, true);
+});
+
+test("mobile axis ticks use unique dates and stay within the four-tick budget", () => {
+  const rows: ChartRow[] = Array.from({ length: 24 }, (_, index) => {
+    const year = 2024 + Math.floor(index / 12);
+    const month = (index % 12) + 1;
+    return {
+      date: `${year}-${String(month).padStart(2, "0")}-01`,
+      label: `${String(month).padStart(2, "0")} '${String(year).slice(-2)}`,
+      value: 1000 + index,
+    };
+  });
+
+  const ticks = getAxisTicks(rows, getChartLayout(390).maxXTicks);
+  assert.ok(ticks.length <= 4);
+  assert.equal(new Set(ticks).size, ticks.length);
+  assert.equal(ticks.at(-1), rows.at(-1)?.date);
+});
+
+test("axis ticks use date keys while deduplicating repeated month labels", () => {
+  const rows: ChartRow[] = [
+    { date: "2026-01-01", label: "Jan '26", value: 100 },
+    { date: "2026-01-02", label: "Jan '26", value: 101 },
+    { date: "2026-02-02", label: "Feb '26", value: 102 },
+    { date: "now", label: "Now", value: 103 },
+  ];
+
+  assert.deepEqual(getAxisTicks(rows), ["2026-01-01", "2026-02-02", "now"]);
+});
+
+test("past custom windows do not append today's live point", () => {
+  const rows = buildIndexChartData({
+    historyData: [
+      { date: "2024-01-02", value: 1000 },
+      { date: "2024-01-03", value: 1010 },
+    ],
+    portfolioData: [],
+    benchmarks: [],
+    liveValue: 1500,
+    shortDayIndex: true,
+    includeLivePoint: false,
+    todayDate: "2026-08-16",
+  });
+
+  assert.equal(rows.at(-1)?.date, "2024-01-03");
+  assert.equal(rows.at(-1)?.value, 1010);
+});
+
+test("overlays rebase to their first shared NEI date", () => {
+  const rows = buildIndexChartData({
+    historyData: [
+      { date: "2026-01-01", value: 1000 },
+      { date: "2026-01-02", value: 1200 },
+      { date: "2026-01-03", value: 1300 },
+    ],
+    portfolioData: [],
+    benchmarks: [
+      {
+        symbol: "NIFTY50",
+        label: "Nifty 50",
+        points: [
+          { date: "2026-01-02", value: 200 },
+          { date: "2026-01-03", value: 220 },
+        ],
+      },
+    ],
+    liveValue: null,
+    shortDayIndex: true,
+    includeLivePoint: false,
+    todayDate: "2026-01-03",
+  });
+
+  assert.equal(rows[1].NIFTY50, 1200);
+  assert.equal(rows[2].NIFTY50, 1320);
+});
+
+test("live point carries the last available overlay value forward", () => {
+  const rows = buildIndexChartData({
+    historyData: [
+      { date: "2026-01-01", value: 1000 },
+      { date: "2026-01-02", value: 1100 },
+    ],
+    portfolioData: [],
+    benchmarks: [
+      {
+        symbol: "NIFTY50",
+        label: "Nifty 50",
+        points: [{ date: "2026-01-01", value: 100 }],
+      },
+    ],
+    liveValue: 1200,
+    shortDayIndex: true,
+    includeLivePoint: true,
+    todayDate: "2026-01-03",
+  });
+
+  assert.equal(rows.at(-1)?.date, "now");
+  assert.equal(rows.at(-1)?.NIFTY50, 1000);
 });
