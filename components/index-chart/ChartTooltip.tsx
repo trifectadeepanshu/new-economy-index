@@ -5,9 +5,6 @@ type TooltipItem = {
   value?: number;
   name?: string;
   color?: string;
-  payload?: {
-    label?: string;
-  };
 };
 
 type TooltipRow = TooltipItem & {
@@ -29,9 +26,6 @@ export function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null;
 
-  const displayLabel =
-    payload.find((item) => item.payload?.label)?.payload?.label ?? label;
-
   // Drop the NEI area's tooltip entry (dataKey "value"); the NEI line covers it.
   const rows = payload
     .filter(hasTooltipValue)
@@ -41,7 +35,7 @@ export function ChartTooltip({
 
   return (
     <div className="nei-chart-tooltip" style={{ minWidth: rows.length > 1 ? 190 : 142 }}>
-      <div className="nei-chart-tooltip-label">{displayLabel}</div>
+      <div className="nei-chart-tooltip-label">{label}</div>
       <div className="nei-chart-tooltip-list">
         {rows.map((item) => (
           <div key={item.name ?? "value"} className="nei-chart-tooltip-row">

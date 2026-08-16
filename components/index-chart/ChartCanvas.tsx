@@ -48,7 +48,6 @@ export function ChartCanvas({
   showBaseLine,
 }: ChartCanvasProps) {
   const axisTicks = getAxisTicks(data);
-  const labelByDate = new Map(data.map((row) => [row.date, row.label]));
 
   return (
     <div className="nei-chart-canvas">
@@ -72,7 +71,7 @@ export function ChartCanvas({
 
           <CartesianGrid strokeDasharray="3 3" stroke="var(--nei-grid)" vertical={false} />
           <XAxis
-            dataKey="date"
+            dataKey="label"
             tick={{
               fill: "var(--nei-muted)",
               fontSize: 11,
@@ -81,9 +80,6 @@ export function ChartCanvas({
             axisLine={false}
             tickLine={false}
             ticks={axisTicks}
-            tickFormatter={(value: string | number) =>
-              labelByDate.get(String(value)) ?? String(value)
-            }
             interval={0}
           />
           <YAxis
@@ -252,7 +248,7 @@ function IndexLine({
       />
       {latestPoint && (
         <ReferenceDot
-          x={latestPoint.date}
+          x={latestPoint.label}
           y={latestPoint.value}
           r={5}
           fill={latestColor}

@@ -69,7 +69,7 @@ export function PerformanceSection({
         liveValue={indexValue}
         stocks={stocks}
         variant="reference"
-        heading="The NEI Top 50 over time."
+        heading="The NEI Top 50 since day one."
       />
     </ReferenceShell>
   );
