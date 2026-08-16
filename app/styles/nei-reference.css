@@ -981,11 +981,14 @@
     top: calc(100% + 8px);
     right: 0;
     z-index: 50;
-    width: 300px;
+    width: min(300px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
     padding: 14px;
     border: 1px solid rgba(11,15,25,0.12);
     border-radius: 12px;
     background: #FFFFFF;
+    color: #0B0F19;
+    color-scheme: light;
     box-shadow: 0 16px 44px rgba(16,24,38,0.16), 0 2px 8px rgba(16,24,38,0.08);
   }
 
@@ -1064,18 +1067,25 @@
     align-items: center;
     justify-content: space-between;
     gap: 6px;
+    min-width: 0;
     margin-bottom: 8px;
   }
 
   .nei-dp-selects {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(70px, 0.58fr);
     align-items: center;
     gap: 6px;
+    min-width: 0;
+    flex: 1;
   }
 
   .nei-dp-select {
     appearance: none;
     -webkit-appearance: none;
+    width: 100%;
+    min-width: 0;
+    min-height: 34px;
     padding: 6px 24px 6px 10px;
     border: 1px solid rgba(11,15,25,0.14);
     border-radius: 7px;
@@ -1085,6 +1095,7 @@
     background-position: right 9px center;
     color: #0B0F19;
     font: 600 13px var(--font-inter), system-ui, sans-serif;
+    line-height: 1.2;
     cursor: pointer;
     transition: border-color 0.15s ease;
   }
@@ -1143,6 +1154,8 @@
   }
 
   .nei-dp-day {
+    width: 100%;
+    min-width: 0;
     height: 34px;
     border: 0;
     background: transparent;
