@@ -18,7 +18,13 @@ import type { Currency } from "@/lib/index-api";
 /** Deep-links a column header to its explanation in the methodology page. */
 type ColumnNote = { n: number; anchor: string };
 
-const COLUMNS: Array<{
+// CAGR is still being verified — visible on every non-production deploy
+// (local dev, staging) but hidden on the live index until it's confirmed.
+// Vercel sets NEXT_PUBLIC_VERCEL_ENV to "production" only for the
+// production domain, so this needs no separate env var of its own.
+const SHOW_CAGR = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
+
+const ALL_COLUMNS: Array<{
   key: SortKey;
   label: string;
   align: "left" | "right";
@@ -51,6 +57,8 @@ const COLUMNS: Array<{
     note: { n: 2, anchor: "note-cagr" },
   },
 ];
+
+const COLUMNS = SHOW_CAGR ? ALL_COLUMNS : ALL_COLUMNS.filter((c) => c.key !== "cagr");
 
 // Split into a labeled button plus a separate arrow button (both trigger the
 // same sort) so a footnote <sup><a> can sit between them in reading order —
@@ -277,13 +285,15 @@ export function ConstituentTable({
                   >
                     {formatSignedPercent(row.sinceBase, 1)}
                   </td>
-                  <td
-                    className={`is-right nei-mono ${
-                      (row.cagr ?? 0) >= 0 ? "is-positive" : "is-negative"
-                    }`}
-                  >
-                    {formatSignedPercent(row.cagr, 1)}
-                  </td>
+                  {SHOW_CAGR && (
+                    <td
+                      className={`is-right nei-mono ${
+                        (row.cagr ?? 0) >= 0 ? "is-positive" : "is-negative"
+                      }`}
+                    >
+                      {formatSignedPercent(row.cagr, 1)}
+                    </td>
+                  )}
                 </tr>
               );
             })}
