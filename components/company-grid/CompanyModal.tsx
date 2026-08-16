@@ -13,7 +13,15 @@ import {
 } from "recharts";
 import type { CompanyDetail, StockData } from "@/lib/index-api";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
-import { formatMarketCap, formatPrice, formatSignedPercent } from "@/components/company-grid/format";
+import {
+  formatMarketCap,
+  formatPrice,
+  formatSignedPercent,
+  truncateToSentence,
+} from "@/components/company-grid/format";
+
+// Roughly 3-4 lines at the modal's description width.
+const DESCRIPTION_MAX_CHARS = 420;
 import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 
 type BarPoint = {
@@ -411,7 +419,11 @@ export function CompanyModal({ stock, onClose }: { stock: StockData | null; onCl
           </div>
         </div>
 
-        {detail?.description && <p id={descriptionId} className="nei-cm-desc">{detail.description}</p>}
+        {detail?.description && (
+          <p id={descriptionId} className="nei-cm-desc">
+            {truncateToSentence(detail.description, DESCRIPTION_MAX_CHARS)}
+          </p>
+        )}
 
         {detailError && (
           <div className="nei-cm-error" role="alert">

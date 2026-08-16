@@ -740,14 +740,13 @@
   .nei-cm-mcap { color: rgba(232,235,240,0.45); font-size: 11px; }
 
   .nei-cm-desc {
+    /* No CSS clipping here on purpose — the text itself is already trimmed
+       to a clean sentence/word boundary (truncateToSentence in format.ts),
+       so it never needs a visual cutoff. */
     margin-top: 16px;
     color: rgba(232,235,240,0.72);
     font-size: 13px;
     line-height: 1.6;
-    /* Exactly 4 lines at this line-height, hard-clipped with no ellipsis —
-       line-clamp always injects a trailing "…", which read as broken. */
-    max-height: 6.4em;
-    overflow: hidden;
   }
 
   .nei-cm-error {
