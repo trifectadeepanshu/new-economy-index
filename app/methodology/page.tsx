@@ -49,6 +49,7 @@ const TOC: TocItem[] = [
   { id: "corporate-actions", n: "05", label: "Corporate actions & divisor" },
   { id: "market-data", n: "06", label: "Market data & settlement" },
   { id: "governance", n: "07", label: "Governance & policy" },
+  { id: "trifecta-portfolio", n: "08", label: "Trifecta Capital Portfolio" },
 ];
 
 function DocSection({
@@ -325,6 +326,41 @@ export default function MethodologyPage() {
             deemed necessary to reflect evolving market structures, corporate
             actions, and regulatory shifts in India&apos;s new economy. Material
             changes to this methodology are versioned and published here.
+          </p>
+        </DocSection>
+
+        <DocSection id="trifecta-portfolio" n="08" title="Trifecta Capital portfolio">
+          <p>
+            Certain NEI Top 50 constituents carry a separate &quot;Trifecta
+            Capital portfolio&quot; designation, shown in the constituent grid,
+            the market-cap view, and the performance chart&apos;s portfolio
+            overlay. It indicates a past or present relationship with Trifecta
+            Capital, and reflects relationship history rather than a real-time
+            statement of current holdings.
+          </p>
+          <ul>
+            <li>
+              <strong>Venture Debt relationships.</strong> A company may carry
+              this designation where it previously had a relationship with
+              Trifecta Capital&apos;s Venture Debt platform, typically at an
+              earlier, pre-IPO stage of the company&apos;s lifecycle. Trifecta
+              Capital may or may not continue to hold equity, warrants, or
+              other securities in these companies as of the current date.
+            </li>
+            <li>
+              <strong>Growth equity investments.</strong> A company may carry
+              this designation where Trifecta Capital&apos;s growth equity arm
+              has made, or has previously made, an investment in the company.
+              Trifecta Capital may or may not continue to actively hold shares
+              in these companies as of the current date.
+            </li>
+          </ul>
+          <p>
+            This designation is disclosed for transparency and context only.
+            It does not constitute investment advice, a recommendation, an
+            indication of current position size, or a representation that
+            Trifecta Capital holds any ongoing economic interest in the
+            company as of today.
           </p>
         </DocSection>
 
