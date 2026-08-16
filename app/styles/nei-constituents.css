@@ -744,10 +744,9 @@
     color: rgba(232,235,240,0.72);
     font-size: 13px;
     line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 5;
-    line-clamp: 5;
-    -webkit-box-orient: vertical;
+    /* Exactly 4 lines at this line-height, hard-clipped with no ellipsis —
+       line-clamp always injects a trailing "…", which read as broken. */
+    max-height: 6.4em;
     overflow: hidden;
   }
 
