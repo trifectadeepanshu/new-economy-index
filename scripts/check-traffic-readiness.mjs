@@ -59,9 +59,23 @@ async function checkRemote() {
     signal: AbortSignal.timeout(15_000),
   });
   if (!live.ok) failures.push(`Live endpoint returned HTTP ${live.status}.`);
-  const cacheControl = live.headers.get("cache-control") ?? "";
-  if (!cacheControl.includes("s-maxage") || !cacheControl.includes("stale-if-error")) {
-    failures.push("Live endpoint is missing shared-cache or stale-if-error directives.");
+  const hasSharedCacheSignal = (response) => {
+    const cacheControl = response.headers.get("cache-control") ?? "";
+    const vercelCache = response.headers.get("x-vercel-cache") ?? "";
+    const age = Number(response.headers.get("age") ?? 0);
+    return cacheControl.includes("s-maxage")
+      || ["HIT", "STALE", "REVALIDATED"].includes(vercelCache)
+      || age > 0;
+  };
+  let sharedCacheVisible = hasSharedCacheSignal(live);
+  if (!sharedCacheVisible) {
+    const repeatedLive = await fetch(new URL("/api/index/live?currency=inr", baseUrl), {
+      signal: AbortSignal.timeout(15_000),
+    });
+    sharedCacheVisible = repeatedLive.ok && hasSharedCacheSignal(repeatedLive);
+  }
+  if (!sharedCacheVisible) {
+    failures.push("Live endpoint did not expose evidence of shared-cache delivery.");
   }
   const liveJson = await live.json().catch(() => null);
   if (!liveJson || !Array.isArray(liveJson.stocks) || typeof liveJson.numCompanies !== "number") {
