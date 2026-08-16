@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  ensureSchema,
   listConstituents,
   recomputeAndPersistIndex,
   upsertConstituent,
@@ -8,7 +7,8 @@ import {
 } from "@/lib/db";
 import { onboardConstituent, type OnboardSummary } from "@/lib/onboard";
 import { refreshConstituentData } from "@/lib/data-refresh";
-import { isBearerAuthorized } from "@/lib/http-auth";
+import { isAdminAuthorized } from "@/lib/admin-auth";
+import { isIsoDate, isTicker } from "@/lib/api-validation";
 import { SECTORS } from "@/lib/companies";
 
 export const dynamic = "force-dynamic";
@@ -21,9 +21,8 @@ function unauthorized() {
 }
 
 export async function GET(req: NextRequest) {
-  if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) return unauthorized();
+  if (!isAdminAuthorized(req)) return unauthorized();
   try {
-    await ensureSchema();
     return NextResponse.json({ constituents: await listConstituents() }, { headers: HEADERS });
   } catch (err) {
     console.error("[/api/admin/constituents] GET", err);
@@ -43,18 +42,22 @@ function parseBody(body: unknown): ConstituentInput | { error: string } {
   const sector = str(b.sector);
   const listedDate = str(b.listedDate);
 
-  if (!ticker) return { error: "Ticker is required" };
-  if (!name) return { error: "Name is required" };
+  if (!isTicker(ticker)) return { error: "Ticker must be 1-30 letters, numbers, dots, ampersands, or hyphens" };
+  if (!name || name.length > 200) return { error: "Name must be 1-200 characters" };
+  if (displayName.length > 200) return { error: "Display name must be at most 200 characters" };
+  if (!/^[A-Z0-9.^&=_-]{1,40}$/i.test(yfTicker)) return { error: "Invalid Yahoo ticker" };
   if (!SECTORS.includes(sector as (typeof SECTORS)[number])) {
     return { error: `Sector must be one of: ${SECTORS.join(", ")}` };
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(listedDate)) {
+  if (!isIsoDate(listedDate)) {
     return { error: "Listing date must be yyyy-mm-dd" };
   }
   const ipoRaw = b.ipoPrice;
   const ipoPrice =
     ipoRaw === null || ipoRaw === "" || ipoRaw === undefined ? null : Number(ipoRaw);
-  if (ipoPrice !== null && !Number.isFinite(ipoPrice)) return { error: "IPO price must be a number" };
+  if (ipoPrice !== null && (!Number.isFinite(ipoPrice) || ipoPrice <= 0 || ipoPrice > 1_000_000_000)) {
+    return { error: "IPO price must be a positive number" };
+  }
 
   return {
     ticker,
@@ -70,9 +73,8 @@ function parseBody(body: unknown): ConstituentInput | { error: string } {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) return unauthorized();
+  if (!isAdminAuthorized(req, true)) return unauthorized();
   try {
-    await ensureSchema();
     const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
     const parsed = parseBody(body);
     if ("error" in parsed) {

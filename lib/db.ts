@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import { randomUUID } from "node:crypto";
 import {
   INDEX_ANCHOR_DATE,
   INDEX_BASE_DATE,
@@ -18,6 +18,7 @@ import {
   type LiveMember,
   type QuarterlySharesMap,
 } from "@/lib/index-engine";
+import { getMigrationSql, getReadSql, getWriteSql } from "@/lib/db-connection";
 
 const STOCK_BATCH_SIZE = 500;
 const LIVE_STATE_KEY = "live_index_state";
@@ -136,12 +137,6 @@ export type CronRunRecord = {
   error: string | null;
 };
 
-function getSql() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL env var is not set");
-  return neon(url);
-}
-
 function toNumber(value: unknown) {
   return Number(value);
 }
@@ -172,7 +167,7 @@ function toStringArray(value: unknown): string[] {
 // ---------------------------------------------------------------------------
 
 export async function ensureSchema() {
-  const sql = getSql();
+  const sql = getMigrationSql();
   await sql`
     CREATE TABLE IF NOT EXISTS index_snapshots (
       date          DATE PRIMARY KEY,
@@ -258,6 +253,14 @@ export async function ensureSchema() {
     )
   `;
   await sql`
+    CREATE TABLE IF NOT EXISTS job_locks (
+      job          VARCHAR(64) PRIMARY KEY,
+      token        VARCHAR(64) NOT NULL,
+      locked_until TIMESTAMPTZ NOT NULL,
+      updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`
     CREATE INDEX IF NOT EXISTS idx_cron_runs_started_at
       ON cron_runs(started_at DESC)
   `;
@@ -329,7 +332,7 @@ export async function ensureSchema() {
 // ---------------------------------------------------------------------------
 
 export async function startCronRun(job: string, date: string | null): Promise<number> {
-  const sql = getSql();
+  const sql = getWriteSql();
   const rows = (await sql`
     INSERT INTO cron_runs (job, date, status, stock_rows, missing_tickers)
     VALUES (${job}, ${date}::date, 'running', 0, '[]'::jsonb)
@@ -339,7 +342,7 @@ export async function startCronRun(job: string, date: string | null): Promise<nu
 }
 
 export async function finishCronRun(id: number, input: CronRunFinishInput) {
-  const sql = getSql();
+  const sql = getWriteSql();
   await sql`
     UPDATE cron_runs
     SET finished_at = now(),
@@ -354,7 +357,7 @@ export async function finishCronRun(id: number, input: CronRunFinishInput) {
 }
 
 export async function getRecentCronRuns(limit = 25): Promise<CronRunRecord[]> {
-  const sql = getSql();
+  const sql = getReadSql();
   const safeLimit = Math.max(1, Math.min(100, Math.trunc(limit)));
   const rows = (await sql`
     SELECT
@@ -387,6 +390,28 @@ export async function getRecentCronRuns(limit = 25): Promise<CronRunRecord[]> {
   }));
 }
 
+export async function acquireJobLock(job: string, leaseSeconds = 10 * 60) {
+  const sql = getWriteSql();
+  const token = randomUUID();
+  const safeLease = Math.max(60, Math.min(30 * 60, Math.trunc(leaseSeconds)));
+  const rows = (await sql`
+    INSERT INTO job_locks (job, token, locked_until, updated_at)
+    VALUES (${job}, ${token}, now() + ${safeLease} * interval '1 second', now())
+    ON CONFLICT (job) DO UPDATE
+      SET token = EXCLUDED.token,
+          locked_until = EXCLUDED.locked_until,
+          updated_at = now()
+      WHERE job_locks.locked_until <= now()
+    RETURNING token
+  `) as DbRow[];
+  return rows.length ? token : null;
+}
+
+export async function releaseJobLock(job: string, token: string) {
+  const sql = getWriteSql();
+  await sql`DELETE FROM job_locks WHERE job = ${job} AND token = ${token}`;
+}
+
 // ---------------------------------------------------------------------------
 // Constituents (universe CMS)
 // ---------------------------------------------------------------------------
@@ -406,7 +431,7 @@ export type ConstituentInput = {
 export type ConstituentRecord = ConstituentInput & { updatedAt: string };
 
 export async function listConstituents(): Promise<ConstituentRecord[]> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = (await sql`
     SELECT ticker, name, display_name, yf_ticker, sector,
            listed_date::text AS listed_date, ipo_price::float AS ipo_price,
@@ -430,7 +455,7 @@ export async function listConstituents(): Promise<ConstituentRecord[]> {
 
 /** Insert or update a constituent, then clear the universe cache. */
 export async function upsertConstituent(c: ConstituentInput): Promise<void> {
-  const sql = getSql();
+  const sql = getWriteSql();
   await sql`
     INSERT INTO constituents (ticker, name, display_name, yf_ticker, sector, listed_date, ipo_price, is_trifecta, is_active, updated_at)
     VALUES (${c.ticker}, ${c.name}, ${c.displayName}, ${c.yfTicker}, ${c.sector}, ${c.listedDate}, ${c.ipoPrice}, ${c.isPortfolio}, ${c.isActive}, now())
@@ -455,7 +480,7 @@ export async function upsertShareCounts(
   source = "yahoo"
 ): Promise<void> {
   if (!points.length) return;
-  const sql = getSql();
+  const sql = getWriteSql();
   await sql`
     INSERT INTO share_counts (ticker, as_of, shares, source)
     SELECT ${ticker}, * FROM unnest(
@@ -477,7 +502,7 @@ export async function upsertYahooShareCounts(
   points: ShareCountInput[]
 ): Promise<number> {
   if (!points.length) return 0;
-  const sql = getSql();
+  const sql = getWriteSql();
   const rows = (await sql`
     INSERT INTO share_counts (ticker, as_of, shares, source)
     SELECT ${ticker}, * FROM unnest(
@@ -506,7 +531,7 @@ export async function upsertAnnualFinancials(
   rows: QuarterlyFinancialInput[]
 ): Promise<void> {
   if (!rows.length) return;
-  const sql = getSql();
+  const sql = getWriteSql();
   await sql`
     INSERT INTO company_financials (ticker, fiscal_year, revenue, ebitda, pat, total_assets)
     SELECT ${ticker}, * FROM unnest(
@@ -527,7 +552,7 @@ export async function upsertQuarterlyFinancials(
   rows: QuarterlyFinancialInput[]
 ): Promise<void> {
   if (!rows.length) return;
-  const sql = getSql();
+  const sql = getWriteSql();
   await sql`
     INSERT INTO company_financials_quarterly (ticker, quarter_end, revenue, ebitda, pat, total_assets)
     SELECT ${ticker}, * FROM unnest(
@@ -544,7 +569,7 @@ export async function upsertQuarterlyFinancials(
 }
 
 export async function upsertCompanyProfile(ticker: string, description: string | null): Promise<void> {
-  const sql = getSql();
+  const sql = getWriteSql();
   await sql`
     INSERT INTO company_profiles (ticker, description, updated_at)
     VALUES (${ticker}, ${description}, now())
@@ -563,7 +588,7 @@ export type AnalystRatingInput = {
 };
 
 export async function upsertAnalystRating(ticker: string, a: AnalystRatingInput): Promise<void> {
-  const sql = getSql();
+  const sql = getWriteSql();
   await sql`
     INSERT INTO analyst_ratings (ticker, strong_buy, buy, hold, sell, strong_sell, rating_key, num_analysts, updated_at)
     VALUES (${ticker}, ${a.strongBuy}, ${a.buy}, ${a.hold}, ${a.sell}, ${a.strongSell}, ${a.ratingKey}, ${a.numAnalysts}, now())
@@ -580,7 +605,7 @@ export async function upsertAnalystRating(ticker: string, a: AnalystRatingInput)
 
 /** Load every stored daily close as date -> (ticker -> close). */
 async function loadAllPrices(): Promise<DailyPrices> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = (await sql`
     SELECT date::text AS date, ticker, close_price::float AS close
     FROM stock_snapshots
@@ -599,7 +624,7 @@ async function loadAllPrices(): Promise<DailyPrices> {
 
 /** Point-in-time share-count history per ticker (sorted ascending by asOf). */
 export async function getSharesMap(): Promise<QuarterlySharesMap> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = (await sql`
     SELECT ticker, as_of::text AS as_of, shares::float AS shares
     FROM share_counts
@@ -682,7 +707,7 @@ export async function recomputeAndPersistIndex(): Promise<{
   latestValue: number | null;
   numCompanies: number;
 }> {
-  const sql = getSql();
+  const sql = getWriteSql();
   const [prices, shares, engineMembers] = await Promise.all([
     loadAllPrices(),
     getSharesMap(),
@@ -758,7 +783,7 @@ export async function recomputeAndPersistIndex(): Promise<{
 }
 
 export async function getLiveIndexState(): Promise<LiveIndexState | null> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = (await sql`SELECT value FROM settings WHERE key = ${LIVE_STATE_KEY}`) as DbRow[];
   if (!rows.length) return null;
   try {
@@ -775,7 +800,7 @@ export async function getLiveIndexState(): Promise<LiveIndexState | null> {
 // ---------------------------------------------------------------------------
 
 export async function getLatestIndexSnapshot(): Promise<LatestIndexSnapshot | null> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = await sql`
     SELECT date::text, value::float, change_pct::float
     FROM index_snapshots
@@ -797,7 +822,7 @@ export async function getLatestIndexSnapshot(): Promise<LatestIndexSnapshot | nu
  * so the change doesn't collapse to ~0 once the cron persists today's row.
  */
 export async function getReferenceIndexClose(beforeDate: string): Promise<number | null> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = await sql`
     SELECT value::float AS value
     FROM index_snapshots
@@ -812,7 +837,7 @@ export async function getIndexRangeStats(
   fromDate: string,
   toDate: string
 ): Promise<IndexRangeStats> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = await sql`
     SELECT max(value)::float AS high, min(value)::float AS low
     FROM index_snapshots
@@ -830,7 +855,7 @@ export async function getIndexRangeStats(
 
 export async function upsertStockSnapshotsBatch(rows: StockSnapshotInput[]) {
   if (!rows.length) return;
-  const sql = getSql();
+  const sql = getWriteSql();
 
   for (let i = 0; i < rows.length; i += STOCK_BATCH_SIZE) {
     const chunk = rows.slice(i, i + STOCK_BATCH_SIZE);
@@ -874,7 +899,7 @@ export async function getLatestStockPrices(): Promise<Record<string, LatestStock
 }
 
 export async function getLatestStockSnapshots(): Promise<Record<string, LatestStockSnapshot>> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = await sql`
     SELECT DISTINCT ON (ticker) ticker, date::text, close_price::float, change_pct::float
     FROM stock_snapshots
@@ -896,7 +921,7 @@ export async function getLatestStockSnapshots(): Promise<Record<string, LatestSt
 export async function getStockSnapshotsOnOrBefore(
   date: string
 ): Promise<Record<string, ReferenceStockSnapshot>> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = await sql`
     SELECT DISTINCT ON (ticker) ticker, date::text, close_price::float
     FROM stock_snapshots
@@ -916,7 +941,7 @@ export async function getStockSnapshotsOnOrBefore(
 
 /** Earliest stored close per ticker — used for per-stock "since inception" display. */
 export async function getEarliestPricesPerTicker(): Promise<Record<string, number>> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = await sql`
     SELECT DISTINCT ON (ticker) ticker, close_price::float
     FROM stock_snapshots

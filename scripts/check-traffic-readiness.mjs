@@ -10,29 +10,50 @@ if (!Array.isArray(vercel.regions) || !vercel.regions.includes("sin1")) {
 }
 if (vercel.fluid !== true) failures.push("Fluid compute is not enabled in vercel.json.");
 
-let databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
+const databaseUrls = {
+  DATABASE_READ_URL: process.env.DATABASE_READ_URL,
+  DATABASE_WRITE_URL: process.env.DATABASE_WRITE_URL,
+};
+if (!databaseUrls.DATABASE_READ_URL && !databaseUrls.DATABASE_WRITE_URL) {
   try {
     const localEnvironment = await readFile(new URL("../.env.local", import.meta.url), "utf8");
-    const match = localEnvironment.match(/^DATABASE_URL=(.+)$/m);
-    databaseUrl = match?.[1]?.trim().replace(/^['"]|['"]$/g, "");
+    for (const name of Object.keys(databaseUrls)) {
+      const match = localEnvironment.match(new RegExp(`^${name}=(.+)$`, "m"));
+      databaseUrls[name] = match?.[1]?.trim().replace(/^['"]|['"]$/g, "");
+    }
   } catch {
     // The production environment normally injects this value directly.
   }
 }
 
-if (databaseUrl) {
-  const database = new URL(databaseUrl);
-  if (!database.hostname.includes("-pooler")) {
-    warnings.push("DATABASE_URL is not a Neon pooled connection string.");
+for (const [name, value] of Object.entries(databaseUrls)) {
+  if (!value) {
+    warnings.push(`${name} is unavailable in this shell; verify the production value in Vercel.`);
+    continue;
   }
-} else {
-  warnings.push("DATABASE_URL is unavailable in this shell; verify the production value in Vercel.");
+  const database = new URL(value);
+  if (!database.hostname.includes("-pooler")) {
+    failures.push(`${name} is not a Neon pooled connection string.`);
+  }
 }
+
+const requiredSecurityHeaders = {
+  "content-security-policy": "default-src",
+  "cross-origin-opener-policy": "same-origin",
+  "permissions-policy": "camera=()",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+};
 
 async function checkRemote() {
   const home = await fetch(new URL("/", baseUrl), { signal: AbortSignal.timeout(10_000) });
   if (!home.ok) failures.push(`Landing page returned HTTP ${home.status}.`);
+  for (const [name, expected] of Object.entries(requiredSecurityHeaders)) {
+    if (!(home.headers.get(name) ?? "").includes(expected)) {
+      failures.push(`Landing page is missing the expected ${name} security header.`);
+    }
+  }
 
   const live = await fetch(new URL("/api/index/live?currency=inr", baseUrl), {
     signal: AbortSignal.timeout(15_000),

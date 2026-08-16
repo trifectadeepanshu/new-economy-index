@@ -6,20 +6,14 @@
  * Cached briefly per server instance; call invalidateUniverse() after a write
  * (e.g. a CMS add) so the next read reflects it immediately.
  */
-import { neon } from "@neondatabase/serverless";
 import { COMPANIES, type Company, type Sector } from "@/lib/companies";
+import { getReadSql } from "@/lib/db-connection";
 
 const CACHE_TTL_MS = 60_000;
 
 type DbRow = Record<string, unknown>;
 
 let cache: { at: number; universe: Company[] } | null = null;
-
-function getSql() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL env var is not set");
-  return neon(url);
-}
 
 function rowToCompany(row: DbRow): Company {
   return {
@@ -38,7 +32,7 @@ function rowToCompany(row: DbRow): Company {
 export async function getUniverse(): Promise<Company[]> {
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.universe;
   try {
-    const sql = getSql();
+    const sql = getReadSql();
     const rows = (await sql`
       SELECT ticker, name, display_name, yf_ticker, sector,
              listed_date::text AS listed_date, ipo_price::float AS ipo_price, is_trifecta

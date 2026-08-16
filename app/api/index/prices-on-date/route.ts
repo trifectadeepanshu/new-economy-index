@@ -3,6 +3,11 @@ import { getStockSnapshotsOnOrBefore } from "@/lib/db";
 import { INDEX_BASE_DATE } from "@/lib/companies";
 import { getISTDate } from "@/lib/market-hours";
 import { createAsyncTtlCache } from "@/lib/async-ttl-cache";
+import {
+  findDuplicateSearchParam,
+  findUnknownSearchParam,
+  isIsoDate,
+} from "@/lib/api-validation";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +16,7 @@ export const dynamic = "force-dynamic";
 const PRICES_CACHE_HEADERS = {
   "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400",
 };
+const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
 
 type PricesPayload = {
   date: string;
@@ -23,14 +29,22 @@ const pricesCache = createAsyncTtlCache<PricesPayload>({
   maxEntries: 400,
 });
 
-function isValidDate(value: string | null): value is string {
-  return !!value && /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
 export async function GET(req: NextRequest) {
-  const date = req.nextUrl.searchParams.get("date");
-  if (!isValidDate(date)) {
-    return NextResponse.json({ error: "date must be yyyy-mm-dd" }, { status: 400 });
+  const params = req.nextUrl.searchParams;
+  const invalidKey = findUnknownSearchParam(params, ["date"])
+    ?? findDuplicateSearchParam(params, ["date"]);
+  if (invalidKey) {
+    return NextResponse.json(
+      { error: `Invalid query parameter: ${invalidKey}` },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+  const date = params.get("date");
+  if (!isIsoDate(date)) {
+    return NextResponse.json(
+      { error: "date must be yyyy-mm-dd" },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
   }
 
   // Clamp to a sane window: nothing before the index has data, nothing
@@ -49,6 +63,9 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error("[/api/index/prices-on-date]", err);
-    return NextResponse.json({ error: "Failed to fetch prices" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch prices" },
+      { status: 500, headers: NO_STORE_HEADERS }
+    );
   }
 }

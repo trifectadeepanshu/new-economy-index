@@ -8,17 +8,11 @@
  * kept only as a sensible fallback when the live rate is unavailable.
  */
 
-import { neon } from "@neondatabase/serverless";
 import { INDEX_BASE_DATE } from "@/lib/companies";
+import { getReadSql, getWriteSql } from "@/lib/db-connection";
 
 const LIVE_TTL_MS = 15 * 60 * 1000; // refresh the live rate every 15 minutes
 const FALLBACK_RATE = 83; // last-resort if nothing is available
-
-function getSql() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL env var is not set");
-  return neon(url);
-}
 
 export type FxRates = {
   /** date (yyyy-mm-dd) -> USD/INR, ascending. */
@@ -28,7 +22,7 @@ export type FxRates = {
 
 /** Load stored daily USD/INR rates and resolve the base-date rate. */
 export async function getFxRates(): Promise<FxRates> {
-  const sql = getSql();
+  const sql = getReadSql();
   const rows = (await sql`
     SELECT date::text AS date, rate::float AS rate FROM fx_rates ORDER BY date ASC
   `) as { date: string; rate: number }[];
@@ -38,7 +32,7 @@ export async function getFxRates(): Promise<FxRates> {
 
 /** Record (or update) the USD/INR rate for a given date. */
 export async function upsertFxRate(date: string, rate: number): Promise<void> {
-  const sql = getSql();
+  const sql = getWriteSql();
   await sql`
     INSERT INTO fx_rates (date, rate) VALUES (${date}, ${rate})
     ON CONFLICT (date) DO UPDATE SET rate = EXCLUDED.rate

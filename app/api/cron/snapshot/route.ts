@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUniverse } from "@/lib/universe";
 import { fetchAllQuotes, type QuoteResult } from "@/lib/yahoo-finance";
 import {
-  ensureSchema,
+  acquireJobLock,
   finishCronRun,
+  releaseJobLock,
   recomputeAndPersistIndex,
   startCronRun,
   type StockSnapshotInput,
@@ -21,9 +22,10 @@ import { getISTDate } from "@/lib/market-hours";
 export const dynamic = "force-dynamic";
 
 const CRON_JOB = "snapshot";
+const HEADERS = { "Cache-Control": "no-store" };
 
 function unauthorized() {
-  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: HEADERS });
 }
 
 function errorDetail(err: unknown) {
@@ -45,19 +47,34 @@ export async function GET(req: NextRequest) {
   if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) {
     return unauthorized();
   }
-  return runSnapshot();
+  return runSnapshotWithLock();
 }
 
 export async function POST(req: NextRequest) {
   if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) {
     return unauthorized();
   }
-  return runSnapshot();
+  return runSnapshotWithLock();
+}
+
+async function runSnapshotWithLock() {
+  const token = await acquireJobLock(CRON_JOB);
+  if (!token) {
+    return NextResponse.json(
+      { error: "Snapshot already running" },
+      { status: 409, headers: { ...HEADERS, "Retry-After": "60" } }
+    );
+  }
+  try {
+    return await runSnapshot();
+  } finally {
+    await releaseJobLock(CRON_JOB, token).catch((err) => {
+      console.warn("[/api/cron/snapshot] lock release failed:", err);
+    });
+  }
 }
 
 async function runSnapshot() {
-  await ensureSchema();
-
   const today = getISTDate();
   const runId = await startCronRun(CRON_JOB, today);
   const active = (await getUniverse()).filter((c) => c.listedDate <= today);
@@ -77,7 +94,7 @@ async function runSnapshot() {
     });
     return NextResponse.json(
       { error: "Failed to fetch quotes", detail },
-      { status: 502 }
+      { status: 502, headers: HEADERS }
     );
   }
 
@@ -101,7 +118,7 @@ async function runSnapshot() {
         date: today,
         missingTickers: missingQuotes,
       },
-      { status: 502 }
+      { status: 502, headers: HEADERS }
     );
   }
 
@@ -151,7 +168,7 @@ async function runSnapshot() {
         stockRows: stockRowsWritten,
         error: "No eligible companies",
       });
-      return NextResponse.json({ message: "No eligible companies", date: today });
+      return NextResponse.json({ message: "No eligible companies", date: today }, { headers: HEADERS });
     }
 
     const indexValue = round(result.latestValue);
@@ -162,12 +179,15 @@ async function runSnapshot() {
       indexValue,
     });
 
-    return NextResponse.json({
-      message: "Snapshot saved",
-      date: result.latestDate,
-      indexValue,
-      numCompanies: result.numCompanies,
-    });
+    return NextResponse.json(
+      {
+        message: "Snapshot saved",
+        date: result.latestDate,
+        indexValue,
+        numCompanies: result.numCompanies,
+      },
+      { headers: HEADERS }
+    );
   } catch (err) {
     const detail = errorDetail(err);
     console.error("[/api/cron/snapshot] snapshot failed:", err);
@@ -179,7 +199,7 @@ async function runSnapshot() {
     });
     return NextResponse.json(
       { error: "Snapshot failed", detail },
-      { status: 500 }
+      { status: 500, headers: HEADERS }
     );
   }
 }

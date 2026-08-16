@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ensureSchema, getRecentCronRuns } from "@/lib/db";
-import { isBearerAuthorized } from "@/lib/http-auth";
+import { getRecentCronRuns } from "@/lib/db";
+import { isAdminAuthorized } from "@/lib/admin-auth";
+import { findDuplicateSearchParam, findUnknownSearchParam } from "@/lib/api-validation";
 
 export const dynamic = "force-dynamic";
 
@@ -9,10 +10,19 @@ const ADMIN_CACHE_HEADERS = {
 };
 
 export async function GET(req: NextRequest) {
-  if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) {
+  if (!isAdminAuthorized(req)) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401, headers: ADMIN_CACHE_HEADERS }
+    );
+  }
+
+  const invalidKey = findUnknownSearchParam(req.nextUrl.searchParams, ["limit"])
+    ?? findDuplicateSearchParam(req.nextUrl.searchParams, ["limit"]);
+  if (invalidKey) {
+    return NextResponse.json(
+      { error: `Invalid query parameter: ${invalidKey}` },
+      { status: 400, headers: ADMIN_CACHE_HEADERS }
     );
   }
 
@@ -20,7 +30,6 @@ export async function GET(req: NextRequest) {
   const limit = Number.isFinite(requestedLimit) ? requestedLimit : 25;
 
   try {
-    await ensureSchema();
     const runs = await getRecentCronRuns(limit);
     return NextResponse.json({ runs }, { headers: ADMIN_CACHE_HEADERS });
   } catch (err) {

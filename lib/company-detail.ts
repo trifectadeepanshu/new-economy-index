@@ -4,20 +4,14 @@
  * values are converted to the requested currency (financials reported in INR by
  * Yahoo).
  */
-import { neon } from "@neondatabase/serverless";
 import { getFxRates, fetchLiveUsdInr } from "@/lib/fx";
+import { getReadSql } from "@/lib/db-connection";
 import type {
   AnalystConsensus,
   CompanyDetail,
   CompanyFinancialPeriod,
   Currency,
 } from "@/lib/index-api";
-
-function getSql() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL env var is not set");
-  return neon(url);
-}
 
 export type FinancialRawRow = {
   period: string;
@@ -172,7 +166,7 @@ export function buildQuarterlyFinancials(
 }
 
 export async function getCompanyDetail(ticker: string, currency: Currency): Promise<CompanyDetail> {
-  const sql = getSql();
+  const sql = getReadSql();
   const [finRaw, annualFinRaw, profRaw, ratingRaw, priceRaw, sharesRaw, fx] = await Promise.all([
     sql`SELECT quarter_end::text AS period, revenue::float, ebitda::float, pat::float, total_assets::float
         FROM company_financials_quarterly WHERE ticker = ${ticker} ORDER BY quarter_end ASC`,

@@ -2,7 +2,11 @@
 
 ## Before deployment
 
-- Use the Neon pooled connection string (`-pooler` hostname) for `DATABASE_URL`.
+- Use pooled Neon connections for `DATABASE_READ_URL` and `DATABASE_WRITE_URL`.
+- Keep `DATABASE_MIGRATION_URL` out of Vercel runtime environments.
+- Use separate, high-entropy values for `CRON_SECRET` and `ADMIN_SECRET`.
+- Protect Preview deployments with Vercel Authentication.
+- Keep Vercel Firewall rate limiting enabled for `/api/*`.
 - Keep Vercel Functions in `sin1`, beside the Neon Singapore database.
 - Confirm Fluid compute is enabled after deployment.
 - Enable Vercel Speed Insights, Web Analytics, function logs, and spend alerts.
@@ -16,6 +20,7 @@ Run the production build and automated tests:
 ```bash
 npm run lint
 npm test
+npm run typecheck
 npm run build
 ```
 

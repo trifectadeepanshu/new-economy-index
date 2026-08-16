@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ensureSchema, finishCronRun, startCronRun } from "@/lib/db";
+import { acquireJobLock, finishCronRun, releaseJobLock, startCronRun } from "@/lib/db";
 import { isBearerAuthorized } from "@/lib/http-auth";
 import { round } from "@/lib/index-math";
 import { getISTDate } from "@/lib/market-hours";
@@ -33,17 +33,32 @@ async function finishRefreshRun(
 
 export async function GET(req: NextRequest) {
   if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) return unauthorized();
-  return runRefresh();
+  return runRefreshWithLock();
 }
 
 export async function POST(req: NextRequest) {
   if (!isBearerAuthorized(req.headers, process.env.CRON_SECRET)) return unauthorized();
-  return runRefresh();
+  return runRefreshWithLock();
+}
+
+async function runRefreshWithLock() {
+  const token = await acquireJobLock(CRON_JOB);
+  if (!token) {
+    return NextResponse.json(
+      { error: "Refresh already running" },
+      { status: 409, headers: { ...HEADERS, "Retry-After": "60" } }
+    );
+  }
+  try {
+    return await runRefresh();
+  } finally {
+    await releaseJobLock(CRON_JOB, token).catch((err) => {
+      console.warn("[/api/cron/refresh] lock release failed:", err);
+    });
+  }
 }
 
 async function runRefresh() {
-  await ensureSchema();
-
   const today = getISTDate();
   const runId = await startCronRun(CRON_JOB, today);
 
