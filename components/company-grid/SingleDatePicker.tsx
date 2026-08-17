@@ -52,12 +52,20 @@ export function SingleDatePicker({
   max,
   onChange,
   placeholder = "Pick a date",
+  selectedPrefix,
+  dialogLabel = "Select date",
+  inputLabel = "Date",
+  hint = "Pick or type a date",
 }: {
   value: string | null;
   min: string;
   max: string;
   onChange: (date: string) => void;
   placeholder?: string;
+  selectedPrefix?: string;
+  dialogLabel?: string;
+  inputLabel?: string;
+  hint?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState<Date>(() => startOfMonth(parseISO(value ?? max)));
@@ -140,6 +148,9 @@ export function SingleDatePicker({
 
   const prevDisabled = monthStartISO(month) <= monthStartISO(parseISO(min));
   const nextDisabled = monthStartISO(month) >= monthStartISO(parseISO(max));
+  const displayValue = pretty(value);
+  const triggerText =
+    displayValue && selectedPrefix ? `${selectedPrefix} ${displayValue}` : displayValue || placeholder;
 
   return (
     <div className="nei-dp" ref={rootRef}>
@@ -149,12 +160,13 @@ export function SingleDatePicker({
         onClick={toggle}
         aria-haspopup="dialog"
         aria-expanded={open}
+        aria-label={displayValue ? `${dialogLabel}: ${displayValue}` : dialogLabel}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <rect x="3" y="4.5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.7" />
           <path d="M3 9h18M8 3v3M16 3v3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
         </svg>
-        <span className="nei-dp-trigger-text">{pretty(value) || placeholder}</span>
+        <span className="nei-dp-trigger-text">{triggerText}</span>
       </button>
 
       {open && (
@@ -166,15 +178,15 @@ export function SingleDatePicker({
             aria-label="Close date picker"
             tabIndex={-1}
           />
-          <div className="nei-dp-pop" role="dialog" aria-label="Select date">
+          <div className="nei-dp-pop" role="dialog" aria-label={dialogLabel}>
             <div className="nei-dp-endpoints">
               <label className="nei-dp-endpoint is-active">
-                <span>Date</span>
+                <span>{inputLabel}</span>
                 <input
                   className={`nei-dp-field nei-mono${invalid ? " is-invalid" : ""}`}
                   value={text}
                   placeholder="DD MMM YYYY"
-                  aria-label="Date"
+                  aria-label={inputLabel}
                   aria-invalid={invalid}
                   onChange={(e) => {
                     setText(e.target.value);
@@ -273,7 +285,7 @@ export function SingleDatePicker({
             </div>
 
             <div className={`nei-dp-hint${invalid ? " is-error" : ""}`} role={invalid ? "alert" : undefined}>
-              {invalid ? "Not a valid date. Try DD MMM YYYY, e.g. 15 Jul 2026" : "Pick or type a date"}
+              {invalid ? "Not a valid date. Try DD MMM YYYY, e.g. 15 Jul 2026" : hint}
             </div>
           </div>
         </>

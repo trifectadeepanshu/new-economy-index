@@ -8,7 +8,7 @@ const OPTIONS: { value: CagrRangeMode; label: string }[] = [
   { value: "1y", label: "1Y" },
   { value: "3y", label: "3Y" },
   { value: "5y", label: "5Y" },
-  { value: "custom", label: "Custom…" },
+  { value: "custom", label: "From Date..." },
 ];
 
 export function CagrRangeControl({
@@ -29,7 +29,7 @@ export function CagrRangeControl({
       <select
         value={mode}
         onChange={(e) => onModeChange(e.target.value as CagrRangeMode)}
-        aria-label="CAGR window"
+        aria-label="CAGR start window"
       >
         {OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
@@ -43,7 +43,11 @@ export function CagrRangeControl({
           min={INDEX_BASE_DATE}
           max={getISTDate()}
           onChange={onCustomDateChange}
-          placeholder="Pick a date"
+          placeholder="Pick start date"
+          selectedPrefix="From"
+          dialogLabel="Select CAGR start date"
+          inputLabel="Start date"
+          hint="CAGR runs from this date to latest close"
         />
       )}
       {isLoading && (

@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import type { CronRunRecord, CronRunStatus } from "@/lib/db";
+import { useAdminSession } from "@/hooks/useAdminSession";
 
 type ApiPayload = {
   runs?: CronRunRecord[];
@@ -81,7 +82,7 @@ function isProblemStatus(status: CronRunStatus) {
 }
 
 export function CronRunsAdmin() {
-  const [secret, setSecret] = useState("");
+  const admin = useAdminSession();
   const [runs, setRuns] = useState<CronRunRecord[]>([]);
   const [loadedAt, setLoadedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -95,20 +96,19 @@ export function CronRunsAdmin() {
   }, [runs]);
 
   async function loadRuns() {
-    const token = secret.trim();
-    if (!token) return;
-
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch("/api/admin/cron-runs?limit=50", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         cache: "no-store",
       });
       const json = (await response.json()) as ApiPayload;
+      if (response.status === 401) {
+        admin.markSignedOut();
+        setRuns([]);
+        setLoadedAt(null);
+      }
       if (!response.ok) throw new Error(json.error ?? `HTTP ${response.status}`);
       setRuns(json.runs ?? []);
       setLoadedAt(new Date());
@@ -120,9 +120,16 @@ export function CronRunsAdmin() {
     }
   }
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void loadRuns();
+    if (admin.status !== "signed-in" && !(await admin.signIn())) return;
+    await loadRuns();
+  }
+
+  async function signOut() {
+    await admin.signOut();
+    setRuns([]);
+    setLoadedAt(null);
   }
 
   return (
@@ -134,24 +141,38 @@ export function CronRunsAdmin() {
             <h1 id="cron-title" className="nei-heading">Cron runs</h1>
           </div>
           <form className="nei-admin-auth" onSubmit={onSubmit}>
-            <label htmlFor="cron-secret">CRON_SECRET</label>
-            <input
-              id="cron-secret"
-              name="cron-secret"
-              type="password"
-              autoComplete="current-password"
-              value={secret}
-              onChange={(event) => setSecret(event.target.value)}
-              required
-            />
-            <button type="submit" disabled={isLoading || !secret.trim()}>
-              {isLoading ? "Loading" : runs.length ? "Refresh" : "Load"}
+            {admin.status === "signed-in" ? (
+              <span className="nei-admin-loaded">Authenticated</span>
+            ) : (
+              <>
+                <label htmlFor="cron-secret">Admin password</label>
+                <input
+                  id="cron-secret"
+                  name="cron-secret"
+                  type="password"
+                  autoComplete="current-password"
+                  value={admin.password}
+                  onChange={(event) => admin.setPassword(event.target.value)}
+                  required
+                />
+              </>
+            )}
+            <button
+              type="submit"
+              disabled={isLoading || admin.status === "checking" || (admin.status !== "signed-in" && !admin.password)}
+            >
+              {isLoading ? "Loading" : admin.status === "signed-in" ? (runs.length ? "Refresh" : "Load") : "Sign in"}
             </button>
+            {admin.status === "signed-in" ? (
+              <button type="button" className="nei-admin-ghost" onClick={() => void signOut()}>
+                Sign out
+              </button>
+            ) : null}
           </form>
         </div>
 
         <div className="nei-admin-status-row" aria-live="polite">
-          {error ? <p className="nei-admin-alert">{error}</p> : null}
+          {error || admin.error ? <p className="nei-admin-alert">{error ?? admin.error}</p> : null}
           {!error && loadedAt ? (
             <p className="nei-admin-loaded nei-mono">Loaded {formatDateTime(loadedAt.toISOString())}</p>
           ) : null}

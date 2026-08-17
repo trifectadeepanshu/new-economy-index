@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { SECTORS } from "@/lib/companies";
 import type { ConstituentRecord } from "@/lib/db";
+import { useAdminSession } from "@/hooks/useAdminSession";
 
 type FormState = {
   ticker: string;
@@ -29,7 +30,7 @@ const EMPTY_FORM: FormState = {
 };
 
 export function ConstituentsAdmin() {
-  const [secret, setSecret] = useState("");
+  const admin = useAdminSession();
   const [rows, setRows] = useState<ConstituentRecord[]>([]);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [editing, setEditing] = useState<string | null>(null);
@@ -38,14 +39,16 @@ export function ConstituentsAdmin() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const auth = { Authorization: `Bearer ${secret.trim()}` };
-
   async function load() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/constituents", { headers: auth, cache: "no-store" });
+      const res = await fetch("/api/admin/constituents", { cache: "no-store" });
       const json = await res.json();
+      if (res.status === 401) {
+        admin.markSignedOut();
+        setRows([]);
+      }
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
       setRows(json.constituents ?? []);
     } catch (e) {
@@ -63,7 +66,7 @@ export function ConstituentsAdmin() {
     try {
       const res = await fetch("/api/admin/constituents", {
         method: "POST",
-        headers: { ...auth, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
           ipoPrice: form.ipoPrice === "" ? null : form.ipoPrice,
@@ -71,6 +74,10 @@ export function ConstituentsAdmin() {
         }),
       });
       const json = await res.json();
+      if (res.status === 401) {
+        admin.markSignedOut();
+        setRows([]);
+      }
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
       setRows(json.constituents ?? []);
       const o = json.onboard;
@@ -111,6 +118,20 @@ export function ConstituentsAdmin() {
 
   const set = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
 
+  async function authenticateAndLoad(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (admin.status !== "signed-in" && !(await admin.signIn())) return;
+    await load();
+  }
+
+  async function signOut() {
+    await admin.signOut();
+    setRows([]);
+    setForm(EMPTY_FORM);
+    setEditing(null);
+    setNotice(null);
+  }
+
   return (
     <main className="nei-admin-page">
       <section className="nei-admin-shell">
@@ -119,23 +140,37 @@ export function ConstituentsAdmin() {
             <p className="nei-label">Admin</p>
             <h1 className="nei-heading">Constituents</h1>
           </div>
-          <div className="nei-admin-auth">
-            <label htmlFor="secret">CRON_SECRET</label>
-            <input
-              id="secret"
-              type="password"
-              autoComplete="current-password"
-              value={secret}
-              onChange={(e) => setSecret(e.target.value)}
-            />
-            <button type="button" onClick={load} disabled={busy || !secret.trim()}>
-              {busy ? "…" : rows.length ? "Refresh" : "Load"}
+          <form className="nei-admin-auth" onSubmit={authenticateAndLoad}>
+            {admin.status === "signed-in" ? (
+              <span className="nei-admin-loaded">Authenticated</span>
+            ) : (
+              <>
+                <label htmlFor="secret">Admin password</label>
+                <input
+                  id="secret"
+                  type="password"
+                  autoComplete="current-password"
+                  value={admin.password}
+                  onChange={(e) => admin.setPassword(e.target.value)}
+                />
+              </>
+            )}
+            <button
+              type="submit"
+              disabled={busy || admin.status === "checking" || (admin.status !== "signed-in" && !admin.password)}
+            >
+              {busy ? "Loading" : admin.status === "signed-in" ? (rows.length ? "Refresh" : "Load") : "Sign in"}
             </button>
-          </div>
+            {admin.status === "signed-in" ? (
+              <button type="button" className="nei-admin-ghost" onClick={() => void signOut()}>
+                Sign out
+              </button>
+            ) : null}
+          </form>
         </div>
 
         <div className="nei-admin-status-row" aria-live="polite">
-          {error && <p className="nei-admin-alert">{error}</p>}
+          {(error || admin.error) && <p className="nei-admin-alert">{error ?? admin.error}</p>}
           {notice && <p className="nei-admin-loaded">{notice}</p>}
         </div>
 
@@ -193,7 +228,7 @@ export function ConstituentsAdmin() {
             </label>
           )}
           <div className="nei-admin-form-actions">
-            <button type="submit" disabled={busy || !secret.trim()}>{editing ? "Save changes" : "Add company"}</button>
+            <button type="submit" disabled={busy || admin.status !== "signed-in"}>{editing ? "Save changes" : "Add company"}</button>
             {editing && (
               <button type="button" className="nei-admin-ghost" onClick={() => { setForm(EMPTY_FORM); setEditing(null); }}>
                 Cancel
@@ -223,7 +258,7 @@ export function ConstituentsAdmin() {
                 </tr>
               ))}
               {!rows.length && (
-                <tr><td colSpan={8} className="nei-admin-empty">Enter CRON_SECRET and Load to view constituents.</td></tr>
+                <tr><td colSpan={8} className="nei-admin-empty">Sign in and load to view constituents.</td></tr>
               )}
             </tbody>
           </table>
