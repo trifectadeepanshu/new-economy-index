@@ -36,7 +36,7 @@ export type SortState = {
 
 export type ConstituentRow = StockData & {
   sinceBase: number | null;
-  /** Elapsed calendar days from the company's effective base date. */
+  /** Elapsed calendar days from the company's effective base date; displayed as decimal years. */
   timeSinceBaseDate: number | null;
   timeSinceBaseDateLabel: string;
   effectiveBaseDate: string | null;

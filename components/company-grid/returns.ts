@@ -1,7 +1,6 @@
 import {
   differenceInCalendarDays,
   format,
-  intervalToDuration,
   isValid,
   parseISO,
   subYears,
@@ -68,16 +67,12 @@ export function getTimeSinceBaseDate(
 
   const days = differenceInCalendarDays(end, start);
   if (days < 0) return null;
-
-  const duration = intervalToDuration({ start, end });
-  const years = duration.years ?? 0;
-  const months = duration.months ?? 0;
-  const remainingDays = duration.days ?? 0;
+  const decimalYears = days / 365.25;
 
   return {
     baseDate,
     days,
-    label: `${years}y ${months}m ${remainingDays}d`,
+    label: `${decimalYears.toFixed(2)} years`,
   };
 }
 

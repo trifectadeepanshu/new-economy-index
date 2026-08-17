@@ -35,16 +35,16 @@ const COLUMNS: Array<{
     note: { n: 1, anchor: "note-absolute-return" },
   },
   {
-    key: "timeSinceBaseDate",
-    label: "Time Since Base Date",
-    align: "right",
-    note: { n: 2, anchor: "note-time-since-base-date" },
-  },
-  {
     key: "irr",
     label: "IRR",
     align: "right",
-    note: { n: 3, anchor: "note-irr" },
+    note: { n: 2, anchor: "note-irr" },
+  },
+  {
+    key: "timeSinceBaseDate",
+    label: "Time Since Base Date",
+    align: "right",
+    note: { n: 3, anchor: "note-time-since-base-date" },
   },
 ];
 
@@ -262,6 +262,13 @@ export function ConstituentTable({
                     {formatSignedPercent(row.sinceBase, 1)}
                   </td>
                   <td
+                    className={`is-right nei-mono ${
+                      (row.irr ?? 0) >= 0 ? "is-positive" : "is-negative"
+                    }`}
+                  >
+                    {formatSignedPercent(row.irr, 1)}
+                  </td>
+                  <td
                     className="is-right nei-mono"
                     title={
                       row.effectiveBaseDate
@@ -270,13 +277,6 @@ export function ConstituentTable({
                     }
                   >
                     {row.timeSinceBaseDateLabel}
-                  </td>
-                  <td
-                    className={`is-right nei-mono ${
-                      (row.irr ?? 0) >= 0 ? "is-positive" : "is-negative"
-                    }`}
-                  >
-                    {formatSignedPercent(row.irr, 1)}
                   </td>
                 </tr>
               );

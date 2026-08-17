@@ -300,14 +300,6 @@ export default function MethodologyPage() {
               company listed later, it starts from the IPO Offer Price so the
               listing-day move remains part of the tracked return.
             </li>
-            <li id="note-time-since-base-date">
-              <strong>Time Since Base Date measures each company&apos;s tracked tenure.</strong>{" "}
-              For a company listed after 31 December 2020, its effective base
-              date is its IPO date. For a company listed on or before the index
-              base date, its effective base date is 31 December 2020. The
-              duration runs from that effective base date to the latest market
-              data date and is displayed in completed years, months, and days.
-            </li>
             <li id="note-irr">
               <strong>IRR is the annualized price return for the selected period.</strong>{" "}
               The selector offers 1, 3, and 5 year lookbacks, plus the Since
@@ -316,6 +308,16 @@ export default function MethodologyPage() {
               annualize the absolute return. The return field is left blank
               when a company was not yet public at the start of the period or
               when required price or tenure data is unavailable.
+            </li>
+            <li id="note-time-since-base-date">
+              <strong>Time Since Base Date measures each company&apos;s tracked tenure.</strong>{" "}
+              For a company listed after 31 December 2020, its effective base
+              date is its IPO date. For a company listed on or before the index
+              base date, its effective base date is 31 December 2020. The
+              duration runs from that effective base date to the latest market
+              data date and is displayed in decimal years, calculated from
+              elapsed calendar days divided by 365.25 and rounded to two decimal
+              places.
             </li>
           </ul>
         </DocSection>

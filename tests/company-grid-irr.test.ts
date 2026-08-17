@@ -55,7 +55,7 @@ test("pre-base listings use the index base date for their tracked tenure", () =>
   assert.deepEqual(getTimeSinceBaseDate("2006-11-21", "2026-08-17"), {
     baseDate: "2020-12-31",
     days: 2055,
-    label: "5y 7m 17d",
+    label: "5.63 years",
   });
 });
 
@@ -64,15 +64,15 @@ test("post-base listings use their IPO date for their tracked tenure", () => {
   assert.deepEqual(getTimeSinceBaseDate("2024-06-18", "2026-08-17"), {
     baseDate: "2024-06-18",
     days: 790,
-    label: "2y 1m 30d",
+    label: "2.16 years",
   });
 });
 
-test("recent listings show months and days", () => {
+test("recent listings show fractional years", () => {
   assert.deepEqual(getTimeSinceBaseDate("2026-05-08", "2026-08-17"), {
     baseDate: "2026-05-08",
     days: 101,
-    label: "0y 3m 9d",
+    label: "0.28 years",
   });
 });
 
