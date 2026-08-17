@@ -10,7 +10,8 @@ import {
   nextSort,
   useConstituentRows,
 } from "@/components/company-grid/useConstituentRows";
-import { useCustomCagrPrices } from "@/components/company-grid/useCustomCagr";
+import { getIrrStartDate } from "@/components/company-grid/returns";
+import { useIrrPrices } from "@/components/company-grid/useIrrPrices";
 import { ViewToggle } from "@/components/company-grid/ViewToggle";
 
 // Deferred: only needed after a user clicks a company card, and it pulls in
@@ -22,9 +23,9 @@ const CompanyModal = dynamic(
 import { getISTDate } from "@/lib/market-hours";
 import type { StockData } from "@/lib/index-api";
 import type {
-  CagrRangeMode,
   CompanyGridProps,
   CompanyGridView,
+  IrrRangeMode,
   SectorFilter,
   SortKey,
   SortState,
@@ -45,18 +46,6 @@ function initialCountFor(view: CompanyGridView) {
 // view reveals the rest in one click straight from the initial 12.
 function expandedCountFor(view: CompanyGridView) {
   return view === "table" ? EXPANDED_TABLE_COUNT : null;
-}
-
-/** The date to fetch prices for, given the picked CAGR window. Null means
- * "use the default since-base window" (no fetch needed). */
-function cagrFromDateFor(mode: CagrRangeMode, customDate: string | null): string | null {
-  if (mode === "sinceBase") return null;
-  if (mode === "custom") return customDate;
-
-  const years = mode === "1y" ? 1 : mode === "3y" ? 3 : 5;
-  const d = new Date(getISTDate());
-  d.setUTCFullYear(d.getUTCFullYear() - years);
-  return d.toISOString().slice(0, 10);
 }
 
 function LoadMoreBar({
@@ -126,22 +115,25 @@ export function CompanyGrid({
   const [sector, setSector] = useState<SectorFilter>("All");
   const [visibleCount, setVisibleCount] = useState(INITIAL_CARD_COUNT);
   const [selected, setSelected] = useState<StockData | null>(null);
-  const [cagrMode, setCagrMode] = useState<CagrRangeMode>("sinceBase");
-  const [customCagrDate, setCustomCagrDate] = useState<string | null>(null);
+  const [irrMode, setIrrMode] = useState<IrrRangeMode>("1y");
 
   const view = externalView ?? internalView ?? "grid";
   const hasResolvedAutoView = externalView !== undefined || internalView !== null;
   const hasResolvedViewport = isMobileCardViewport !== null;
   const showToggle = showToggleProp ?? externalView === undefined;
 
-  const cagrFromDate = useMemo(
-    () => cagrFromDateFor(cagrMode, customCagrDate),
-    [cagrMode, customCagrDate]
+  const irrFromDate = useMemo(
+    () => getIrrStartDate(irrMode, getISTDate()),
+    [irrMode]
   );
-  const { prices: cagrPrices, isLoading: cagrLoading } = useCustomCagrPrices(cagrFromDate);
-  const customCagr = cagrFromDate && cagrPrices ? { fromDate: cagrFromDate, prices: cagrPrices } : null;
+  const {
+    prices: irrPrices,
+    isLoading: irrLoading,
+    error: irrError,
+  } = useIrrPrices(irrFromDate);
+  const irrWindow = useMemo(() => (irrPrices ? { prices: irrPrices } : null), [irrPrices]);
 
-  const rows = useConstituentRows(stocks, sort, sector, query, customCagr, currency, usdInr);
+  const rows = useConstituentRows(stocks, sort, sector, query, irrWindow, currency, usdInr);
   const hasActiveFilters = query.trim().length > 0 || sector !== "All";
   // Re-resolve against the live rows every render so an open modal keeps
   // tracking its company's price/change as `stocks` refreshes on the 30s
@@ -266,11 +258,10 @@ export function CompanyGrid({
             variant={variant}
             currency={currency}
             onSelect={setSelected}
-            cagrMode={cagrMode}
-            onCagrModeChange={setCagrMode}
-            customCagrDate={customCagrDate}
-            onCustomCagrDateChange={setCustomCagrDate}
-            cagrLoading={cagrLoading}
+            irrMode={irrMode}
+            onIrrModeChange={setIrrMode}
+            irrLoading={irrLoading}
+            irrError={irrError}
           />
           {canLoadMore && (
             <LoadMoreBar visibleCount={effectiveVisibleCount} total={rows.length} onLoadMore={handleLoadMore} />

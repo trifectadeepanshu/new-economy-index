@@ -160,7 +160,7 @@
     scroll-margin-top: 88px;
   }
 
-  /* Footnote targets deep-linked from the constituent table (e.g. #note-cagr)
+  /* Footnote targets deep-linked from the constituent table (e.g. #note-irr)
      need their own offset — they're not section-level anchors. */
   .nei-doc-section li[id] {
     scroll-margin-top: 88px;

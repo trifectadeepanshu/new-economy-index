@@ -293,29 +293,20 @@ export default function MethodologyPage() {
               refreshed on a quarterly basis, keeping market-capitalisation
               weights current between reviews.
             </li>
-            <li id="note-1y-return">
-              <strong>1Y % is blank for recent listings.</strong> This figure
-              requires a full year of trading history to be meaningful. For a
-              constituent that has not completed a year since listing, the field
-              is left blank rather than showing an approximate or partial-year
-              figure.
+            <li id="note-time-since-base">
+              <strong>Time Since Base uses each company&apos;s effective base.</strong>{" "}
+              The column shows cumulative price return from 31 December 2020 for
+              a company that was already public on the index base date. For a
+              company listed later, it starts from the IPO Offer Price so the
+              listing-day move remains part of the tracked return.
             </li>
-            <li id="note-cagr">
-              <strong>CAGR uses different entry points by listing date.</strong>{" "}
-              For a constituent listed before the index base date (31 December
-              2020), CAGR is annualised from the index base price on that date.
-              For a constituent listed after the index base date, CAGR is
-              annualised from its IPO Offer Price, not its first-day opening or
-              closing price, consistent with the IPO fast-entry treatment in
-              Section 4.4, so the listing-day move is captured as part of the
-              constituent&apos;s tracked return. As with 1Y %, the figure is left
-              blank where the underlying window is under roughly three months,
-              since annualising a very short window produces a rate that is not
-              meaningful. A dropdown above the CAGR column lets a viewer switch
-              this default window to a fixed 1, 3, or 5 year lookback, or a
-              custom start date. In that case CAGR is annualised between the
-              selected date&apos;s closing price and the current price for every
-              constituent, subject to the same minimum-window floor.
+            <li id="note-irr">
+              <strong>IRR is the annualized price return for a fixed period.</strong>{" "}
+              The selector offers 1, 3, and 5 year lookbacks. Each calculation
+              uses the latest available closing price on or before the lookback
+              date and the constituent&apos;s current price. The field is left blank
+              when a company was not yet public at the start of the selected
+              period or when either price is unavailable.
             </li>
           </ul>
         </DocSection>

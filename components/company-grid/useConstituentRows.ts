@@ -1,8 +1,11 @@
 import { useMemo } from "react";
 import type { Currency, StockData } from "@/lib/index-api";
-import { INDEX_BASE_DATE } from "@/lib/companies";
 import { getISTDate } from "@/lib/market-hours";
-import type { CagrPricePoint } from "@/components/company-grid/useCustomCagr";
+import {
+  computeIrr,
+  getTimeSinceBaseReturn,
+  type IrrPricePoint,
+} from "@/components/company-grid/returns";
 import type {
   ConstituentRow,
   SectorFilter,
@@ -10,53 +13,9 @@ import type {
   SortState,
 } from "@/components/company-grid/types";
 
-/** A user-picked CAGR window, overriding the default since-base calculation. */
-export type CustomCagrWindow = {
-  fromDate: string;
-  prices: Record<string, CagrPricePoint>;
+export type IrrWindow = {
+  prices: Record<string, IrrPricePoint>;
 };
-
-// Below this many days, annualizing a return extrapolates wildly (a stock up
-// 15% in 3 weeks would show as +900%/yr) — show nothing rather than a
-// number that reads as broken.
-const MIN_CAGR_WINDOW_DAYS = 90;
-
-/** Annualized version of sinceBase, over the same window ("Since Base" uses:
- * the index base date for constituents already listed then, or their listing
- * date for later entrants — mirrored here for the same entry date). */
-function computeCagr(sinceBase: number | null, listedDate: string, today: string) {
-  if (sinceBase === null) return null;
-
-  const entryDate = listedDate > INDEX_BASE_DATE ? listedDate : INDEX_BASE_DATE;
-  const days = (Date.parse(today) - Date.parse(entryDate)) / 86_400_000;
-  if (!(days >= MIN_CAGR_WINDOW_DAYS)) return null;
-
-  return (Math.pow(1 + sinceBase / 100, 365.25 / days) - 1) * 100;
-}
-
-/** CAGR from an explicit picked date instead of the default entry date —
- * same annualizing formula and minimum-window guard as computeCagr. */
-function computeCustomCagr(
-  currentPrice: number | null,
-  fromPrice: number | undefined,
-  fromDate: string,
-  today: string
-) {
-  if (currentPrice === null || !fromPrice || fromPrice <= 0) return null;
-
-  const days = (Date.parse(today) - Date.parse(fromDate)) / 86_400_000;
-  if (!(days >= MIN_CAGR_WINDOW_DAYS)) return null;
-
-  return (Math.pow(currentPrice / fromPrice, 365.25 / days) - 1) * 100;
-}
-
-/** /api/index/prices-on-date always returns raw INR closes, but `row.price`
- * is in whatever currency the user has selected — convert the fetched price
- * into that same currency before comparing them, or the ratio is meaningless
- * (dividing a USD price by an INR one lands the "return" around -98%). */
-function toDisplayCurrency(inrPrice: number, currency: Currency, usdInr: number | null) {
-  return currency === "usd" && usdInr && usdInr > 0 ? inrPrice / usdInr : inrPrice;
-}
 
 function getSortDirection(key: SortKey) {
   return key === "ticker" || key === "name" || key === "sector" ? 1 : -1;
@@ -99,7 +58,7 @@ export function useConstituentRows(
   sort: SortState,
   sector: SectorFilter,
   query: string,
-  customCagr?: CustomCagrWindow | null,
+  irrWindow?: IrrWindow | null,
   currency: Currency = "inr",
   usdInr: number | null = null
 ) {
@@ -109,19 +68,20 @@ export function useConstituentRows(
       .filter((row) => sector === "All" || row.sector === sector)
       .filter((row) => matchesSearch(row, query))
       .map<ConstituentRow>((row) => {
-        const sinceBase = row.ratio === null ? null : (row.ratio - 1) * 100;
-        let cagr: number | null;
-        if (customCagr) {
-          const fromPriceInr = customCagr.prices[row.ticker]?.price;
-          const fromPrice =
-            fromPriceInr != null ? toDisplayCurrency(fromPriceInr, currency, usdInr) : undefined;
-          cagr = computeCustomCagr(row.price, fromPrice, customCagr.fromDate, today);
-        } else {
-          cagr = computeCagr(sinceBase, row.listedDate, today);
-        }
-        return { ...row, sinceBase, cagr };
+        const sinceBase = getTimeSinceBaseReturn(row.ratio);
+        const irr = irrWindow
+          ? computeIrr({
+              currentPrice: row.price,
+              startPoint: irrWindow.prices[row.ticker],
+              toDate: row.asOfDate ?? today,
+              currency,
+              usdInr,
+            })
+          : null;
+
+        return { ...row, sinceBase, irr };
       });
 
     return rows.sort(compareRows(sort));
-  }, [query, sector, sort, stocks, customCagr, currency, usdInr]);
+  }, [query, sector, sort, stocks, irrWindow, currency, usdInr]);
 }

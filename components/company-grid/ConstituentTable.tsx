@@ -1,4 +1,4 @@
-import { CagrRangeControl } from "@/components/company-grid/CagrRangeControl";
+import { IrrRangeControl } from "@/components/company-grid/IrrRangeControl";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import {
   formatMarketCap,
@@ -6,9 +6,9 @@ import {
   formatSignedPercent,
 } from "@/components/company-grid/format";
 import type {
-  CagrRangeMode,
   CompanyGridVariant,
   ConstituentRow,
+  IrrRangeMode,
   SortKey,
   SortState,
 } from "@/components/company-grid/types";
@@ -18,13 +18,7 @@ import type { Currency } from "@/lib/index-api";
 /** Deep-links a column header to its explanation in the methodology page. */
 type ColumnNote = { n: number; anchor: string };
 
-// CAGR is still being verified — visible on every non-production deploy
-// (local dev, staging) but hidden on the live index until it's confirmed.
-// Vercel sets NEXT_PUBLIC_VERCEL_ENV to "production" only for the
-// production domain, so this needs no separate env var of its own.
-const SHOW_CAGR = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
-
-const ALL_COLUMNS: Array<{
+const COLUMNS: Array<{
   key: SortKey;
   label: string;
   align: "left" | "right";
@@ -36,29 +30,21 @@ const ALL_COLUMNS: Array<{
   { key: "price", label: "Price", align: "right" },
   { key: "marketCap", label: "Market Cap", align: "right" },
   {
-    key: "oneYearChangePct",
-    label: "1Y %",
-    align: "right",
-    title: "Trailing 12-month price return.",
-    note: { n: 1, anchor: "note-1y-return" },
-  },
-  {
     key: "ratio",
-    label: "Since Base",
+    label: "Time Since Base",
     align: "right",
     title:
-      "Return since the constituent's index-entry price — the index base (31 Dec 2020) for names already listed then, or the IPO price for later listings.",
+      "Cumulative return from 31 Dec 2020 for companies already public then, or from the IPO offer price for later listings.",
+    note: { n: 1, anchor: "note-time-since-base" },
   },
   {
-    key: "cagr",
-    label: "CAGR",
+    key: "irr",
+    label: "IRR",
     align: "right",
-    title: "Since Base, annualized. Pick a different window from the dropdown below.",
-    note: { n: 2, anchor: "note-cagr" },
+    title: "Annualized price return over the selected 1, 3, or 5 year period.",
+    note: { n: 2, anchor: "note-irr" },
   },
 ];
-
-const COLUMNS = SHOW_CAGR ? ALL_COLUMNS : ALL_COLUMNS.filter((c) => c.key !== "cagr");
 
 // Split into a labeled button plus a separate arrow button (both trigger the
 // same sort) so a footnote <sup><a> can sit between them in reading order —
@@ -114,19 +100,17 @@ function SortArrow({
 function TableHeader({
   sort,
   onSort,
-  cagrMode,
-  onCagrModeChange,
-  customCagrDate,
-  onCustomCagrDateChange,
-  cagrLoading,
+  irrMode,
+  onIrrModeChange,
+  irrLoading,
+  irrError,
 }: {
   sort: SortState;
   onSort: (key: SortKey) => void;
-  cagrMode: CagrRangeMode;
-  onCagrModeChange: (mode: CagrRangeMode) => void;
-  customCagrDate: string | null;
-  onCustomCagrDateChange: (date: string) => void;
-  cagrLoading: boolean;
+  irrMode: IrrRangeMode;
+  onIrrModeChange: (mode: IrrRangeMode) => void;
+  irrLoading: boolean;
+  irrError: string | null;
 }) {
   return (
     <thead>
@@ -160,13 +144,12 @@ function TableHeader({
               </sup>
             )}
             <SortArrow column={column} sort={sort} onSort={onSort} />
-            {column.key === "cagr" && (
-              <CagrRangeControl
-                mode={cagrMode}
-                onModeChange={onCagrModeChange}
-                customDate={customCagrDate}
-                onCustomDateChange={onCustomCagrDateChange}
-                isLoading={cagrLoading}
+            {column.key === "irr" && (
+              <IrrRangeControl
+                mode={irrMode}
+                onModeChange={onIrrModeChange}
+                isLoading={irrLoading}
+                error={irrError}
               />
             )}
           </th>
@@ -218,11 +201,10 @@ export function ConstituentTable({
   variant = "default",
   currency = "inr",
   onSelect,
-  cagrMode,
-  onCagrModeChange,
-  customCagrDate,
-  onCustomCagrDateChange,
-  cagrLoading = false,
+  irrMode,
+  onIrrModeChange,
+  irrLoading = false,
+  irrError = null,
 }: {
   rows: ConstituentRow[];
   sort: SortState;
@@ -230,11 +212,10 @@ export function ConstituentTable({
   variant?: CompanyGridVariant;
   currency?: Currency;
   onSelect?: (row: ConstituentRow) => void;
-  cagrMode: CagrRangeMode;
-  onCagrModeChange: (mode: CagrRangeMode) => void;
-  customCagrDate: string | null;
-  onCustomCagrDateChange: (date: string) => void;
-  cagrLoading?: boolean;
+  irrMode: IrrRangeMode;
+  onIrrModeChange: (mode: IrrRangeMode) => void;
+  irrLoading?: boolean;
+  irrError?: string | null;
 }) {
   const isTerminal = variant === "terminal";
 
@@ -245,11 +226,10 @@ export function ConstituentTable({
           <TableHeader
             sort={sort}
             onSort={onSort}
-            cagrMode={cagrMode}
-            onCagrModeChange={onCagrModeChange}
-            customCagrDate={customCagrDate}
-            onCustomCagrDateChange={onCustomCagrDateChange}
-            cagrLoading={cagrLoading}
+            irrMode={irrMode}
+            onIrrModeChange={onIrrModeChange}
+            irrLoading={irrLoading}
+            irrError={irrError}
           />
           <tbody>
             {rows.map((row, index) => {
@@ -273,27 +253,18 @@ export function ConstituentTable({
                   <td className="is-right nei-mono">{formatMarketCap(row.marketCap, currency)}</td>
                   <td
                     className={`is-right nei-mono ${
-                      (row.oneYearChangePct ?? 0) >= 0 ? "is-positive" : "is-negative"
-                    }`}
-                  >
-                    {formatSignedPercent(row.oneYearChangePct)}
-                  </td>
-                  <td
-                    className={`is-right nei-mono ${
                       (row.sinceBase ?? 0) >= 0 ? "is-positive" : "is-negative"
                     }`}
                   >
                     {formatSignedPercent(row.sinceBase, 1)}
                   </td>
-                  {SHOW_CAGR && (
-                    <td
-                      className={`is-right nei-mono ${
-                        (row.cagr ?? 0) >= 0 ? "is-positive" : "is-negative"
-                      }`}
-                    >
-                      {formatSignedPercent(row.cagr, 1)}
-                    </td>
-                  )}
+                  <td
+                    className={`is-right nei-mono ${
+                      (row.irr ?? 0) >= 0 ? "is-positive" : "is-negative"
+                    }`}
+                  >
+                    {formatSignedPercent(row.irr, 1)}
+                  </td>
                 </tr>
               );
             })}

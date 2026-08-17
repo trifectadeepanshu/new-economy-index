@@ -10,17 +10,16 @@ export type SortKey =
   | "price"
   | "marketCap"
   | "changePct"
-  | "oneYearChangePct"
   | "ratio"
-  | "cagr";
+  | "irr";
 export type SectorFilter = "All" | string;
-export type CagrRangeMode = "sinceBase" | "1y" | "3y" | "5y" | "custom";
+export type IrrRangeMode = "1y" | "3y" | "5y";
 
 export type CompanyGridProps = {
   stocks: StockData[];
   isLoading: boolean;
   currency?: Currency;
-  /** Live USD/INR rate — needed to convert the (always-INR) custom-CAGR
+  /** Live USD/INR rate — needed to convert the (always-INR) historical IRR
    * lookup price into the display currency before comparing it to `price`. */
   usdInr?: number | null;
   view?: CompanyGridView;
@@ -36,7 +35,6 @@ export type SortState = {
 
 export type ConstituentRow = StockData & {
   sinceBase: number | null;
-  /** Annualized version of sinceBase (CAGR since index entry). Null for
-   * constituents that entered too recently for annualizing to be meaningful. */
-  cagr: number | null;
+  /** Annualized price return over the selected fixed period. */
+  irr: number | null;
 };

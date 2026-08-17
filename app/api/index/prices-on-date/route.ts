@@ -48,8 +48,8 @@ export async function GET(req: NextRequest) {
   }
 
   // Clamp to a sane window: nothing before the index has data, nothing
-  // beyond today (a future date would just silently resolve to today's
-  // latest price, which isn't what "custom CAGR from date X" should mean).
+  // beyond today (a future fixed-period IRR start would otherwise silently
+  // resolve to today's latest price).
   const today = getISTDate();
   const clamped = date < INDEX_BASE_DATE ? INDEX_BASE_DATE : date > today ? today : date;
 

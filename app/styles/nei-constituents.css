@@ -190,7 +190,7 @@
 
   .nei-constituent-table {
     width: 100%;
-    min-width: 1120px;
+    min-width: 980px;
     border-collapse: collapse;
     font-size: 14px;
   }
@@ -263,18 +263,18 @@
     text-decoration: underline;
   }
 
-  .nei-cagr-range {
+  .nei-irr-range {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    flex-wrap: wrap;
     gap: 6px;
     margin-top: 8px;
+    min-height: 44px;
   }
 
-  .nei-cagr-range > select {
-    min-width: 124px;
-    height: 38px;
+  .nei-irr-range > select {
+    min-width: 116px;
+    height: 44px;
     border: 1px solid var(--nei-grid-strong);
     border-radius: 8px;
     background: var(--nei-chip);
@@ -285,34 +285,35 @@
     cursor: pointer;
   }
 
-  .nei-cagr-range > select:focus {
-    outline: none;
+  .nei-irr-range > select:focus-visible {
+    outline: 2px solid var(--nei-accent);
+    outline-offset: 2px;
     border-color: var(--nei-accent);
   }
 
-  .nei-company-grid.is-terminal .nei-cagr-range > select,
-  .nei-constituents.is-terminal .nei-cagr-range > select {
+  .nei-company-grid.is-terminal .nei-irr-range > select,
+  .nei-constituents.is-terminal .nei-irr-range > select {
     background: rgba(232, 235, 240, 0.07);
     border-color: rgba(232, 235, 240, 0.15);
     color-scheme: dark;
   }
 
-  .nei-cagr-range .nei-dp-trigger {
-    min-width: 166px;
-    min-height: 38px;
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .nei-cagr-range-loading {
+  .nei-irr-range-loading {
     width: 6px;
     height: 6px;
+    flex: 0 0 6px;
     border-radius: 50%;
     background: var(--nei-accent);
-    animation: nei-cagr-pulse 1s ease-in-out infinite;
+    animation: nei-irr-pulse 1s ease-in-out infinite;
   }
 
-  @keyframes nei-cagr-pulse {
+  .nei-irr-range-error {
+    color: var(--nei-neg);
+    font: 600 10px var(--font-inter), ui-monospace, monospace;
+    text-transform: none;
+  }
+
+  @keyframes nei-irr-pulse {
     0%,
     100% {
       opacity: 0.3;
