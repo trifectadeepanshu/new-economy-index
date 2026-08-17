@@ -1,5 +1,13 @@
-import { differenceInCalendarDays, format, parseISO, subYears } from "date-fns";
+import {
+  differenceInCalendarDays,
+  format,
+  intervalToDuration,
+  isValid,
+  parseISO,
+  subYears,
+} from "date-fns";
 import type { IrrRangeMode } from "@/components/company-grid/types";
+import { INDEX_BASE_DATE } from "@/lib/companies";
 import type { Currency } from "@/lib/index-api";
 
 export type IrrPricePoint = { date: string; price: number };
@@ -17,6 +25,41 @@ export function getIrrStartDate(mode: IrrRangeMode, toDate: string): string {
 export function getTimeSinceBaseReturn(ratio: number | null): number | null {
   if (ratio === null || !Number.isFinite(ratio) || ratio <= 0) return null;
   return (ratio - 1) * 100;
+}
+
+export type TimeSinceBaseDate = {
+  baseDate: string;
+  days: number;
+  label: string;
+};
+
+export function getEffectiveBaseDate(listedDate: string): string {
+  return listedDate > INDEX_BASE_DATE ? listedDate : INDEX_BASE_DATE;
+}
+
+export function getTimeSinceBaseDate(
+  listedDate: string,
+  toDate: string
+): TimeSinceBaseDate | null {
+  const baseDate = getEffectiveBaseDate(listedDate);
+  const start = parseISO(baseDate);
+  const end = parseISO(toDate);
+  if (!isValid(start) || !isValid(end)) return null;
+
+  const days = differenceInCalendarDays(end, start);
+  if (days < 0) return null;
+
+  const duration = intervalToDuration({ start, end });
+  const years = duration.years ?? 0;
+  const months = duration.months ?? 0;
+  const remainingDays = duration.days ?? 0;
+  const parts = years > 0
+    ? [`${years}y`, ...(months > 0 ? [`${months}m`] : [])]
+    : months > 0
+      ? [`${months}m`, ...(remainingDays > 0 ? [`${remainingDays}d`] : [])]
+      : [`${remainingDays}d`];
+
+  return { baseDate, days, label: parts.join(" ") };
 }
 
 export function computeIrr({

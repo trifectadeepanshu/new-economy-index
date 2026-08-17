@@ -11,6 +11,7 @@ export type SortKey =
   | "marketCap"
   | "changePct"
   | "ratio"
+  | "timeSinceBaseDate"
   | "irr";
 export type SectorFilter = "All" | string;
 export type IrrRangeMode = "1y" | "3y" | "5y";
@@ -35,6 +36,10 @@ export type SortState = {
 
 export type ConstituentRow = StockData & {
   sinceBase: number | null;
+  /** Elapsed calendar days from the company's effective base date. */
+  timeSinceBaseDate: number | null;
+  timeSinceBaseDateLabel: string;
+  effectiveBaseDate: string | null;
   /** Annualized price return over the selected fixed period. */
   irr: number | null;
 };

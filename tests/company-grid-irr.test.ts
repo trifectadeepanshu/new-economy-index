@@ -3,7 +3,9 @@ import test from "node:test";
 import { IRR_OPTIONS } from "../components/company-grid/IrrRangeControl";
 import {
   computeIrr,
+  getEffectiveBaseDate,
   getIrrStartDate,
+  getTimeSinceBaseDate,
   getTimeSinceBaseReturn,
 } from "../components/company-grid/returns";
 
@@ -40,6 +42,36 @@ test("Absolute Return converts the effective-base ratio to cumulative return", (
   closeTo(getTimeSinceBaseReturn(3.204), 220.4);
   closeTo(getTimeSinceBaseReturn(0.746), -25.4);
   assert.equal(getTimeSinceBaseReturn(null), null);
+});
+
+test("pre-base listings use the index base date for their tracked tenure", () => {
+  assert.equal(getEffectiveBaseDate("2006-11-21"), "2020-12-31");
+  assert.deepEqual(getTimeSinceBaseDate("2006-11-21", "2026-08-17"), {
+    baseDate: "2020-12-31",
+    days: 2055,
+    label: "5y 7m",
+  });
+});
+
+test("post-base listings use their IPO date for their tracked tenure", () => {
+  assert.equal(getEffectiveBaseDate("2024-06-18"), "2024-06-18");
+  assert.deepEqual(getTimeSinceBaseDate("2024-06-18", "2026-08-17"), {
+    baseDate: "2024-06-18",
+    days: 790,
+    label: "2y 1m",
+  });
+});
+
+test("recent listings show months and days", () => {
+  assert.deepEqual(getTimeSinceBaseDate("2026-05-08", "2026-08-17"), {
+    baseDate: "2026-05-08",
+    days: 101,
+    label: "3m 9d",
+  });
+});
+
+test("tenure is blank when the effective base date is after the data date", () => {
+  assert.equal(getTimeSinceBaseDate("2026-09-01", "2026-08-17"), null);
 });
 
 test("IRR annualizes between the actual historical close date and current price", () => {

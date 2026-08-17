@@ -38,6 +38,14 @@ const COLUMNS: Array<{
     note: { n: 1, anchor: "note-absolute-return" },
   },
   {
+    key: "timeSinceBaseDate",
+    label: "Time Since Base Date",
+    align: "right",
+    title:
+      "Elapsed time from 31 Dec 2020 for companies already public then, or from the IPO date for later listings.",
+    note: { n: 3, anchor: "note-time-since-base-date" },
+  },
+  {
     key: "irr",
     label: "IRR",
     align: "right",
@@ -257,6 +265,16 @@ export function ConstituentTable({
                     }`}
                   >
                     {formatSignedPercent(row.sinceBase, 1)}
+                  </td>
+                  <td
+                    className="is-right nei-mono"
+                    title={
+                      row.effectiveBaseDate
+                        ? `Effective base date: ${row.effectiveBaseDate}`
+                        : undefined
+                    }
+                  >
+                    {row.timeSinceBaseDateLabel}
                   </td>
                   <td
                     className={`is-right nei-mono ${

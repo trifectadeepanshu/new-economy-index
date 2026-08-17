@@ -3,6 +3,7 @@ import type { Currency, StockData } from "@/lib/index-api";
 import { getISTDate } from "@/lib/market-hours";
 import {
   computeIrr,
+  getTimeSinceBaseDate,
   getTimeSinceBaseReturn,
   type IrrPricePoint,
 } from "@/components/company-grid/returns";
@@ -69,6 +70,7 @@ export function useConstituentRows(
       .filter((row) => matchesSearch(row, query))
       .map<ConstituentRow>((row) => {
         const sinceBase = getTimeSinceBaseReturn(row.ratio);
+        const baseTenure = getTimeSinceBaseDate(row.listedDate, row.asOfDate ?? today);
         const irr = irrWindow
           ? computeIrr({
               currentPrice: row.price,
@@ -79,7 +81,14 @@ export function useConstituentRows(
             })
           : null;
 
-        return { ...row, sinceBase, irr };
+        return {
+          ...row,
+          sinceBase,
+          timeSinceBaseDate: baseTenure?.days ?? null,
+          timeSinceBaseDateLabel: baseTenure?.label ?? "—",
+          effectiveBaseDate: baseTenure?.baseDate ?? null,
+          irr,
+        };
       });
 
     return rows.sort(compareRows(sort));
