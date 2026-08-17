@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   addDays,
   addMonths,
@@ -66,6 +66,73 @@ export function DateRangePicker({
   const [hover, setHover] = useState<string | null>(null);
   const [invalidField, setInvalidField] = useState<"start" | "end" | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const popRef = useRef<HTMLDivElement | null>(null);
+
+  // Keep the desktop popover inside short or zoomed browser windows. Mobile
+  // keeps the CSS bottom-sheet treatment instead.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const trigger = triggerRef.current;
+    const pop = popRef.current;
+    if (!trigger || !pop) return;
+    const mobileQuery = window.matchMedia("(max-width: 640px)");
+    let frame = 0;
+
+    const clearPosition = (pop: HTMLDivElement) => {
+      for (const property of ["position", "top", "right", "bottom", "left"]) {
+        pop.style.removeProperty(property);
+      }
+    };
+
+    const place = () => {
+      if (mobileQuery.matches) {
+        clearPosition(pop);
+        return;
+      }
+
+      const edge = 12;
+      const gap = 8;
+      pop.style.position = "fixed";
+      pop.style.top = "0px";
+      pop.style.right = "auto";
+      pop.style.bottom = "auto";
+      pop.style.left = "0px";
+
+      const triggerRect = trigger.getBoundingClientRect();
+      const popRect = pop.getBoundingClientRect();
+      const maxLeft = Math.max(edge, window.innerWidth - popRect.width - edge);
+      const left = Math.min(Math.max(triggerRect.right - popRect.width, edge), maxLeft);
+      const below = triggerRect.bottom + gap;
+      const above = triggerRect.top - popRect.height - gap;
+      const centered = Math.max(edge, (window.innerHeight - popRect.height) / 2);
+      const top = below + popRect.height <= window.innerHeight - edge
+        ? below
+        : above >= edge
+          ? above
+          : Math.min(centered, Math.max(edge, window.innerHeight - popRect.height - edge));
+
+      pop.style.left = `${left}px`;
+      pop.style.top = `${top}px`;
+    };
+
+    const queuePlacement = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(place);
+    };
+
+    queuePlacement();
+    window.addEventListener("resize", queuePlacement);
+    window.addEventListener("scroll", queuePlacement, true);
+    mobileQuery.addEventListener("change", queuePlacement);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", queuePlacement);
+      window.removeEventListener("scroll", queuePlacement, true);
+      mobileQuery.removeEventListener("change", queuePlacement);
+      clearPosition(pop);
+    };
+  }, [open]);
 
   // Close on outside click / Escape. On phones the picker behaves like a
   // bottom sheet, so lock the page underneath while it is open.
@@ -193,6 +260,7 @@ export function DateRangePicker({
   return (
     <div className="nei-dp" ref={rootRef}>
       <button
+        ref={triggerRef}
         type="button"
         className={`nei-dp-trigger${open ? " is-open" : ""}`}
         onClick={toggle}
@@ -217,7 +285,7 @@ export function DateRangePicker({
             aria-label="Close date picker"
             tabIndex={-1}
           />
-          <div className="nei-dp-pop" role="dialog" aria-label="Select date range">
+          <div ref={popRef} className="nei-dp-pop" role="dialog" aria-label="Select date range">
           <div className="nei-dp-endpoints">
             <label className={`nei-dp-endpoint${!end ? " is-active" : ""}`}>
               <span>Start</span>

@@ -1109,6 +1109,11 @@
     outline-offset: 1px;
   }
 
+  .nei-dp-select option {
+    background-color: #FFFFFF;
+    color: #0B0F19;
+  }
+
   .nei-dp-nav {
     display: inline-flex;
     align-items: center;

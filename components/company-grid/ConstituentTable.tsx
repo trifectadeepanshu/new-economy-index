@@ -22,7 +22,6 @@ const COLUMNS: Array<{
   key: SortKey;
   label: string;
   align: "left" | "right";
-  title?: string;
   note?: ColumnNote;
 }> = [
   { key: "name", label: "Company", align: "left" },
@@ -33,24 +32,18 @@ const COLUMNS: Array<{
     key: "ratio",
     label: "Absolute Return",
     align: "right",
-    title:
-      "Cumulative return from 31 Dec 2020 for companies already public then, or from the IPO offer price for later listings.",
     note: { n: 1, anchor: "note-absolute-return" },
   },
   {
     key: "timeSinceBaseDate",
     label: "Time Since Base Date",
     align: "right",
-    title:
-      "Elapsed time from 31 Dec 2020 for companies already public then, or from the IPO date for later listings.",
     note: { n: 2, anchor: "note-time-since-base-date" },
   },
   {
     key: "irr",
     label: "IRR",
     align: "right",
-    title:
-      "Annualized price return over the selected 1, 3, or 5 year period, or from the company's effective base date.",
     note: { n: 3, anchor: "note-irr" },
   },
 ];
@@ -134,7 +127,6 @@ function TableHeader({
                 : "none"
             }
             className={column.align === "right" ? "is-right" : undefined}
-            title={column.title}
           >
             <div className="nei-table-heading">
               <span className="nei-table-sort-group">

@@ -32,7 +32,7 @@ import type {
 } from "@/components/company-grid/types";
 
 const INITIAL_SORT: SortState = { key: "marketCap", dir: -1 };
-const MOBILE_CARD_VIEW = "(max-width: 1100px)";
+const MOBILE_CARD_VIEW = "(max-width: 1200px)";
 const INITIAL_CARD_COUNT = 12; // a full 3 rows at the grid's usual 4-column width
 // Table rows are far shorter than cards, so a "page" holds more of them.
 const INITIAL_TABLE_COUNT = 10;

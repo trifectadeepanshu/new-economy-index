@@ -186,6 +186,42 @@
     overflow-x: auto;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
+    scrollbar-color: rgba(11, 15, 25, 0.28) transparent;
+    scrollbar-width: thin;
+  }
+
+  .nei-constituent-table-wrap::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  .nei-constituent-table-wrap::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .nei-constituent-table-wrap::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: rgba(11, 15, 25, 0.28);
+    background-clip: padding-box;
+  }
+
+  .nei-constituent-table-wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(11, 15, 25, 0.46);
+    background-clip: padding-box;
+  }
+
+  .nei-constituents.is-terminal .nei-constituent-table-wrap {
+    scrollbar-color: rgba(232, 235, 240, 0.32) transparent;
+  }
+
+  .nei-constituents.is-terminal .nei-constituent-table-wrap::-webkit-scrollbar-thumb {
+    background: rgba(232, 235, 240, 0.32);
+    background-clip: padding-box;
+  }
+
+  .nei-constituents.is-terminal .nei-constituent-table-wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(232, 235, 240, 0.5);
+    background-clip: padding-box;
   }
 
   .nei-constituent-table {
@@ -318,6 +354,11 @@
     background: rgba(232, 235, 240, 0.07);
     border-color: rgba(232, 235, 240, 0.15);
     color-scheme: dark;
+  }
+
+  .nei-irr-range > select option {
+    background-color: #FFFFFF;
+    color: #0B0F19;
   }
 
   .nei-irr-range-loading {

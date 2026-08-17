@@ -1105,6 +1105,7 @@
     z-index: 1200;
     width: auto;
     max-width: none;
+    max-height: calc(100vh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     box-sizing: border-box;
     overflow-y: auto;
@@ -1209,6 +1210,7 @@
 
   .nei-cm-panel {
     max-width: none;
+    max-height: calc(100vh - 12px - env(safe-area-inset-top));
     max-height: calc(100dvh - 12px - env(safe-area-inset-top));
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1313,6 +1315,22 @@
   .nei-footer-inner {
     padding-right: 14px;
     padding-left: 14px;
+  }
+}
+
+@media (forced-colors: active) {
+  .nei-irr-range > select,
+  .nei-dp-select {
+    border: 1px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+    forced-color-adjust: auto;
+  }
+
+  .nei-dp-select {
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-image: none;
   }
 }
 
