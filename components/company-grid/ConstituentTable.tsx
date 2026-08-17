@@ -133,7 +133,12 @@ function TableHeader({
                   : "descending"
                 : "none"
             }
-            className={column.align === "right" ? "is-right" : undefined}
+            className={[
+              column.align === "right" ? "is-right" : "",
+              column.key === "irr" ? "has-inline-control" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             title={column.title}
           >
             {column.note && (

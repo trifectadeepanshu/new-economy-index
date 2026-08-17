@@ -263,24 +263,28 @@
     text-decoration: underline;
   }
 
+  .nei-constituent-table thead th.has-inline-control {
+    white-space: nowrap;
+  }
+
   .nei-irr-range {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: flex-end;
     gap: 6px;
-    margin-top: 8px;
-    min-height: 44px;
+    min-height: 32px;
+    margin-left: 8px;
+    vertical-align: middle;
   }
 
   .nei-irr-range > select {
-    min-width: 116px;
-    height: 44px;
+    min-width: 100px;
+    height: 32px;
     border: 1px solid var(--nei-grid-strong);
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--nei-chip);
     color: var(--nei-fg);
-    padding: 0 28px 0 10px;
-    font: 600 12px var(--font-inter), ui-monospace, monospace;
+    padding: 0 24px 0 8px;
+    font: 600 11px var(--font-inter), ui-monospace, monospace;
     text-transform: none;
     cursor: pointer;
   }
