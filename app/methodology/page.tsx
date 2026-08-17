@@ -293,8 +293,8 @@ export default function MethodologyPage() {
               refreshed on a quarterly basis, keeping market-capitalisation
               weights current between reviews.
             </li>
-            <li id="note-time-since-base">
-              <strong>Time Since Base uses each company&apos;s effective base.</strong>{" "}
+            <li id="note-absolute-return">
+              <strong>Absolute Return uses each company&apos;s effective base.</strong>{" "}
               The column shows cumulative price return from 31 December 2020 for
               a company that was already public on the index base date. For a
               company listed later, it starts from the IPO Offer Price so the

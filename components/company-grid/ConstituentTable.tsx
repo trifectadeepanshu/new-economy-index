@@ -31,11 +31,11 @@ const COLUMNS: Array<{
   { key: "marketCap", label: "Market Cap", align: "right" },
   {
     key: "ratio",
-    label: "Time Since Base",
+    label: "Absolute Return",
     align: "right",
     title:
       "Cumulative return from 31 Dec 2020 for companies already public then, or from the IPO offer price for later listings.",
-    note: { n: 1, anchor: "note-time-since-base" },
+    note: { n: 1, anchor: "note-absolute-return" },
   },
   {
     key: "irr",

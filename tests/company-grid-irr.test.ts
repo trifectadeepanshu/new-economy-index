@@ -36,7 +36,7 @@ test("period subtraction handles leap day by using the last day of February", ()
   assert.equal(getIrrStartDate("1y", "2024-02-29"), "2023-02-28");
 });
 
-test("Time Since Base converts the effective-base ratio to cumulative return", () => {
+test("Absolute Return converts the effective-base ratio to cumulative return", () => {
   closeTo(getTimeSinceBaseReturn(3.204), 220.4);
   closeTo(getTimeSinceBaseReturn(0.746), -25.4);
   assert.equal(getTimeSinceBaseReturn(null), null);
