@@ -310,13 +310,12 @@ export default function MethodologyPage() {
             </li>
             <li id="note-irr">
               <strong>IRR is the annualized price return for the selected period.</strong>{" "}
-              The selector offers 1, 3, and 5 year lookbacks plus Since Base.
-              Fixed-period calculations use the latest available closing price
-              on or before the lookback date and the constituent&apos;s current
-              price. Since Base annualizes each company&apos;s Absolute Return over
-              its Time Since Base Date. The field is left blank when a company
-              was not yet public at the start of a fixed period or when the
-              required price or tenure data is unavailable.
+              The selector offers 1, 3, and 5 year lookbacks, plus the Since
+              Base Date. Calculations use the closing price from the start of
+              the lookback period and the constituent&apos;s current price to
+              annualize the absolute return. The return field is left blank
+              when a company was not yet public at the start of the period or
+              when required price or tenure data is unavailable.
             </li>
           </ul>
         </DocSection>
