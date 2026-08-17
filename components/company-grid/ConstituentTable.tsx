@@ -133,37 +133,36 @@ function TableHeader({
                   : "descending"
                 : "none"
             }
-            className={[
-              column.align === "right" ? "is-right" : "",
-              column.key === "irr" ? "has-inline-control" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
+            className={column.align === "right" ? "is-right" : undefined}
             title={column.title}
           >
-            {column.note && (
-              <sup className="nei-doc-note-ref">
-                <a
-                  href={`/methodology#${column.note.anchor}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label={`Footnote ${column.note.n}: how ${column.label} is calculated`}
-                >
-                  {column.note.n}
-                </a>
-              </sup>
-            )}
-            <SortButton column={column} sort={sort} onSort={onSort} />
-            <SortArrow column={column} sort={sort} onSort={onSort} />
-            {column.key === "irr" && (
-              <IrrRangeControl
-                mode={irrMode}
-                onModeChange={onIrrModeChange}
-                isLoading={irrLoading}
-                error={irrError}
-              />
-            )}
+            <div className="nei-table-heading">
+              <span className="nei-table-sort-group">
+                {column.note && (
+                  <sup className="nei-doc-note-ref">
+                    <a
+                      href={`/methodology#${column.note.anchor}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`Footnote ${column.note.n}: how ${column.label} is calculated`}
+                    >
+                      {column.note.n}
+                    </a>
+                  </sup>
+                )}
+                <SortButton column={column} sort={sort} onSort={onSort} />
+                <SortArrow column={column} sort={sort} onSort={onSort} />
+              </span>
+              {column.key === "irr" && (
+                <IrrRangeControl
+                  mode={irrMode}
+                  onModeChange={onIrrModeChange}
+                  isLoading={irrLoading}
+                  error={irrError}
+                />
+              )}
+            </div>
           </th>
         ))}
       </tr>

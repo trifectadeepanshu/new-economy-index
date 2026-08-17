@@ -212,7 +212,26 @@
     text-transform: uppercase;
   }
 
-  .nei-constituent-table thead th > button {
+  .nei-table-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    white-space: nowrap;
+  }
+
+  .nei-constituent-table thead th.is-right .nei-table-heading {
+    justify-content: flex-end;
+  }
+
+  .nei-table-sort-group {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .nei-table-sort-group > button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -226,7 +245,7 @@
     cursor: pointer;
   }
 
-  .nei-constituent-table thead th > button.is-active {
+  .nei-table-sort-group > button.is-active {
     color: var(--nei-fg);
   }
 
@@ -248,6 +267,9 @@
   }
 
   .nei-doc-note-ref {
+    position: relative;
+    top: -0.3em;
+    line-height: 1;
     margin-right: 3px;
   }
 
@@ -263,16 +285,12 @@
     text-decoration: underline;
   }
 
-  .nei-constituent-table thead th.has-inline-control {
-    white-space: nowrap;
-  }
-
   .nei-irr-range {
     display: inline-flex;
     align-items: center;
+    flex: 0 0 auto;
     gap: 6px;
     min-height: 32px;
-    margin-left: 8px;
     vertical-align: middle;
   }
 
