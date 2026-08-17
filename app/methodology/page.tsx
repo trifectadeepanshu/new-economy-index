@@ -306,8 +306,7 @@ export default function MethodologyPage() {
               date is its IPO date. For a company listed on or before the index
               base date, its effective base date is 31 December 2020. The
               duration runs from that effective base date to the latest market
-              data date and is displayed in completed years and months, with
-              days retained for tenures under one year.
+              data date and is displayed in completed years, months, and days.
             </li>
             <li id="note-irr">
               <strong>IRR is the annualized price return for a fixed period.</strong>{" "}

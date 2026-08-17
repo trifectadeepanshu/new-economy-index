@@ -43,21 +43,19 @@ const COLUMNS: Array<{
     align: "right",
     title:
       "Elapsed time from 31 Dec 2020 for companies already public then, or from the IPO date for later listings.",
-    note: { n: 3, anchor: "note-time-since-base-date" },
+    note: { n: 2, anchor: "note-time-since-base-date" },
   },
   {
     key: "irr",
     label: "IRR",
     align: "right",
     title: "Annualized price return over the selected 1, 3, or 5 year period.",
-    note: { n: 2, anchor: "note-irr" },
+    note: { n: 3, anchor: "note-irr" },
   },
 ];
 
-// Split into a labeled button plus a separate arrow button (both trigger the
-// same sort) so a footnote <sup><a> can sit between them in reading order —
-// right after the label, before the arrow — without nesting an <a> inside a
-// <button>, which is invalid HTML.
+// Split the label and arrow into separate buttons so the linked footnote can
+// precede the label without nesting an <a> inside a <button>.
 function SortButton({
   column,
   sort,
@@ -137,7 +135,6 @@ function TableHeader({
             className={column.align === "right" ? "is-right" : undefined}
             title={column.title}
           >
-            <SortButton column={column} sort={sort} onSort={onSort} />
             {column.note && (
               <sup className="nei-doc-note-ref">
                 <a
@@ -151,6 +148,7 @@ function TableHeader({
                 </a>
               </sup>
             )}
+            <SortButton column={column} sort={sort} onSort={onSort} />
             <SortArrow column={column} sort={sort} onSort={onSort} />
             {column.key === "irr" && (
               <IrrRangeControl

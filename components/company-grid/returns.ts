@@ -53,13 +53,12 @@ export function getTimeSinceBaseDate(
   const years = duration.years ?? 0;
   const months = duration.months ?? 0;
   const remainingDays = duration.days ?? 0;
-  const parts = years > 0
-    ? [`${years}y`, ...(months > 0 ? [`${months}m`] : [])]
-    : months > 0
-      ? [`${months}m`, ...(remainingDays > 0 ? [`${remainingDays}d`] : [])]
-      : [`${remainingDays}d`];
 
-  return { baseDate, days, label: parts.join(" ") };
+  return {
+    baseDate,
+    days,
+    label: `${years}y ${months}m ${remainingDays}d`,
+  };
 }
 
 export function computeIrr({
