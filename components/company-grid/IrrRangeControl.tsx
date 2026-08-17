@@ -4,6 +4,7 @@ export const IRR_OPTIONS: ReadonlyArray<{ value: IrrRangeMode; label: string }> 
   { value: "1y", label: "1 Year" },
   { value: "3y", label: "3 Years" },
   { value: "5y", label: "5 Years" },
+  { value: "sinceBase", label: "Since Base" },
 ];
 
 export function IrrRangeControl({

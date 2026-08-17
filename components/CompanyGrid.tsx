@@ -131,7 +131,15 @@ export function CompanyGrid({
     isLoading: irrLoading,
     error: irrError,
   } = useIrrPrices(irrFromDate);
-  const irrWindow = useMemo(() => (irrPrices ? { prices: irrPrices } : null), [irrPrices]);
+  const irrWindow = useMemo(
+    () =>
+      irrMode === "sinceBase"
+        ? { mode: irrMode, prices: null }
+        : irrPrices
+          ? { mode: irrMode, prices: irrPrices }
+          : null,
+    [irrMode, irrPrices]
+  );
 
   const rows = useConstituentRows(stocks, sort, sector, query, irrWindow, currency, usdInr);
   const hasActiveFilters = query.trim().length > 0 || sector !== "All";

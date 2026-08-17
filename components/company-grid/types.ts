@@ -14,7 +14,7 @@ export type SortKey =
   | "timeSinceBaseDate"
   | "irr";
 export type SectorFilter = "All" | string;
-export type IrrRangeMode = "1y" | "3y" | "5y";
+export type IrrRangeMode = "1y" | "3y" | "5y" | "sinceBase";
 
 export type CompanyGridProps = {
   stocks: StockData[];
@@ -40,6 +40,6 @@ export type ConstituentRow = StockData & {
   timeSinceBaseDate: number | null;
   timeSinceBaseDateLabel: string;
   effectiveBaseDate: string | null;
-  /** Annualized price return over the selected fixed period. */
+  /** Annualized price return over the selected fixed period or effective-base tenure. */
   irr: number | null;
 };

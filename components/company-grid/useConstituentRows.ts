@@ -3,19 +3,22 @@ import type { Currency, StockData } from "@/lib/index-api";
 import { getISTDate } from "@/lib/market-hours";
 import {
   computeIrr,
+  computeSinceBaseIrr,
   getTimeSinceBaseDate,
   getTimeSinceBaseReturn,
   type IrrPricePoint,
 } from "@/components/company-grid/returns";
 import type {
   ConstituentRow,
+  IrrRangeMode,
   SectorFilter,
   SortKey,
   SortState,
 } from "@/components/company-grid/types";
 
 export type IrrWindow = {
-  prices: Record<string, IrrPricePoint>;
+  mode: IrrRangeMode;
+  prices: Record<string, IrrPricePoint> | null;
 };
 
 function getSortDirection(key: SortKey) {
@@ -71,15 +74,19 @@ export function useConstituentRows(
       .map<ConstituentRow>((row) => {
         const sinceBase = getTimeSinceBaseReturn(row.ratio);
         const baseTenure = getTimeSinceBaseDate(row.listedDate, row.asOfDate ?? today);
-        const irr = irrWindow
-          ? computeIrr({
-              currentPrice: row.price,
-              startPoint: irrWindow.prices[row.ticker],
-              toDate: row.asOfDate ?? today,
-              currency,
-              usdInr,
-            })
-          : null;
+        let irr: number | null = null;
+
+        if (irrWindow?.mode === "sinceBase") {
+          irr = computeSinceBaseIrr(row.ratio, baseTenure?.days ?? null);
+        } else if (irrWindow?.prices) {
+          irr = computeIrr({
+            currentPrice: row.price,
+            startPoint: irrWindow.prices[row.ticker],
+            toDate: row.asOfDate ?? today,
+            currency,
+            usdInr,
+          });
+        }
 
         return {
           ...row,

@@ -49,7 +49,8 @@ const COLUMNS: Array<{
     key: "irr",
     label: "IRR",
     align: "right",
-    title: "Annualized price return over the selected 1, 3, or 5 year period.",
+    title:
+      "Annualized price return over the selected 1, 3, or 5 year period, or from the company's effective base date.",
     note: { n: 3, anchor: "note-irr" },
   },
 ];

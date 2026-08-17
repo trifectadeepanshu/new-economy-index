@@ -12,19 +12,39 @@ import type { Currency } from "@/lib/index-api";
 
 export type IrrPricePoint = { date: string; price: number };
 
-const PERIOD_YEARS: Record<IrrRangeMode, number> = {
+const PERIOD_YEARS: Record<Exclude<IrrRangeMode, "sinceBase">, number> = {
   "1y": 1,
   "3y": 3,
   "5y": 5,
 };
 
-export function getIrrStartDate(mode: IrrRangeMode, toDate: string): string {
+export function getIrrStartDate(mode: IrrRangeMode, toDate: string): string | null {
+  if (mode === "sinceBase") return null;
   return format(subYears(parseISO(toDate), PERIOD_YEARS[mode]), "yyyy-MM-dd");
 }
 
 export function getTimeSinceBaseReturn(ratio: number | null): number | null {
   if (ratio === null || !Number.isFinite(ratio) || ratio <= 0) return null;
   return (ratio - 1) * 100;
+}
+
+export function computeSinceBaseIrr(
+  ratio: number | null,
+  elapsedDays: number | null
+): number | null {
+  if (
+    ratio === null ||
+    !Number.isFinite(ratio) ||
+    ratio <= 0 ||
+    elapsedDays === null ||
+    !Number.isFinite(elapsedDays) ||
+    elapsedDays <= 0
+  ) {
+    return null;
+  }
+
+  const annualized = (Math.pow(ratio, 365.25 / elapsedDays) - 1) * 100;
+  return Number.isFinite(annualized) ? annualized : null;
 }
 
 export type TimeSinceBaseDate = {

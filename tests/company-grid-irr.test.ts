@@ -3,6 +3,7 @@ import test from "node:test";
 import { IRR_OPTIONS } from "../components/company-grid/IrrRangeControl";
 import {
   computeIrr,
+  computeSinceBaseIrr,
   getEffectiveBaseDate,
   getIrrStartDate,
   getTimeSinceBaseDate,
@@ -14,11 +15,12 @@ function closeTo(actual: number | null, expected: number, tolerance = 1e-9) {
   assert.ok(Math.abs(actual! - expected) <= tolerance, `${actual} is not close to ${expected}`);
 }
 
-test("IRR selector exposes only the three requested fixed periods", () => {
+test("IRR selector exposes fixed periods and Since Base", () => {
   assert.deepEqual(IRR_OPTIONS, [
     { value: "1y", label: "1 Year" },
     { value: "3y", label: "3 Years" },
     { value: "5y", label: "5 Years" },
+    { value: "sinceBase", label: "Since Base" },
   ]);
 });
 
@@ -36,6 +38,10 @@ test("5 year period resolves to five calendar years earlier", () => {
 
 test("period subtraction handles leap day by using the last day of February", () => {
   assert.equal(getIrrStartDate("1y", "2024-02-29"), "2023-02-28");
+});
+
+test("Since Base does not request one shared historical date", () => {
+  assert.equal(getIrrStartDate("sinceBase", "2026-08-17"), null);
 });
 
 test("Absolute Return converts the effective-base ratio to cumulative return", () => {
@@ -84,6 +90,18 @@ test("IRR annualizes between the actual historical close date and current price"
   });
   const expected = (Math.pow(2, 365.25 / 367) - 1) * 100;
   closeTo(actual, expected);
+});
+
+test("Since Base IRR annualizes the effective-base ratio over its exact tenure", () => {
+  const actual = computeSinceBaseIrr(3.204, 2055);
+  const expected = (Math.pow(3.204, 365.25 / 2055) - 1) * 100;
+  closeTo(actual, expected);
+});
+
+test("Since Base IRR rejects missing ratios and zero-day tenures", () => {
+  assert.equal(computeSinceBaseIrr(null, 2055), null);
+  assert.equal(computeSinceBaseIrr(1.5, null), null);
+  assert.equal(computeSinceBaseIrr(1.5, 0), null);
 });
 
 test("IRR is blank when a company has no public price at the period start", () => {
