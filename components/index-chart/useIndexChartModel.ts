@@ -65,7 +65,17 @@ export function buildIndexChartData({
   const overlayByDate = new Map<string, Partial<Record<OverlayKey, number>>>();
   const latestOverlayValues: Partial<Record<OverlayKey, number>> = {};
 
-  const addOverlay = (key: OverlayKey, points: { date: string; value: number }[]) => {
+  // Benchmarks (Nifty 50/500) live on a totally different native scale (~20,000s),
+  // so they're rescaled to meet the NEI at their first shared date purely for
+  // visual comparability. The Trifecta Portfolio sub-index is already on the
+  // same base-1000 scale as the NEI — rescaling it too would make the chart
+  // disagree with the canonical CapIQ workbook's own "Trifecta Sub-Index Value"
+  // column, which reports it unscaled from its own 2023-07-06 inception.
+  const addOverlay = (
+    key: OverlayKey,
+    points: { date: string; value: number }[],
+    rescale: boolean
+  ) => {
     const firstShared = points.find((point) => {
       const neiValue = neiByDate.get(point.date);
       return (
@@ -77,7 +87,7 @@ export function buildIndexChartData({
     });
     if (!firstShared) return;
 
-    const factor = neiByDate.get(firstShared.date)! / firstShared.value;
+    const factor = rescale ? neiByDate.get(firstShared.date)! / firstShared.value : 1;
     for (const point of points) {
       if (!(point.value > 0) || !Number.isFinite(point.value)) continue;
 
@@ -91,8 +101,8 @@ export function buildIndexChartData({
     }
   };
 
-  for (const benchmark of benchmarks) addOverlay(benchmark.symbol, benchmark.points);
-  addOverlay("TRIFECTA", portfolioData);
+  for (const benchmark of benchmarks) addOverlay(benchmark.symbol, benchmark.points, true);
+  addOverlay("TRIFECTA", portfolioData, false);
 
   const points = historyData.map((point) => {
     const chartPoint = toChartPoint(point, shortDayIndex);
