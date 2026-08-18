@@ -13,22 +13,25 @@ stock index tracking VC/PE-backed, listed Indian "new economy" companies.
 - **Stack:** Next.js 16 (App Router, TS), **Neon** serverless Postgres, deployed
   on **Vercel**. Not Supabase, no Python pipeline (the one `.py` is deprecated).
 - **Scheduling:** Vercel Cron (`vercel.json` -> `/api/cron/snapshot`, weekdays
-  11:00 UTC; `/api/cron/refresh`, Sundays 03:00 UTC) + two GitHub Actions
-  (`.github/workflows/ci.yml`, `cron-monitor.yml`).
+  11:00 UTC; `/api/cron/refresh`, quarterly at 03:00 UTC on Jan/Apr/Jul/Oct 1st)
+  + two GitHub Actions (`.github/workflows/ci.yml`, `cron-monitor.yml`).
 - **Index methodology (canonical):** base **1,000 at 2020-12-31**; holds the
-  **top 50 by market cap** (universe is **53**); reconstituted at quarter-ends
-  **and each company's first-priced day**; a new company is **seeded at its IPO
-  price on the trading day before listing** so the listing-day pop counts;
-  market-cap divisor is chain-linked; **point-in-time shares**. Latest value is
-  ~**2,308** (base 1,000 · Dec-2020). Engine: `lib/index-engine.ts`.
+  **top 50 by market cap** (universe is **54**, added Turtlemint 2026-08-18);
+  reconstituted at quarter-ends **and each company's first-priced day**; a new
+  company is **seeded at its IPO price on the trading day before listing** so
+  the listing-day pop counts; market-cap divisor is chain-linked;
+  **point-in-time shares**. Engine: `lib/index-engine.ts`.
 - **Index level is currency-independent** (a pure number like Nifty). Only
   per-stock prices/market caps convert INR↔USD (`lib/fx.ts`, `USDINR=X`).
 - **Benchmark:** **Nifty 500** (`^CRSLDX`) — `lib/benchmarks.ts`.
 
-The index was validated to reproduce a canonical CapIQ workbook ("TLF New
-Economy Index Data") to the penny. That workbook was imported **once**
-(`scripts/import-capiq-workbook.ts`) and its data lives frozen in the DB; it is
-**not** a live dependency.
+The index is validated to reproduce a canonical CapIQ workbook ("TLF New
+Economy Index Data") exactly. That workbook is **re-imported whenever CapIQ
+issues an updated version** (`scripts/import-capiq-workbook.ts` — see Phase 5),
+most recently 2026-08-18 from the "Final Version" workbook, which now covers
+**2020-12-31 → 2026-07-15**. Data from **2026-07-16 onward is Yahoo-sourced**
+and stays that way going forward; only the CapIQ-covered window gets replaced
+on a re-import.
 
 ---
 
@@ -47,10 +50,11 @@ and refreshing shares meant re-importing the CapIQ workbook by hand. Goal:
   `lib/yahoo-provider.ts`.
 - **Yahoo has point-in-time shares back to ~FY2022** (via `fundamentals-timeseries`,
   paged backward — it caps ~4 periods per request). It does **not** have
-  2020–2021 shares. So: **keep the frozen CapIQ history (2020→mid-2026) as-is**;
-  Yahoo takes over going forward. Re-deriving all history from Yahoo would shift
-  the index ~1.5% (shares) — rejected. This is **option (A): keep exact history,
-  Yahoo forward.**
+  2020–2021 shares. So: **keep the CapIQ history (2020→last CapIQ coverage
+  date, 2026-07-15 as of the 2026-08-18 re-import) as the source of truth**;
+  Yahoo takes over from the day after. Re-deriving all history from Yahoo would
+  shift the index ~1.5% (shares) — rejected. This is **option (A): keep exact
+  history, Yahoo forward.**
 - Rejected: EODHD (cost), SerpApi/Google Finance (coarse history, per-call cost,
   thin fundamentals).
 - Auth for the CMS: reuse the existing **bearer secret** (`CRON_SECRET`).
@@ -114,7 +118,11 @@ and refreshing shares meant re-importing the CapIQ workbook by hand. Goal:
 - **CapIQ-safe share writes:** `upsertYahooShareCounts()` can insert/revise Yahoo
   rows but does not overwrite `excel-capiq` share rows. CMS re-backfill now uses
   the same safe writer.
-- **Vercel Cron:** weekly refresh scheduled Sundays at 03:00 UTC.
+- **Vercel Cron:** originally weekly (Sundays 03:00 UTC); changed to
+  **quarterly** (`0 3 1 1,4,7,10 *` — 1st of Jan/Apr/Jul/Oct) the next day in
+  `13be992` ("Cron: run fundamentals refresh quarterly, not weekly") to match
+  the index's own quarterly rebalance cadence. `vercel.json` is current;
+  nothing below this bullet reflects the schedule change.
 - Production manual refresh passed on 2026-07-28: 53 companies processed, 292
   share rows fetched, 124 share rows written, 259 financial rows, 53 profiles,
   50 analyst rows, zero failures; recomputed close stayed **2,308.71 / n=50**.
@@ -130,20 +138,57 @@ and refreshing shares meant re-importing the CapIQ workbook by hand. Goal:
 - Production smoke passed after deploy: homepage 200, live API 200,
   `stocks.length = 50`, `tickerTape.length = 53`, admin cron page/API reachable.
 
+### Phase 5 — CapIQ workbook re-import, Turtlemint added  ✅ (on `staging`, 2026-08-18)
+- Trifecta's team recalculated the index independently in Excel and found it
+  diverging from the live app by a small margin. Root cause: the DB's frozen
+  CapIQ history only covered through 2026-07-06; 2026-07-07 → 2026-07-15 (9
+  trading days) was already Yahoo-sourced, plus Turtlemint (IPO'd 2026-06-29)
+  had never been in any CapIQ workbook at all. Fix, per explicit instruction:
+  **all data through 2026-07-15 from the new "Final Version" CapIQ workbook;
+  2026-07-16 onward stays Yahoo** (unchanged from before).
+- **Found and fixed a real bug** in `import-capiq-workbook.ts`'s XML cell
+  parser: the new workbook writes empty cells as self-closing
+  `<c r="I3" s="6"/>` tags, which the old regex (expecting `<c>...</c>` always)
+  would mishandle — it silently consumed forward to the next real `</c>` it
+  could find, misattributing a later cell's value onto the earlier, actually-
+  empty ref. Confirmed concretely (cell I3, empty since Nazara hadn't IPO'd on
+  2020-12-31, was reading a later cell's value instead). This was a latent bug
+  in the parser itself, independent of the "till 15 July" request.
+- Added **Turtlemint** (`TURTLEMINT`, Fintech, listed 2026-06-29, IPO ₹152,
+  Trifecta portfolio) to `lib/companies.ts` as company **#54** — it was
+  previously onboarded only via the admin CMS with Yahoo data, which is why an
+  earlier reconciliation attempt (2026-08-04) couldn't run the import tool at
+  all (universe validation requires the workbook and the static seed to match
+  exactly).
+- Backed up the affected `stock_snapshots`/`share_counts` rows locally before
+  applying (this import is a direct production DB mutation, independent of any
+  git deploy). Verified the recomputed index against the workbook's own
+  `Final_Index_Calculations` sheet for all 2,023 days (2020-12-31 →
+  2026-07-15) — matches on every trading day, including the boundary day
+  itself. Confirmed no CapIQ-vs-Yahoo price discontinuity at the splice point
+  (every ticker's CapIQ close on 07-15 was identical to what Yahoo had already
+  reported for that date).
+- This closed a previously-accepted, separately-tracked ~0.03% offset from
+  30-Jun-2026 onward (a stale share-count revision in an older workbook
+  version) — the new workbook apparently already carries the correction.
+
 ---
 
 ## 4. Current state
 
-- **`main` has:** all fixes + Phases 1-4. Latest commit:
-  `25f9ec1` (`Phase 4: clean up static universe usage`).
-- **CI:** GitHub Actions green for `25f9ec1`.
+- **`main` has:** all fixes + Phases 1-4, commit `25f9ec1`. **`staging` also
+  has Phase 5** (CapIQ re-import + Turtlemint + parser fix, 2026-08-18) —
+  not yet merged to `main` as of this writing.
+- **CI:** green on both branches as of the last push.
 - **Vercel:** production deployment is Ready and aliased to
-  `new-economy-index.vercel.app`.
-- **DB (Neon, production):** `constituents` seeded (53); index_snapshots latest
-  close **2,308.71** on 2026-07-27 (n=50); live smoke on 2026-07-28 returned
-  **2,325.7364** intraday. All per-company tables are populated for the 53.
-  CapIQ-sourced rows remain frozen (`source` = `excel-capiq`); Yahoo rows use
-  `source` = `yahoo`.
+  `new-economy-index.vercel.app`; staging previews at the `-git-staging-`
+  alias.
+- **DB (Neon, shared by staging and production code — the DB itself is not
+  branch-scoped):** `constituents` has **54** rows (53 original + Turtlemint).
+  CapIQ-sourced rows (`source = excel-capiq`) now cover 2020-12-31 →
+  2026-07-15; Yahoo rows (`source = yahoo`) cover 2026-07-16 onward. Re-running
+  `import-capiq-workbook.ts --apply` against a newer workbook mutates this DB
+  immediately, regardless of which git branch is checked out.
 - **CMS / cron admin** work with `CRON_SECRET`:
   `/admin/constituents`, `/admin/cron-runs`.
 
@@ -152,10 +197,11 @@ and refreshing shares meant re-importing the CapIQ workbook by hand. Goal:
 ## 5. What's left to do
 
 ### Monitor the first scheduled refresh
-- Manual `/api/cron/refresh` passed in production.
-- The first scheduled Sunday run after this handoff is **2026-08-02 at 03:00 UTC**
-  (08:30 IST). Check `/admin/cron-runs` afterward for job `refresh`, status
-  `success`, no missing tickers, and a sane index value.
+- The refresh cron is **quarterly**, not weekly (see Phase 3 note) — the only
+  `refresh` row in `cron_runs` as of 2026-08-18 is the 2026-07-28 **manual**
+  trigger; the schedule hasn't fired on its own yet. Next scheduled run:
+  **2026-10-01 03:00 UTC**. Check `/admin/cron-runs` afterward for job
+  `refresh`, status `success`, no missing tickers, and a sane index value.
 
 ### Open copy item (needs a human decision)
 - §05 subheading **"A decade in. Here is what we learned."**
@@ -173,9 +219,9 @@ and refreshing shares meant re-importing the CapIQ workbook by hand. Goal:
   before pushing — CI silently went red twice because `build` alone passed.
 - **Verify the index-unchanged invariant** after any universe/engine change:
   `recomputeAndPersistIndex()` should preserve the latest stored close unless
-  real data has moved it. The current verified close is **2,308.71 / n=50** on
-  2026-07-27. Quick check: seed/refresh, then recompute and compare to the
-  latest `index_snapshots` row.
+  real data has moved it. Quick check: note the latest `index_snapshots` row
+  before the change, then compare after recompute — same date/value/n unless
+  the change was meant to move it (e.g. a workbook re-import).
 - **IPO-seed guard** (`lib/onboard.ts`): only seed the IPO price when the first
   Yahoo price is within ~7 days of `listedDate`. Seeding an old name injects a
   bogus day-one move.
@@ -204,12 +250,13 @@ npm test && npm run lint && npx tsc --noEmit && npm run build
 # re-seed constituents from companies.ts (idempotent)
 npx tsx scripts/seed-constituents.ts
 
-# manually trigger the weekly Yahoo refresh in production
+# manually trigger the (quarterly-scheduled) Yahoo refresh in production
 curl -X POST https://new-economy-index.vercel.app/api/cron/refresh \
   -H "Authorization: Bearer $CRON_SECRET"
 
-# one-time CapIQ historical import (already done; reference only)
-npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_new version_2.xlsx" --apply
+# re-run only when CapIQ issues an updated workbook (dry-run first, no --apply)
+npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_Final Version_shared Deepanshu.xlsx"
+# add --apply once the dry-run summary shows zero universe/share mismatches
 
 # env: DATABASE_URL + CRON_SECRET in .env.local (loaded by scripts)
 ```
