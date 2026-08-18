@@ -26,7 +26,7 @@ import { ensureSchema, recomputeAndPersistIndex } from "../lib/db";
 import { STOCK_SOURCE_CAPIQ } from "../lib/quote-snapshots";
 
 const DEFAULT_WORKBOOK =
-  "/Users/deepanshu/Downloads/TLF New Economy Index Data_new version_2.xlsx";
+  "/Users/deepanshu/Downloads/TLF New Economy Index Data_Final Version_shared Deepanshu.xlsx";
 const STOCK_CHUNK_SIZE = 5_000;
 const SHARE_CHUNK_SIZE = 500;
 const STOCK_SOURCE_CHANGE_PCT_DIGITS = 6;
@@ -191,7 +191,14 @@ function splitCellRef(ref: string) {
 function loadSheet(workbook: string, target: string, sharedStrings: string[]): WorkbookSheet {
   const xml = readZipEntry(workbook, target);
   const sheet: WorkbookSheet = new Map();
-  const cellRe = /<c\b([^>]*)>([\s\S]*?)<\/c>/g;
+  // Cells can be self-closing (<c r="I3" s="6"/>) when empty. A regex that only
+  // matches the open/close-tag form (<c ...>...</c>) treats a self-closing cell's
+  // trailing "/" as part of its attributes, then lazily consumes everything up to
+  // the NEXT "</c>" it can find — silently swallowing real cells in between and
+  // misattributing a later cell's value to the earlier (actually-empty) ref. The
+  // alternation below matches the self-closing form explicitly so it terminates
+  // there instead of bleeding into subsequent cells.
+  const cellRe = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
   let match: RegExpExecArray | null;
 
   while ((match = cellRe.exec(xml))) {
@@ -201,8 +208,9 @@ function loadSheet(workbook: string, target: string, sharedStrings: string[]): W
     if (!parsed) continue;
 
     const type = attr(match[1], "t");
-    const valueText = textFromTags(match[2], "v");
-    const inlineText = textFromTags(match[2], "t");
+    const inner = match[2] ?? "";
+    const valueText = textFromTags(inner, "v");
+    const inlineText = textFromTags(inner, "t");
     let value: string | null = null;
 
     if (type === "s" && valueText) {

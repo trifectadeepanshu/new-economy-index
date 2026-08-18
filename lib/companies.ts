@@ -32,10 +32,11 @@ const PORTFOLIO_TICKERS = new Set([
   "IDEAFORGE",
   "SHADOWFAX",
   "NEPHROPLUS",
+  "TURTLEMINT",
 ]);
 
 // Universe mirrors the canonical CapIQ model ("TLF New Economy Index Data" —
-// 53 names, sub-sectors and IPO prices as defined there). The index includes
+// 54 names, sub-sectors and IPO prices as defined there). The index includes
 // the top 50 by market cap, reconstituted quarterly. Keep in sync with the model.
 type Seed = readonly [
   name: string,
@@ -90,6 +91,7 @@ export const COMPANIES: Company[] = [
     ["One MobiKwik Systems Limited", "MobiKwik", "MOBIKWIK", "MOBIKWIK.NS", "2024-12-18", 279],
     ["Billionbrains Garage Ventures Limited", "Groww", "GROWW", "GROWW.NS", "2025-11-12", 100],
     ["Pine Labs Limited", "Pine Labs", "PINELABS", "PINELABS.NS", "2025-11-14", 221],
+    ["Turtlemint Fintech Solutions Limited", "Turtlemint", "TURTLEMINT", "TURTLEMINT.NS", "2026-06-29", 152],
     ["OnEMI Technology Solutions Limited", "Kissht", "KISSHT", "KISSHT.NS", "2026-05-08", 171],
   ]),
 
@@ -133,6 +135,6 @@ export const COMPANIES: Company[] = [
 export const INDEX_BASE_DATE = "2020-12-31";
 export const INDEX_ANCHOR_DATE = "2020-12-31";
 export const INDEX_BASE_VALUE = 1000;
-// The index holds the top 50 by market cap (of the 53-name universe). Used as the
-// copy fallback for the live constituent count so headings never flash "53".
+// The index holds the top 50 by market cap (of the 54-name universe). Used as the
+// copy fallback for the live constituent count so headings never flash "54".
 export const INDEX_SIZE = 50;
