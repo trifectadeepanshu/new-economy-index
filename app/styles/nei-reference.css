@@ -1750,15 +1750,6 @@
     letter-spacing: 0.04em;
   }
 
-  .nei-sb-companies-label {
-    display: block;
-    margin-bottom: 8px;
-    color: rgba(11,15,25,0.5);
-    font: 700 11px var(--font-inter), ui-monospace, monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
   .nei-sb-companies-scroll {
     max-height: 240px;
     overflow-y: auto;

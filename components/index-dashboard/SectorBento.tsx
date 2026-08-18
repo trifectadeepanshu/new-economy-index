@@ -463,7 +463,6 @@ function SectorPanel({
         </div>
 
         <div className="nei-sb-companies">
-          <span className="nei-sb-companies-label">Companies in {comp.sector}</span>
           <div className="nei-sb-companies-scroll">
             <div className="nei-sb-companies-head" aria-hidden="true">
               <span>Name</span>
