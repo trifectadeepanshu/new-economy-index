@@ -331,10 +331,10 @@ export default function MethodologyPage() {
           </p>
         </DocSection>
 
-        <DocSection id="trifecta-portfolio" n="08" title="Trifecta Capital portfolio">
+        <DocSection id="trifecta-portfolio" n="08" title="Trifecta Capital Portfolio">
           <p>
             Certain NEI Top 50 constituents carry a separate &quot;Trifecta
-            Capital portfolio&quot; designation, shown in the constituent grid,
+            Capital Portfolio&quot; designation, shown in the constituent grid,
             the market-cap view, and the performance chart&apos;s portfolio
             overlay. It indicates a past or present relationship with Trifecta
             Capital, and reflects relationship history rather than a real-time
