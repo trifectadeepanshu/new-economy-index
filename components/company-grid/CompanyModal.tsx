@@ -224,8 +224,10 @@ function MiniBars({
         {points.map((point, i) => (
           <span
             key={`${point.label}-${i}`}
-            className={`nei-cm-bar${i === points.length - 1 ? " is-latest" : ""}`}
-            style={{ height: `${point.value == null ? 4 : 8 + ((point.value - min) / range) * 30}px` }}
+            className={`nei-cm-bar${
+              point.value == null ? " is-empty" : i === points.length - 1 ? " is-latest" : ""
+            }`}
+            style={{ height: `${point.value == null ? 6 : 8 + ((point.value - min) / range) * 30}px` }}
             title={`${point.label}: ${point.value == null ? "No data" : format(point.value)}`}
           />
         ))}

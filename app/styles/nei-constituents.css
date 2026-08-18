@@ -871,6 +871,11 @@
   .nei-cm-bar-row { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
   .nei-cm-bar { flex: 1; border-radius: 2px; background: rgba(169,192,255,0.28); min-height: 3px; }
   .nei-cm-bar.is-latest { background: var(--nei-accent, #E07A38); }
+  .nei-cm-bar.is-empty {
+    background: transparent;
+    border: 1px dashed rgba(169,192,255,0.32);
+    border-radius: 2px;
+  }
   .nei-cm-bar-labels {
     display: flex;
     gap: 3px;
