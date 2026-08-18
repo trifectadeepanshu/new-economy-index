@@ -15,8 +15,9 @@
  *     valuing both compositions at Q's prices.
  *
  * Between rebalances, shares/flags/divisor are frozen and only daily prices move.
- * The same engine drives the full index (topN = 50) and the portfolio sub-index
- * (topN = ∞ — all members included).
+ * The same engine drives the full index (topN = 50), sector indices (the
+ * sector slice of that same top-50 selection), and the portfolio sub-index
+ * (topN = ∞ — all portfolio members included).
  */
 
 export type EngineMember = {
@@ -51,6 +52,13 @@ export type EngineOptions = {
   baseValue: number;
   baseDate: string; // first quarter-end (drives the quarterly rebalance mechanics)
   topN: number; // max constituents per quarter (Infinity for no cap)
+  /**
+   * Optional universe used for ranking and rebalance dates. The returned
+   * series still values only `members`. Sector indices use this to inherit the
+   * parent NEI Top 50 composition instead of independently including every
+   * company in the sector.
+   */
+  selectionMembers?: EngineMember[];
   /**
    * Optional display anchor: rescale the whole series so the first point on/after
    * this date equals baseValue, and drop earlier points. Keeps the quarterly
@@ -123,15 +131,22 @@ export function computeIndexSeries(
   const dates = [...prices.keys()].sort();
   if (!dates.length) return { points: [], divisor: 0, members: [] };
 
-  const tickers = members.map((m) => m.ticker);
+  const memberTickers = new Set(members.map((member) => member.ticker));
+  const selectionMembers = options.selectionMembers ?? members;
+  const tickers = selectionMembers.map((member) => member.ticker);
+  const memberByTicker = new Map(selectionMembers.map((member) => [member.ticker, member]));
 
   // Per-ticker sorted [date, close] for as-of lookups at rebalances.
   const sortedPrices = new Map<string, [string, number][]>();
   for (const t of tickers) {
     const arr: [string, number][] = [];
+    const member = memberByTicker.get(t)!;
+    const earliestEligibleDate =
+      member.listedDate > baseDate ? previousCalendarDay(member.listedDate) : baseDate;
     for (const d of dates) {
+      if (d < earliestEligibleDate) continue;
       const px = prices.get(d)!.get(t);
-      if (px != null) arr.push([d, px]);
+      if (px != null && Number.isFinite(px) && px > 0) arr.push([d, px]);
     }
     sortedPrices.set(t, arr);
   }
@@ -153,7 +168,7 @@ export function computeIndexSeries(
     const sh = new Map<string, number>();
     const px = new Map<string, number>();
     const mc: { ticker: string; cap: number }[] = [];
-    for (const m of members) {
+    for (const m of selectionMembers) {
       const s = sharesAt(shares.get(m.ticker), q);
       const p = priceAsOf(sortedPrices.get(m.ticker) ?? [], q);
       if (s != null) sh.set(m.ticker, s);
@@ -161,7 +176,12 @@ export function computeIndexSeries(
       if (s != null && p != null && s * p > 0) mc.push({ ticker: m.ticker, cap: s * p });
     }
     mc.sort((a, b) => b.cap - a.cap);
-    const included = new Set(mc.slice(0, topN).map((x) => x.ticker));
+    const included = new Set(
+      mc
+        .slice(0, topN)
+        .map((x) => x.ticker)
+        .filter((ticker) => memberTickers.has(ticker))
+    );
     qShares.set(q, sh);
     qPrice.set(q, px);
     qFlag.set(q, included);
@@ -201,21 +221,17 @@ export function computeIndexSeries(
     prevQ = q;
   }
 
-  // Daily index — carry forward closes; value with the effective quarter's state.
-  // A price only carries forward for STALE_CUTOFF_TRADING_DAYS before it's
-  // treated as unusable (excluded, same as a missing price) — otherwise one
-  // permanently broken single-ticker feed would keep contributing a frozen
-  // price to the index forever with no signal anywhere.
-  const STALE_CUTOFF_TRADING_DAYS = 10; // ~2 weeks; wider than known 1-day feed gaps
+  // Daily index — carry forward the last valid close and value the effective
+  // composition. A missing quote must never silently remove a constituent's
+  // market cap without a matching divisor adjustment; freshness is surfaced by
+  // the live-data layer instead.
   const lastClose = new Map<string, number>();
-  const lastFreshIndex = new Map<string, number>(); // ticker -> trading-day index last priced
   const out: IndexPoint[] = [];
   let qi = 0;
   for (let di = 0; di < dates.length; di++) {
     const date = dates[di];
     for (const [t, c] of prices.get(date)!) {
-      lastClose.set(t, c);
-      lastFreshIndex.set(t, di);
+      if (Number.isFinite(c) && c > 0) lastClose.set(t, c);
     }
     if (date < quarters[0]) continue; // before inception
     while (qi + 1 < quarters.length && quarters[qi + 1] <= date) qi++;
@@ -227,9 +243,7 @@ export function computeIndexSeries(
     const flags = qFlag.get(q)!;
     let total = 0;
     for (const t of flags) {
-      const freshIdx = lastFreshIndex.get(t);
-      const isFresh = freshIdx != null && di - freshIdx <= STALE_CUTOFF_TRADING_DAYS;
-      const px = isFresh ? lastClose.get(t) : undefined;
+      const px = lastClose.get(t);
       const s = sh.get(t);
       if (px != null && s != null) total += px * s;
     }
@@ -280,8 +294,22 @@ export function liveIndexValue(
   if (!(divisor > 0)) return null;
   let total = 0;
   for (const { ticker, shares } of members) {
-    const px = livePrices.get(ticker) ?? carryForward.get(ticker);
-    if (px != null) total += px * shares;
+    const livePrice = livePrices.get(ticker);
+    const carriedPrice = carryForward.get(ticker);
+    const px =
+      livePrice != null && Number.isFinite(livePrice) && livePrice > 0
+        ? livePrice
+        : carriedPrice != null && Number.isFinite(carriedPrice) && carriedPrice > 0
+          ? carriedPrice
+          : null;
+    if (px == null || !Number.isFinite(shares) || shares <= 0) return null;
+    total += px * shares;
   }
   return total > 0 ? Math.round((total / divisor) * 10000) / 10000 : null;
+}
+
+function previousCalendarDay(date: string): string {
+  const value = new Date(`${date}T00:00:00Z`);
+  value.setUTCDate(value.getUTCDate() - 1);
+  return value.toISOString().slice(0, 10);
 }

@@ -23,7 +23,8 @@ import { getMigrationSql, getReadSql, getWriteSql } from "@/lib/db-connection";
 const STOCK_BATCH_SIZE = 500;
 const LIVE_STATE_KEY = "live_index_state";
 
-// Index includes the top 50 by market cap each quarter; sub-indices use all members.
+// The headline and sector indices share the same top-50 selection. The
+// portfolio series is independent and includes all Trifecta portfolio members.
 const INDEX_TOP_N = 50;
 const SUBINDEX_TOP_N = Number.POSITIVE_INFINITY;
 const INDEX_ENGINE_OPTIONS: EngineOptions = {
@@ -676,7 +677,10 @@ export async function getIndexHistoryBundle(
   if (opts.sectors) {
     for (const sector of SECTORS) {
       const sectorMembers = membersBySector.get(sector) ?? [];
-      const result = computeIndexSeries(prices, shares, sectorMembers, SUBINDEX_ENGINE_OPTIONS);
+      const result = computeIndexSeries(prices, shares, sectorMembers, {
+        ...INDEX_ENGINE_OPTIONS,
+        selectionMembers: allMembers,
+      });
       for (const p of result.points) {
         if (p.date < fromDate || p.date > toDate) continue;
         sectorData.push({ date: p.date, sector, value: round(p.value, 4), numCompanies: p.numCompanies });
@@ -686,7 +690,10 @@ export async function getIndexHistoryBundle(
 
   let portfolioData: IndexHistoryPoint[] = [];
   if (opts.portfolio) {
-    const result = computeIndexSeries(prices, shares, portfolioMembers, SUBINDEX_ENGINE_OPTIONS);
+    const result = computeIndexSeries(prices, shares, portfolioMembers, {
+      ...SUBINDEX_ENGINE_OPTIONS,
+      selectionMembers: allMembers,
+    });
     portfolioData = slice(result.points, fromDate, toDate);
   }
 
@@ -723,7 +730,7 @@ export async function recomputeAndPersistIndex(): Promise<{
     prices,
     shares,
     engineMembers.portfolioMembers,
-    SUBINDEX_ENGINE_OPTIONS
+    { ...SUBINDEX_ENGINE_OPTIONS, selectionMembers: engineMembers.allMembers }
   );
 
   if (!points.length) {

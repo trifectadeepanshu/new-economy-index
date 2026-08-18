@@ -215,7 +215,10 @@ export async function getLiveIndexPayload(currency: Currency): Promise<LiveIndex
       ...(liveState.portfolio?.members.map((m) => m.ticker) ?? []),
     ]);
     const missingQuotes = [...requiredTickers].filter(
-      (ticker) => livePrices[ticker]?.price == null
+      (ticker) => {
+        const price = livePrices[ticker]?.price;
+        return price == null || !Number.isFinite(price) || price <= 0;
+      }
     );
     if (missingQuotes.length) {
       throw new Error(`Missing live quotes: ${missingQuotes.join(", ")}`);
@@ -225,11 +228,15 @@ export async function getLiveIndexPayload(currency: Currency): Promise<LiveIndex
     for (const c of active) {
       const live = livePrices[c.ticker];
       const close = latestClose[c.ticker];
+      const livePrice =
+        live?.price != null && Number.isFinite(live.price) && live.price > 0
+          ? live.price
+          : null;
       merged[c.ticker] = {
-        price: live?.price ?? close?.price ?? null,
-        changePct: live?.changePct ?? close?.changePct ?? null,
-        asOfDate: live?.price != null ? today : close?.date ?? null,
-        isStale: live?.price == null,
+        price: livePrice ?? close?.price ?? null,
+        changePct: livePrice != null ? live?.changePct ?? null : close?.changePct ?? null,
+        asOfDate: livePrice != null ? today : close?.date ?? null,
+        isStale: livePrice == null,
       };
     }
     // Show only the index constituents (current top-50), not the full universe.
@@ -248,7 +255,11 @@ export async function getLiveIndexPayload(currency: Currency): Promise<LiveIndex
     // Extend the divisor chain with live prices. Quote completeness is checked
     // above, so missing prices cannot silently carry forward inside the index.
     const livePriceMap = new Map<string, number>();
-    for (const q of quotes) if (q.ticker && q.price != null) livePriceMap.set(q.ticker, q.price);
+    for (const q of quotes) {
+      if (q.ticker && q.price != null && Number.isFinite(q.price) && q.price > 0) {
+        livePriceMap.set(q.ticker, q.price);
+      }
+    }
 
     const indexInr = liveIndexValue(livePriceMap, new Map(), liveState.members, liveState.divisor);
 
