@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import "./styles/nei-shared.css";
+
+const GOOGLE_ANALYTICS_ID = "G-4D3GGBND18";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -47,6 +50,18 @@ export default function RootLayout({
       className={`${inter.variable} ${sora.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GOOGLE_ANALYTICS_ID}');
+        `}
+      </Script>
     </html>
   );
 }
