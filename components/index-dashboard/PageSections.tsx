@@ -1,6 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
-import { type ReactNode } from "react";
+"use client";
+
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { CompanyGrid } from "@/components/CompanyGrid";
 import { IndexChart } from "@/components/IndexChart";
 import type { Currency, SectorCompositionPoint, StockData } from "@/lib/index-api";
@@ -9,8 +10,70 @@ import {
   SectionEyebrow,
   TickFrame,
 } from "@/components/index-dashboard/DashboardChrome";
-import { SectorBento } from "@/components/index-dashboard/SectorBento";
 import { MarketCapStrata } from "@/components/index-dashboard/MarketCapStrata";
+
+const SectorBento = dynamic(
+  () => import("@/components/index-dashboard/SectorBento").then((module) => module.SectorBento),
+  { ssr: false, loading: () => <SectorBentoPlaceholder /> }
+);
+
+function SectorBentoPlaceholder() {
+  return (
+    <div className="nei-sb is-loading" role="status" aria-label="Loading sector breakdown">
+      <div className="nei-sb-grid" aria-hidden="true">
+        {Array.from({ length: SECTORS.length }, (_, index) => (
+          <div
+            key={SECTORS[index]}
+            className={`nei-sb-tile ${index === 0 ? "is-major" : index < 3 ? "is-medium" : "is-compact"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DeferredSectorBento({
+  sectors,
+  stocks,
+  currency,
+}: {
+  sectors: SectorCompositionPoint[];
+  stocks: StockData[];
+  currency: Currency;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    if (!("IntersectionObserver" in window)) {
+      const frame = requestAnimationFrame(() => setReady(true));
+      return () => cancelAnimationFrame(frame);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setReady(true);
+        observer.disconnect();
+      },
+      { rootMargin: "700px 0px" }
+    );
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={rootRef}>
+      {ready ? (
+        <SectorBento sectors={sectors} stocks={stocks} currency={currency} />
+      ) : (
+        <SectorBentoPlaceholder />
+      )}
+    </div>
+  );
+}
 
 function ReferenceShell({
   id,
@@ -143,7 +206,7 @@ export function SectorSection({
       mutedTitle="broken down."
       copy="Deeper than fintech. Broader than consumer. Constantly evolving."
     >
-      <SectorBento sectors={sectorComposition} stocks={stocks} currency={currency} />
+      <DeferredSectorBento sectors={sectorComposition} stocks={stocks} currency={currency} />
     </ReferenceShell>
   );
 }
@@ -174,56 +237,5 @@ export function MarketCapSection({
         isLoading={isLoading}
       />
     </ReferenceShell>
-  );
-}
-
-export function DashboardFooter() {
-  const year = new Date().getFullYear();
-  return (
-    <footer className="nei-footer-v2">
-      <TickFrame inset={32} tone="paper" lineLen={36} corner={12} opacity={0.3} padded={false}>
-        <div className="nei-footer-inner">
-          <div className="nei-footer-top">
-            <div className="nei-footer-brand-col">
-              <div className="nei-footer-brand">
-                <Image
-                  src="/trifecta-capital-logo.png"
-                  alt="Trifecta Capital"
-                  width={1800}
-                  height={517}
-                  className="nei-footer-logo"
-                />
-              </div>
-              <p>
-                Market data sourced from Yahoo Finance, updated during market
-                hours. Provided for informational purposes only; not investment
-                advice. © {year} Trifecta Capital.
-              </p>
-            </div>
-            <div className="nei-footer-links">
-              <div>
-                <strong>NEI Top 50</strong>
-                <Link href="/#performance">Performance</Link>
-                <Link href="/#sectors">Sectors</Link>
-                <Link href="/#market-cap">Market Cap</Link>
-                <Link href="/#constituents">Constituents</Link>
-                <Link href="/methodology">Methodology</Link>
-              </div>
-              <div>
-                <strong>Trifecta Capital</strong>
-                <a href="https://trifectacapital.in" target="_blank" rel="noopener noreferrer">
-                  trifectacapital.in ↗
-                </a>
-                <a href="mailto:info@trifectacapital.in">info@trifectacapital.in</a>
-              </div>
-            </div>
-          </div>
-          <div className="nei-footer-bottom">
-            <span>2015 → {year} →</span>
-            <span>Gurugram · Mumbai · Bengaluru</span>
-          </div>
-        </div>
-      </TickFrame>
-    </footer>
   );
 }

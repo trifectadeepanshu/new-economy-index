@@ -56,7 +56,6 @@ export function CompanyLogo({
           sizes={`${size}px`}
           className="nei-company-logo-image"
           onError={() => setFailed(true)}
-          unoptimized
         />
       ) : (
         <span className="nei-company-logo-fallback">{initialsFor(name)}</span>

@@ -14,7 +14,6 @@ import {
 import { SECTORS, type Sector } from "@/lib/companies";
 import type {
   Currency,
-  IndexHistoryPayload,
   IndexHistoryPoint,
   SectorCompositionPoint,
   SectorHistoryPoint,
@@ -24,6 +23,12 @@ import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
 import { CompanyLogo } from "@/components/company-grid/CompanyLogo";
 import { formatMarketCap } from "@/lib/formatters";
 import { formatPrice, formatSignedPercent } from "@/components/company-grid/format";
+import {
+  buildHistoryRequest,
+  getIndexHistory,
+} from "@/components/index-chart/historyClient";
+import { getPresetFromDate } from "@/lib/index-history-window";
+import { getISTDate } from "@/lib/market-hours";
 
 type SectorSeries = Map<Sector, { date: string; value: number }[]>;
 type SectorPoint = { date: string; value: number };
@@ -36,6 +41,7 @@ type ComparisonPoint = {
 };
 
 const COMPARISON_BASE_VALUE = 1000;
+const MAX_HISTORY_URL = buildHistoryRequest("MAX", null).url;
 
 function monthLabel(date: string): string {
   const d = new Date(date);
@@ -512,13 +518,16 @@ export function SectorBento({
   const [open, setOpen] = useState<Sector | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/index/history?range=1Y&includeSectors=1", { signal: controller.signal })
-      .then((r) => (r.ok ? (r.json() as Promise<IndexHistoryPayload>) : Promise.reject()))
+    let ignore = false;
+    const cutoff = getPresetFromDate("1Y", getISTDate());
+
+    getIndexHistory(MAX_HISTORY_URL)
       .then((json) => {
+        if (ignore) return;
         const map: SectorSeries = new Map();
-        setIndexSeries(json.data ?? []);
+        setIndexSeries((json.data ?? []).filter((point) => point.date >= cutoff));
         for (const p of (json.sectorData ?? []) as SectorHistoryPoint[]) {
+          if (p.date < cutoff) continue;
           const arr = map.get(p.sector) ?? [];
           arr.push({ date: p.date, value: p.value });
           map.set(p.sector, arr);
@@ -526,7 +535,9 @@ export function SectorBento({
         setSeriesBySector(map);
       })
       .catch(() => {});
-    return () => controller.abort();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   // Show sectors ordered by weight (composition is already sorted); fall back to

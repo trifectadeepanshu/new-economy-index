@@ -1,15 +1,11 @@
-import { INDEX_BASE_VALUE, SECTORS, type Sector } from "@/lib/companies";
+import { INDEX_BASE_VALUE, type Sector } from "@/lib/companies";
 import type {
   IndexHistoryPoint,
   SectorHistoryPoint,
-  StockData,
 } from "@/lib/index-api";
-import { round } from "@/lib/index-math";
 import { SECTOR_CHART_COLORS } from "@/components/index-chart/constants";
 import { formatLabel } from "@/components/index-chart/format";
 import type { ChartMode, ChartPoint, ChartRow, ComparePoint } from "@/components/index-chart/types";
-
-const SECTOR_SET = new Set<string>(SECTORS);
 
 /** Day-level labels read well up to ~45 days; longer spans switch to months. */
 export function useShortDayLabels(points: { date: string }[]): boolean {
@@ -174,27 +170,4 @@ export function buildCompareData(
   }
 
   return Array.from(byDate.values());
-}
-
-export function getLiveSectorValues(stocks: StockData[]) {
-  const totals = new Map<Sector, { ratioTotal: number; count: number }>();
-
-  for (const { ratio, sector } of stocks) {
-    if (typeof ratio !== "number" || !Number.isFinite(ratio) || !SECTOR_SET.has(sector)) {
-      continue;
-    }
-
-    const typedSector = sector as Sector;
-    const total = totals.get(typedSector) ?? { ratioTotal: 0, count: 0 };
-    total.ratioTotal += ratio;
-    total.count += 1;
-    totals.set(typedSector, total);
-  }
-
-  const values: Partial<Record<Sector, number>> = {};
-  for (const [sector, total] of totals) {
-    values[sector] = round(INDEX_BASE_VALUE * (total.ratioTotal / total.count));
-  }
-
-  return values;
 }

@@ -1321,6 +1321,30 @@
     gap: 12px;
   }
 
+  .nei-sb.is-loading .nei-sb-tile {
+    cursor: default;
+    opacity: 0.48;
+    background: linear-gradient(
+      100deg,
+      rgba(255,255,255,0.62) 20%,
+      rgba(255,255,255,0.92) 42%,
+      rgba(255,255,255,0.62) 64%
+    );
+    background-size: 240% 100%;
+    animation: nei-sector-loading 1.4s ease-in-out infinite;
+  }
+
+  @keyframes nei-sector-loading {
+    from { background-position: 100% 0; }
+    to { background-position: -100% 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nei-sb.is-loading .nei-sb-tile {
+      animation: none;
+    }
+  }
+
   .nei-sb-tile {
     --sector-color: #2B62C4;
     position: relative;

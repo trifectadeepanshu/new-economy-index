@@ -3,7 +3,6 @@
 import { HeroSection, TickerDrift } from "@/components/index-dashboard/HeroSection";
 import {
   ConstituentsSection,
-  DashboardFooter,
   MarketCapSection,
   PerformanceSection,
   SectorSection,
@@ -32,7 +31,7 @@ function IndexDashboardInner({
   const model = useIndexDashboardModel(initialLiveData);
 
   return (
-    <div className="nei-dashboard">
+    <>
       <TickerDrift items={model.tickerTape} />
       <HeroSection model={model} />
 
@@ -61,8 +60,6 @@ function IndexDashboardInner({
         currency={model.currency}
         usdInr={model.usdInr}
       />
-
-      <DashboardFooter />
-    </div>
+    </>
   );
 }

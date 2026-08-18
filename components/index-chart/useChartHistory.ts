@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
-import type { IndexHistoryPayload } from "@/lib/index-api";
+import { type RangeKey } from "@/components/index-chart/constants";
 import {
-  RANGE_KEY_TO_API,
-  type RangeKey,
-} from "@/components/index-chart/constants";
+  buildHistoryRequest,
+  getIndexHistory,
+  type CustomRange,
+} from "@/components/index-chart/historyClient";
 import type { HistoryState } from "@/components/index-chart/types";
+
+export { buildHistoryRequest } from "@/components/index-chart/historyClient";
+export type { CustomRange } from "@/components/index-chart/historyClient";
 
 const INITIAL_HISTORY_STATE: HistoryState = {
   signature: null,
@@ -14,32 +18,6 @@ const INITIAL_HISTORY_STATE: HistoryState = {
   benchmarks: [],
   error: null,
 };
-
-export type CustomRange = { from: string; to: string };
-
-function isAbortError(error: unknown) {
-  return error instanceof DOMException && error.name === "AbortError";
-}
-
-/** Build the history query + a stable signature for a preset or custom window. */
-export function buildHistoryRequest(rangeKey: RangeKey, custom: CustomRange | null) {
-  const params = new URLSearchParams({
-    includeSectors: "1",
-    benchmarks: "1",
-    portfolio: "1",
-  });
-  if (rangeKey === "CUSTOM" && custom) {
-    params.set("from", custom.from);
-    params.set("to", custom.to);
-    return {
-      url: `/api/index/history?${params.toString()}`,
-      signature: `CUSTOM:${custom.from}:${custom.to}`,
-    };
-  }
-  const apiRange = RANGE_KEY_TO_API[rangeKey === "CUSTOM" ? "1Y" : rangeKey];
-  params.set("range", apiRange);
-  return { url: `/api/index/history?${params.toString()}`, signature: apiRange };
-}
 
 export function useChartHistory(rangeKey: RangeKey, custom: CustomRange | null) {
   const [state, setState] = useState<HistoryState>(INITIAL_HISTORY_STATE);
@@ -51,14 +29,9 @@ export function useChartHistory(rangeKey: RangeKey, custom: CustomRange | null) 
   useEffect(() => {
     if (pendingCustom) return;
 
-    const controller = new AbortController();
     let ignore = false;
 
-    fetch(url, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json() as Promise<IndexHistoryPayload>;
-      })
+    getIndexHistory(url)
       .then((json) => {
         if (ignore) return;
         setState({
@@ -71,7 +44,7 @@ export function useChartHistory(rangeKey: RangeKey, custom: CustomRange | null) 
         });
       })
       .catch((error: unknown) => {
-        if (ignore || isAbortError(error)) return;
+        if (ignore) return;
         setState({
           signature,
           historyData: [],
@@ -84,7 +57,6 @@ export function useChartHistory(rangeKey: RangeKey, custom: CustomRange | null) 
 
     return () => {
       ignore = true;
-      controller.abort();
     };
   }, [url, signature, pendingCustom]);
 

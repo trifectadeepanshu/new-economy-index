@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { DashboardFooter } from "@/components/index-dashboard/PageSections";
+import { DashboardFooter } from "@/components/index-dashboard/DashboardFooter";
 import { MethodologyToc, type TocItem } from "@/components/methodology/MethodologyToc";
+import "../styles/nei-footer.css";
+import "../styles/nei-doc.css";
+import "../styles/nei-responsive.css";
 
 export const metadata: Metadata = {
   title: "Index Methodology & Governance | NEI Top 50 | Trifecta Capital",

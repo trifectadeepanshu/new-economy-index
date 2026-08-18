@@ -2,15 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import "./styles/nei-shared.css";
-import "./styles/nei-hero.css";
-import "./styles/nei-chart.css";
-import "./styles/nei-reference.css";
-import "./styles/nei-constituents.css";
-import "./styles/nei-methodology.css";
-import "./styles/nei-doc.css";
-import "./styles/nei-admin.css";
-import "./styles/nei-responsive.css";
-import "./styles/nei-motion.css";
 
 const inter = Inter({
   variable: "--font-inter",

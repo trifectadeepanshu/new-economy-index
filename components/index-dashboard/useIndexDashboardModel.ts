@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useIndexData } from "@/hooks/useIndexData";
 import { useCurrency } from "@/components/index-dashboard/CurrencyContext";
 import type {
-  IndexHistoryPayload,
   LiveIndexPayload,
   LiveTickerPayload,
   StockData,
@@ -11,6 +10,11 @@ import { INDEX_BASE_VALUE, INDEX_SIZE } from "@/lib/companies";
 import { getISTDate, isMarketOpen } from "@/lib/market-hours";
 import { formatNumber } from "@/components/index-dashboard/format";
 import { buildHeroSeries, type HeroSparkPoint } from "@/components/index-dashboard/heroSeries";
+import {
+  buildHistoryRequest,
+  getIndexHistory,
+} from "@/components/index-chart/historyClient";
+import { getPresetFromDate } from "@/lib/index-history-window";
 
 type ValueFlash = "" | "pos" | "neg";
 type StatTone = "positive" | "negative";
@@ -29,6 +33,7 @@ const EMPTY_MARKET_STATS = {
   advancers: 0,
   decliners: 0,
 };
+const MAX_HISTORY_URL = buildHistoryRequest("MAX", null).url;
 
 function useCountUp(target: number | null) {
   const [displayed, setDisplayed] = useState<number | null>(null);
@@ -73,27 +78,27 @@ function useSparkSeries() {
   const [series, setSeries] = useState<HeroSparkPoint[]>([]);
 
   useEffect(() => {
-    const controller = new AbortController();
+    let ignore = false;
+    const cutoff = getPresetFromDate("1Y", getISTDate());
 
-    fetch("/api/index/history?range=1Y", { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json() as Promise<IndexHistoryPayload>;
-      })
+    getIndexHistory(MAX_HISTORY_URL)
       .then((json) => {
+        if (ignore) return;
         const values = (json.data ?? [])
           .map((point) => ({ date: point.date, value: Number(point.value) }))
-          .filter((point) => point.date && Number.isFinite(point.value));
+          .filter(
+            (point) => point.date >= cutoff && Number.isFinite(point.value)
+          );
 
         setSeries(values);
       })
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === "AbortError")) {
-          setSeries([]);
-        }
+      .catch(() => {
+        if (!ignore) setSeries([]);
       });
 
-    return () => controller.abort();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return series;
