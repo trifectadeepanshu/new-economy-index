@@ -22,14 +22,13 @@ CRON_SECRET=your-secret-here
 
 ## Data Jobs
 
-The old Yahoo-based `scripts/backfill.ts` and `scripts/backfill-shares.ts`
-are intentionally retired; they exit before touching data.
-
-Import the canonical CapIQ workbook cache and recompute the index:
+Re-import the canonical CapIQ workbook cache and recompute the index
+(only needed when CapIQ issues an updated workbook — dry-run first, then
+`--apply` once the summary shows zero universe/share mismatches):
 
 ```bash
-npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_v2.xlsx"
-npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_v2.xlsx" --apply
+npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_Final Version_shared Deepanshu.xlsx"
+npm run import:capiq -- --workbook "/path/to/TLF New Economy Index Data_Final Version_shared Deepanshu.xlsx" --apply
 ```
 
 Daily forward snapshots are handled by the cron route:
@@ -51,8 +50,12 @@ cron window and checks that today's snapshot row was recorded cleanly.
 
 ## Checks
 
+`npm run build` does not run the test suite or typecheck `tests/` — run the
+full sequence before pushing:
+
 ```bash
 npm test
 npm run lint
+npx tsc --noEmit
 npm run build
 ```

@@ -139,7 +139,7 @@ export function ChartCanvas({
                 <Line
                   type="monotone"
                   dataKey="TRIFECTA"
-                  name="Trifecta Capital portfolio"
+                  name="Trifecta Capital Portfolio"
                   stroke="#E07A38"
                   strokeWidth={1.8}
                   dot={false}

@@ -5,8 +5,8 @@ export function PortfolioMark() {
   return (
     <Image
       src="/trifecta-mark.png"
-      alt="Trifecta Capital portfolio company"
-      title="Trifecta Capital portfolio company"
+      alt="Trifecta Capital Portfolio company"
+      title="Trifecta Capital Portfolio company"
       width={16}
       height={16}
       className="nei-portfolio-mark"

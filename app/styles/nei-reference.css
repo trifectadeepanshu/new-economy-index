@@ -1628,6 +1628,7 @@
     width: min(100%, 760px);
     max-height: min(86vh, 760px);
     overflow-y: auto;
+    overscroll-behavior: contain;
     min-width: 0;
     padding: 28px 28px 24px;
     border: 1px solid rgba(11,15,25,0.10);
@@ -1749,21 +1750,36 @@
     letter-spacing: 0.04em;
   }
 
-  .nei-sb-companies-label {
-    display: block;
-    margin-bottom: 8px;
+  .nei-sb-companies-scroll {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 4px 0 0;
+  }
+
+  .nei-sb-companies-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(112px, auto) minmax(86px, auto) minmax(68px, auto);
+    gap: 14px;
+    padding: 0 0 8px;
+    background: #FFFFFF;
     color: rgba(11,15,25,0.5);
-    font: 700 11px var(--font-inter), ui-monospace, monospace;
+    font: 700 10px var(--font-inter), ui-monospace, monospace;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+  }
+
+  .nei-sb-companies-head span:last-child {
+    text-align: right;
   }
 
   .nei-sb-companies ul {
     list-style: none;
     margin: 0;
-    max-height: 240px;
-    overflow-y: auto;
-    padding: 0 4px 0 0;
+    padding: 0;
   }
 
   .nei-sb-companies li {
@@ -1913,6 +1929,8 @@
       flex-direction: column;
       gap: 8px;
     }
+
+    .nei-sb-companies-head { display: none; }
 
     .nei-sb-companies li {
       grid-template-columns: minmax(0, 1fr) minmax(74px, auto);

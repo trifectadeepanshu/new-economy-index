@@ -309,12 +309,18 @@ function SectorPanel({
       }
     };
     document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
+    // Lock both html and body — on some layouts the document scrolls on
+    // <html>, not <body>, so locking only one silently leaves the page
+    // behind the modal scrollable.
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     window.setTimeout(() => closeRef.current?.focus(), 0);
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
       previouslyFocusedRef.current?.focus();
     };
   }, [onClose]);
@@ -457,25 +463,32 @@ function SectorPanel({
         </div>
 
         <div className="nei-sb-companies">
-          <span className="nei-sb-companies-label">Companies in {comp.sector}</span>
-          <ul>
-            {companies.map((c) => {
-              const up = (c.changePct ?? 0) >= 0;
-              return (
-                <li key={c.ticker}>
-                  <div className="nei-sb-co-name">
-                    <CompanyLogo ticker={c.ticker} name={c.name} size={26} />
-                    <span>{c.displayName}</span>
-                  </div>
-                  <span className="nei-mono nei-sb-co-mcap">{formatMarketCap(c.marketCap, currency)}</span>
-                  <span className="nei-mono nei-sb-co-price">{formatPrice(c.price, currency)}</span>
-                  <span className={`nei-mono nei-sb-co-chg ${up ? "is-pos" : "is-neg"}`}>
-                    {formatSignedPercent(c.changePct, 1)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="nei-sb-companies-scroll">
+            <div className="nei-sb-companies-head" aria-hidden="true">
+              <span>Name</span>
+              <span>Market Cap</span>
+              <span>Share Price</span>
+              <span>1Y IRR</span>
+            </div>
+            <ul>
+              {companies.map((c) => {
+                const up = (c.oneYearChangePct ?? 0) >= 0;
+                return (
+                  <li key={c.ticker}>
+                    <div className="nei-sb-co-name">
+                      <CompanyLogo ticker={c.ticker} name={c.name} size={26} />
+                      <span>{c.displayName}</span>
+                    </div>
+                    <span className="nei-mono nei-sb-co-mcap">{formatMarketCap(c.marketCap, currency)}</span>
+                    <span className="nei-mono nei-sb-co-price">{formatPrice(c.price, currency)}</span>
+                    <span className={`nei-mono nei-sb-co-chg ${up ? "is-pos" : "is-neg"}`}>
+                      {formatSignedPercent(c.oneYearChangePct, 1)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
