@@ -11,7 +11,9 @@ A single-page Next.js (App Router) site that publishes a market-cap-weighted
 stock index tracking VC/PE-backed, listed Indian "new economy" companies.
 
 - **Stack:** Next.js 16 (App Router, TS), **Neon** serverless Postgres, deployed
-  on **Vercel**. Not Supabase, no Python pipeline (the one `.py` is deprecated).
+  on **Vercel**. Not Supabase, no Python pipeline (the one `.py` was
+  deprecated, then removed 2026-08-18 along with dead `lib/upstox.ts` and the
+  self-blocking `backfill.ts`/`backfill-shares.ts` stubs — see Phase 5).
 - **Scheduling:** Vercel Cron (`vercel.json` -> `/api/cron/snapshot`, weekdays
   11:00 UTC; `/api/cron/refresh`, quarterly at 03:00 UTC on Jan/Apr/Jul/Oct 1st)
   + two GitHub Actions (`.github/workflows/ci.yml`, `cron-monitor.yml`).
@@ -171,6 +173,22 @@ and refreshing shares meant re-importing the CapIQ workbook by hand. Goal:
 - This closed a previously-accepted, separately-tracked ~0.03% offset from
   30-Jun-2026 onward (a stale share-count revision in an older workbook
   version) — the new workbook apparently already carries the correction.
+
+### Phase 6 — dead code cleanup  ✅ (on `staging`, 2026-08-18)
+- Removed **`lib/upstox.ts`** (124 lines, unused since May 2026 — the live
+  data source was switched to Upstox and back to Yahoo the same day; the file
+  itself was never deleted, and a later commit even kept editing it despite
+  nothing importing it). Its two Vercel env vars (`UPSTOX_API_TOKEN`,
+  `UPSTOX_ACCESS_TOKEN`, Production only) are now orphaned — remove them in
+  Vercel directly, not covered by this commit.
+- Removed **`scripts/generate_excel.py`** (the only Python file in the repo;
+  a self-blocking deprecated stub, fully superseded by
+  `import-capiq-workbook.ts`) and **`scripts/backfill.ts`** /
+  **`scripts/backfill-shares.ts`** (same pattern — self-blocking stubs
+  pointing at `import:capiq`).
+- Updated `README.md` (dropped the now-nonexistent-file callout, fixed the
+  example workbook filename, added the missing `tsc --noEmit` step to
+  "Checks").
 
 ---
 
