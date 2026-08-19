@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { CompanyCards } from "@/components/company-grid/CompanyCards";
 import { CompanyGridSkeleton } from "@/components/company-grid/CompanyGridSkeleton";
@@ -32,7 +32,6 @@ import type {
 } from "@/components/company-grid/types";
 
 const INITIAL_SORT: SortState = { key: "marketCap", dir: -1 };
-const MOBILE_CARD_VIEW = "(max-width: 1200px)";
 const INITIAL_CARD_COUNT = 12; // a full 3 rows at the grid's usual 4-column width
 // Table rows are far shorter than cards, so a "page" holds more of them.
 const INITIAL_TABLE_COUNT = 10;
@@ -107,9 +106,7 @@ export function CompanyGrid({
   showToggle: showToggleProp,
   variant = "default",
 }: CompanyGridProps) {
-  const [internalView, setInternalView] = useState<CompanyGridView | null>(null);
-  const [isMobileCardViewport, setIsMobileCardViewport] = useState<boolean | null>(null);
-  const [hasChosenView, setHasChosenView] = useState(false);
+  const [internalView, setInternalView] = useState<CompanyGridView>("table");
   const [sort, setSort] = useState<SortState>(INITIAL_SORT);
   const [query, setQuery] = useState("");
   const [sector, setSector] = useState<SectorFilter>("All");
@@ -117,9 +114,7 @@ export function CompanyGrid({
   const [selected, setSelected] = useState<StockData | null>(null);
   const [irrMode, setIrrMode] = useState<IrrRangeMode>("1y");
 
-  const view = externalView ?? internalView ?? "grid";
-  const hasResolvedAutoView = externalView !== undefined || internalView !== null;
-  const hasResolvedViewport = isMobileCardViewport !== null;
+  const view = externalView ?? internalView;
   const showToggle = showToggleProp ?? externalView === undefined;
 
   const irrFromDate = useMemo(
@@ -168,24 +163,7 @@ export function CompanyGrid({
   const visibleRows = rows.slice(0, effectiveVisibleCount);
   const canLoadMore = effectiveVisibleCount < rows.length;
 
-  useEffect(() => {
-    const media = window.matchMedia(MOBILE_CARD_VIEW);
-    const syncView = () => {
-      const isMobile = media.matches;
-
-      setIsMobileCardViewport(isMobile);
-      if (externalView === undefined && !hasChosenView) {
-        setInternalView(isMobile ? "grid" : "table");
-      }
-    };
-
-    syncView();
-    media.addEventListener("change", syncView);
-    return () => media.removeEventListener("change", syncView);
-  }, [externalView, hasChosenView]);
-
   function handleViewChange(nextView: CompanyGridView) {
-    setHasChosenView(true);
     setVisibleCount(initialCountFor(nextView));
 
     if (onViewChange) {
@@ -226,7 +204,7 @@ export function CompanyGrid({
     setVisibleCount(initialCountFor(view));
   }
 
-  if (!hasResolvedViewport || !hasResolvedAutoView || (isLoading && stocks.length === 0)) {
+  if (isLoading && stocks.length === 0) {
     return (
       <CompanyGridSkeleton
         view={view}
