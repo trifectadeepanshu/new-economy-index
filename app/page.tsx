@@ -2,6 +2,7 @@ import { IndexDashboard } from "@/components/IndexDashboard";
 import { DashboardFooter } from "@/components/index-dashboard/DashboardFooter";
 import "./styles/nei-hero.css";
 import "./styles/nei-chart.css";
+import "./styles/nei-select-menu.css";
 import "./styles/nei-reference.css";
 import "./styles/nei-constituents.css";
 import "./styles/nei-footer.css";

@@ -16,6 +16,7 @@ import {
   formatPercent,
 } from "@/components/index-dashboard/format";
 import type { IndexDashboardModel } from "@/components/index-dashboard/useIndexDashboardModel";
+import { getFocusableElements } from "@/components/ui/focus";
 
 const NAV_LINKS = [
   ["Performance", "#performance"],
@@ -91,6 +92,7 @@ function HeroNav({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const closeMenu = () => setIsMenuOpen(false);
   const navRef = useRef<HTMLElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Match the site's other overlays (date picker, sector detail panel):
   // Escape closes, a tap/click outside closes, and the page underneath is
@@ -101,12 +103,34 @@ function HeroNav({
       if (navRef.current && !navRef.current.contains(e.target as Node)) closeMenu();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeMenu();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeMenu();
+        window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+        return;
+      }
+      if (e.key !== "Tab" || !navRef.current) return;
+      const focusable = getFocusableElements(navRef.current);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const current = document.activeElement;
+      if (e.shiftKey && (current === first || !navRef.current.contains(current))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && current === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
+    window.setTimeout(
+      () => navRef.current?.querySelector<HTMLElement>(".nei-v2-links a")?.focus(),
+      0
+    );
     return () => {
       document.body.style.overflow = prevOverflow;
       document.removeEventListener("pointerdown", onDown);
@@ -161,6 +185,7 @@ function HeroNav({
           className="nei-nav-currency-toggle"
         />
         <button
+          ref={menuButtonRef}
           type="button"
           className="nei-mobile-menu-button"
           aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}

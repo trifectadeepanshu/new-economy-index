@@ -72,29 +72,26 @@ function SortButton({
   );
 }
 
-function SortArrow({
-  column,
-  sort,
-  onSort,
-}: {
+function SortArrow({ column, sort }: {
   column: (typeof COLUMNS)[number];
   sort: SortState;
-  onSort: (key: SortKey) => void;
 }) {
   const active = sort.key === column.key;
   const icon = active ? (sort.dir === 1 ? "↑" : "↓") : "↕";
 
   return (
-    <button
-      type="button"
+    <span
       className={`nei-sort-arrow${active ? " is-active" : ""}`}
-      onClick={() => onSort(column.key)}
-      tabIndex={-1}
       aria-hidden="true"
     >
       {icon}
-    </button>
+    </span>
   );
+}
+
+function returnTone(value: number | null | undefined) {
+  if (value == null || !Number.isFinite(value)) return "";
+  return value >= 0 ? " is-positive" : " is-negative";
 }
 
 function TableHeader({
@@ -144,7 +141,7 @@ function TableHeader({
                   </sup>
                 )}
                 <SortButton column={column} sort={sort} onSort={onSort} />
-                <SortArrow column={column} sort={sort} onSort={onSort} />
+                <SortArrow column={column} sort={sort} />
               </span>
               {column.key === "irr" && (
                 <IrrRangeControl
@@ -224,7 +221,12 @@ export function ConstituentTable({
 
   return (
     <div className={`nei-constituents ${isTerminal ? "is-terminal" : ""}`}>
-      <div className="nei-constituent-table-wrap">
+      <div
+        className="nei-constituent-table-wrap"
+        role="region"
+        aria-label="Constituent table"
+        tabIndex={0}
+      >
         <table className="nei-constituent-table">
           <TableHeader
             sort={sort}
@@ -255,16 +257,12 @@ export function ConstituentTable({
                   <td className="is-right nei-mono">{formatPrice(row.price, currency)}</td>
                   <td className="is-right nei-mono">{formatMarketCap(row.marketCap, currency)}</td>
                   <td
-                    className={`is-right nei-mono ${
-                      (row.sinceBase ?? 0) >= 0 ? "is-positive" : "is-negative"
-                    }`}
+                    className={`is-right nei-mono${returnTone(row.sinceBase)}`}
                   >
                     {formatSignedPercent(row.sinceBase, 1)}
                   </td>
                   <td
-                    className={`is-right nei-mono ${
-                      (row.irr ?? 0) >= 0 ? "is-positive" : "is-negative"
-                    }`}
+                    className={`is-right nei-mono${returnTone(row.irr)}`}
                   >
                     {formatSignedPercent(row.irr, 1)}
                   </td>

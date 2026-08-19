@@ -190,6 +190,11 @@
     scrollbar-width: thin;
   }
 
+  .nei-constituent-table-wrap:focus-visible {
+    outline: 2px solid var(--nei-accent);
+    outline-offset: 4px;
+  }
+
   .nei-constituent-table-wrap::-webkit-scrollbar {
     height: 10px;
   }
@@ -286,15 +291,14 @@
   }
 
   .nei-sort-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-left: 4px;
-    min-height: 32px;
-    border: 0;
-    background: transparent;
     color: inherit;
     opacity: 0.55;
-    padding: 0;
     font: inherit;
-    cursor: pointer;
+    pointer-events: none;
   }
 
   .nei-sort-arrow.is-active {
@@ -330,35 +334,15 @@
     vertical-align: middle;
   }
 
-  .nei-irr-range > select {
+  .nei-irr-select {
     min-width: 100px;
-    height: 32px;
-    border: 1px solid var(--nei-grid-strong);
+  }
+
+  .nei-irr-select .nei-select-trigger {
+    min-height: 32px;
     border-radius: 6px;
-    background: var(--nei-chip);
-    color: var(--nei-fg);
-    padding: 0 24px 0 8px;
+    padding: 0 8px;
     font: 600 11px var(--font-inter), ui-monospace, monospace;
-    text-transform: none;
-    cursor: pointer;
-  }
-
-  .nei-irr-range > select:focus-visible {
-    outline: 2px solid var(--nei-accent);
-    outline-offset: 2px;
-    border-color: var(--nei-accent);
-  }
-
-  .nei-company-grid.is-terminal .nei-irr-range > select,
-  .nei-constituents.is-terminal .nei-irr-range > select {
-    background: rgba(232, 235, 240, 0.07);
-    border-color: rgba(232, 235, 240, 0.15);
-    color-scheme: dark;
-  }
-
-  .nei-irr-range > select option {
-    background-color: #FFFFFF;
-    color: #0B0F19;
   }
 
   .nei-irr-range-loading {
@@ -769,6 +753,7 @@
     padding: 26px 28px 30px;
     color: #E8EBF0;
     box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    scrollbar-gutter: stable;
   }
   .nei-cm-panel:focus { outline: none; }
 

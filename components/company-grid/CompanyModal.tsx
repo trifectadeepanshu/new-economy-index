@@ -19,10 +19,11 @@ import {
   formatSignedPercent,
   truncateToSentence,
 } from "@/components/company-grid/format";
+import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
+import { getFocusableElements } from "@/components/ui/focus";
 
 // Roughly 3-4 lines at the modal's description width.
 const DESCRIPTION_MAX_CHARS = 420;
-import { PortfolioMark } from "@/components/company-grid/PortfolioMark";
 
 type BarPoint = {
   label: string;
@@ -33,21 +34,6 @@ type TooltipItem = {
   value?: number;
   payload?: CompanyDetail["priceSeries"][number];
 };
-
-const FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
-
-function getFocusableElements(container: HTMLElement) {
-  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-    (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true"
-  );
-}
 
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";

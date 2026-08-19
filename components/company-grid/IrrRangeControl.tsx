@@ -1,4 +1,5 @@
 import type { IrrRangeMode } from "@/components/company-grid/types";
+import { SelectMenu } from "@/components/ui/SelectMenu";
 
 export const IRR_OPTIONS: ReadonlyArray<{ value: IrrRangeMode; label: string }> = [
   { value: "1y", label: "1 Year" },
@@ -19,19 +20,15 @@ export function IrrRangeControl({
   error: string | null;
 }) {
   return (
-    <span className="nei-irr-range">
-      <select
+    <span className="nei-irr-range" aria-busy={isLoading}>
+      <SelectMenu
+        ariaLabel="IRR period"
+        className="nei-irr-select"
+        tone="dark"
         value={mode}
-        onChange={(event) => onModeChange(event.target.value as IrrRangeMode)}
-        aria-label="IRR period"
-        aria-busy={isLoading}
-      >
-        {IRR_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+        options={IRR_OPTIONS}
+        onChange={onModeChange}
+      />
       {isLoading && (
         <span className="nei-irr-range-loading" role="status" aria-label="Loading IRR data" />
       )}

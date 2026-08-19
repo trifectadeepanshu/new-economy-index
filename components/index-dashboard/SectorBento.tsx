@@ -29,6 +29,7 @@ import {
 } from "@/components/index-chart/historyClient";
 import { getPresetFromDate } from "@/lib/index-history-window";
 import { getISTDate } from "@/lib/market-hours";
+import { getFocusableElements } from "@/components/ui/focus";
 
 type SectorSeries = Map<Sector, { date: string; value: number }[]>;
 type SectorPoint = { date: string; value: number };
@@ -42,7 +43,6 @@ type ComparisonPoint = {
 
 const COMPARISON_BASE_VALUE = 1000;
 const MAX_HISTORY_URL = buildHistoryRequest("MAX", null).url;
-
 function monthLabel(date: string): string {
   const d = new Date(date);
   return `${d.toLocaleDateString("en-US", { month: "short" })} '${String(d.getUTCFullYear()).slice(2)}`;
@@ -297,6 +297,7 @@ function SectorPanel({
   currency: Currency;
   onClose: () => void;
 }) {
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const comparison = useMemo(() => buildComparisonSeries(series, indexSeries), [indexSeries, series]);
@@ -312,6 +313,25 @@ function SectorPanel({
       if (e.key === "Escape") {
         e.stopPropagation();
         onClose();
+        return;
+      }
+
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const focusable = getFocusableElements(panelRef.current);
+      if (!focusable.length) {
+        e.preventDefault();
+        panelRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const current = document.activeElement;
+      if (e.shiftKey && (current === first || !panelRef.current.contains(current))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && current === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
     document.addEventListener("keydown", onKey);
@@ -361,10 +381,12 @@ function SectorPanel({
   const overlay = (
     <div className="nei-sb-overlay" onClick={onClose}>
       <div
+        ref={panelRef}
         className="nei-sb-panel"
         role="dialog"
         aria-modal="true"
         aria-label={`${comp.sector} sector detail`}
+        tabIndex={-1}
         style={{ "--sector-color": color } as CSSProperties}
         onClick={(e) => e.stopPropagation()}
       >

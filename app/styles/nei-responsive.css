@@ -876,7 +876,7 @@
 
   .nei-nav-currency-toggle .nei-currency-btn {
     min-width: 44px;
-    min-height: 38px;
+    min-height: 44px;
     padding: 0 8px;
     font-size: 10.5px;
   }
@@ -1130,8 +1130,10 @@
 
   .nei-dp-select {
     min-width: 0;
-    min-height: 40px;
-    padding-right: 24px;
+  }
+
+  .nei-dp-select .nei-select-trigger {
+    min-height: 44px;
     font-size: 14px;
   }
 
@@ -1319,18 +1321,43 @@
 }
 
 @media (forced-colors: active) {
-  .nei-irr-range > select,
-  .nei-dp-select {
-    border: 1px solid ButtonText;
-    background: Canvas;
-    color: CanvasText;
-    forced-color-adjust: auto;
+  .nei-constituent-table-wrap:focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+@media (pointer: coarse) {
+  .nei-currency-btn,
+  .nei-chip,
+  .nei-legend-button,
+  .nei-table-sort-group > button,
+  .nei-v2-links a {
+    min-height: 44px;
   }
 
-  .nei-dp-select {
-    appearance: auto;
-    -webkit-appearance: auto;
-    background-image: none;
+  .nei-company-card-clickable:hover,
+  .nei-company-card-clickable:focus-within {
+    transform: none;
+  }
+}
+
+@media (hover: none) {
+  .nei-company-card-clickable:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .nei-currency-btn,
+  .nei-chip,
+  .nei-legend-button,
+  .nei-footer-links a {
+    min-height: 44px;
+  }
+
+  .nei-footer-links a {
+    display: flex;
+    align-items: center;
   }
 }
 

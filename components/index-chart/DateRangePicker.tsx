@@ -13,6 +13,8 @@ import {
   startOfWeek,
 } from "date-fns";
 import type { CustomRange } from "@/components/index-chart/useChartHistory";
+import { SelectMenu } from "@/components/ui/SelectMenu";
+import { getFocusableElements } from "@/components/ui/focus";
 
 const DOW = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTHS = [
@@ -28,7 +30,6 @@ const TYPED_FORMATS = [
 const iso = (d: Date) => format(d, "yyyy-MM-dd");
 const pretty = (d?: string | null) => (d ? format(parseISO(d), "dd MMM yyyy") : "");
 const monthStartISO = (d: Date) => iso(startOfMonth(d));
-
 /** Parse a hand-typed date into an ISO string, or null if unrecognisable. */
 function parseTyped(text: string): string | null {
   const t = text.trim();
@@ -139,10 +140,35 @@ export function DateRangePicker({
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Element;
+      if (target.closest(".nei-select-menu")) return;
+      if (rootRef.current && !rootRef.current.contains(target)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+        window.requestAnimationFrame(() => triggerRef.current?.focus());
+        return;
+      }
+
+      if (e.key !== "Tab" || !popRef.current) return;
+      const focusable = getFocusableElements(popRef.current);
+      if (!focusable.length) {
+        e.preventDefault();
+        popRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const current = document.activeElement;
+      if (e.shiftKey && (current === first || !popRef.current.contains(current))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (current === last || !popRef.current.contains(current))) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     const mobileQuery = window.matchMedia("(max-width: 640px)");
     const prevOverflow = document.body.style.overflow;
@@ -153,6 +179,7 @@ export function DateRangePicker({
     mobileQuery.addEventListener("change", syncScrollLock);
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
+    window.setTimeout(() => popRef.current?.focus(), 0);
     return () => {
       mobileQuery.removeEventListener("change", syncScrollLock);
       document.body.style.overflow = prevOverflow;
@@ -217,6 +244,7 @@ export function DateRangePicker({
     }
     apply(start, dISO);
     setOpen(false);
+    window.requestAnimationFrame(() => triggerRef.current?.focus());
   }
 
   // Commit a typed field: validate, clamp to range, keep endpoints ordered.
@@ -285,7 +313,14 @@ export function DateRangePicker({
             aria-label="Close date picker"
             tabIndex={-1}
           />
-          <div ref={popRef} className="nei-dp-pop" role="dialog" aria-label="Select date range">
+          <div
+            ref={popRef}
+            className="nei-dp-pop"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Select date range"
+            tabIndex={-1}
+          >
           <div className="nei-dp-endpoints">
             <label className={`nei-dp-endpoint${!end ? " is-active" : ""}`}>
               <span>Start</span>
@@ -343,30 +378,20 @@ export function DateRangePicker({
               ‹
             </button>
             <div className="nei-dp-selects">
-              <select
+              <SelectMenu
                 className="nei-dp-select"
                 value={month.getMonth()}
-                aria-label="Month"
-                onChange={(e) => jump(month.getFullYear(), Number(e.target.value))}
-              >
-                {MONTHS.map((name, i) => (
-                  <option key={name} value={i}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-              <select
+                ariaLabel="Month"
+                options={MONTHS.map((name, index) => ({ label: name, value: index }))}
+                onChange={(nextMonth) => jump(month.getFullYear(), nextMonth)}
+              />
+              <SelectMenu
                 className="nei-dp-select"
                 value={month.getFullYear()}
-                aria-label="Year"
-                onChange={(e) => jump(Number(e.target.value), month.getMonth())}
-              >
-                {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+                ariaLabel="Year"
+                options={years.map((year) => ({ label: String(year), value: year }))}
+                onChange={(nextYear) => jump(nextYear, month.getMonth())}
+              />
             </div>
             <button
               type="button"
