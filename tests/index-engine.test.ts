@@ -166,36 +166,38 @@ test("a sector index inherits the parent top-N composition", () => {
   assert.equal(byDate.get("2021-04-02")?.value, 1100);
 });
 
-test("an independent portfolio applies share updates at parent-universe events", () => {
+test("a portfolio sub-index inherits the parent top-N composition", () => {
   const prices: DailyPrices = new Map([
-    ["2021-03-31", new Map([["ALPHA", 100], ["BETA", 100]])],
-    ["2021-04-01", new Map([["ALPHA", 100], ["BETA", 100], ["GAMMA", 100]])],
-    ["2021-04-02", new Map([["ALPHA", 200], ["BETA", 100], ["GAMMA", 100]])],
+    ["2021-03-31", new Map([["ALPHA", 100], ["BETA", 90], ["GAMMA", 80]])],
+    ["2021-04-01", new Map([["ALPHA", 100], ["BETA", 90], ["GAMMA", 80], ["DELTA", 200]])],
+    ["2021-04-02", new Map([["ALPHA", 110], ["BETA", 180], ["GAMMA", 80], ["DELTA", 200]])],
   ]);
-  const shares: QuarterlySharesMap = new Map([
-    ["ALPHA", [
-      { asOf: "2021-03-31", shares: 1 },
-      { asOf: "2021-04-01", shares: 2 },
-    ]],
-    ["BETA", [{ asOf: "2021-03-31", shares: 1 }]],
-    ["GAMMA", [{ asOf: "2021-04-01", shares: 1 }]],
-  ]);
+  const shares: QuarterlySharesMap = new Map(
+    ["ALPHA", "BETA", "GAMMA", "DELTA"].map((ticker) => [
+      ticker,
+      [{ asOf: "2021-03-31", shares: 1 }],
+    ])
+  );
   const selectionMembers: EngineMember[] = [
     { ticker: "ALPHA", listedDate: "2020-01-01" },
     { ticker: "BETA", listedDate: "2020-01-01" },
-    { ticker: "GAMMA", listedDate: "2021-04-02" },
+    { ticker: "GAMMA", listedDate: "2020-01-01" },
+    { ticker: "DELTA", listedDate: "2021-04-02" },
   ];
 
   const result = computeIndexSeries(prices, shares, selectionMembers.slice(0, 2), {
     baseValue: 1000,
     baseDate: "2021-03-31",
-    topN: Number.POSITIVE_INFINITY,
+    topN: 2,
     selectionMembers,
   });
   const byDate = new Map(result.points.map((point) => [point.date, point]));
 
+  // DELTA enters the parent top two and displaces portfolio member BETA. The
+  // portfolio divisor absorbs the removal and BETA's next-day rally is ignored.
   assert.equal(byDate.get("2021-04-01")?.value, 1000);
-  assert.equal(byDate.get("2021-04-02")?.value, 1666.6667);
+  assert.equal(byDate.get("2021-04-01")?.numCompanies, 1);
+  assert.equal(byDate.get("2021-04-02")?.value, 1100);
 });
 
 test("prices before a post-base listing seed cannot leak into selection", () => {

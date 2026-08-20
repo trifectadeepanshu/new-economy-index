@@ -23,10 +23,10 @@ import { getMigrationSql, getReadSql, getWriteSql } from "@/lib/db-connection";
 const STOCK_BATCH_SIZE = 500;
 const LIVE_STATE_KEY = "live_index_state";
 
-// The headline and sector indices share the same top-50 selection. The
-// portfolio series is independent and includes all Trifecta portfolio members.
+// The headline, sector, and Trifecta portfolio series share the same top-50
+// selection. The portfolio series values only Trifecta names in that index.
 const INDEX_TOP_N = 50;
-const SUBINDEX_TOP_N = Number.POSITIVE_INFINITY;
+const SUBINDEX_TOP_N = INDEX_TOP_N;
 const INDEX_ENGINE_OPTIONS: EngineOptions = {
   baseValue: INDEX_BASE_VALUE,
   baseDate: INDEX_BASE_DATE,

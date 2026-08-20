@@ -15,9 +15,9 @@
  *     valuing both compositions at Q's prices.
  *
  * Between rebalances, shares/flags/divisor are frozen and only daily prices move.
- * The same engine drives the full index (topN = 50), sector indices (the
- * sector slice of that same top-50 selection), and the portfolio sub-index
- * (topN = ∞ — all portfolio members included).
+ * The same engine drives the full index and filtered sub-indices. Sector and
+ * portfolio series pass the full universe as `selectionMembers`, so they value
+ * only their members that are also selected into the parent top 50.
  */
 
 export type EngineMember = {
