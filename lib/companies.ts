@@ -105,7 +105,7 @@ export const COMPANIES: Company[] = [
     ["IndiQube Spaces Limited", "IndiQube", "INDIQUBE", "INDIQUBE.NS", "2025-07-30", 237],
     ["Aequs Limited", "Aequs", "AEQUS", "AEQUS.NS", "2025-12-10", 124],
     ["Shadowfax Technologies Limited", "Shadowfax", "SHADOWFAX", "SHADOWFAX.NS", "2026-01-28", 124],
-    ["Shiprocket Limited", "Shiprocket", "SIPO", "SIPO.NS", "2026-08-19", 97],
+    ["Shiprocket Limited", "Shiprocket", "SHIPROCKET", "SHIPROCKET.NS", "2026-08-19", 97],
   ]),
 
   ...withSector("SaaS", [
