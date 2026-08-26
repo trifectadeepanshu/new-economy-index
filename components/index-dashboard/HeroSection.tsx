@@ -23,6 +23,7 @@ const NAV_LINKS = [
   ["Sectors", "#sectors"],
   ["Market Cap", "#market-cap"],
   ["Constituents", "#constituents"],
+  ["Insights", "/insights"],
   ["Methodology", "/methodology"],
 ] as const;
 

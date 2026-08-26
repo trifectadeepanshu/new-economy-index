@@ -1,0 +1,1252 @@
+@layer components {
+  .nei-insights-page {
+    --insights-ink: #0b0f19;
+    --insights-navy: #172c54;
+    --insights-orange: #e07a38;
+    --insights-green: #168a59;
+    --insights-red: #c95d3d;
+    min-height: 100vh;
+    overflow-x: clip;
+    background: #f4f6f9;
+    color: var(--insights-ink);
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  .nei-insights-page *,
+  .nei-insights-page *::before,
+  .nei-insights-page *::after {
+    letter-spacing: 0;
+  }
+
+  .nei-insights-hero {
+    background: var(--insights-navy);
+    color: #f2f4f8;
+  }
+
+  .nei-insights-hero-inner,
+  .nei-insight-inner,
+  .nei-insights-source {
+    width: min(100%, 1280px);
+    margin: 0 auto;
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+
+  .nei-insights-hero-inner {
+    padding-top: 84px;
+  }
+
+  .nei-insights-kicker,
+  .nei-insight-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .nei-insights-kicker {
+    color: rgba(242, 244, 248, 0.62);
+  }
+
+  .nei-insights-kicker .nei-mono {
+    color: #f09a6d;
+  }
+
+  .nei-insights-kicker::after,
+  .nei-insight-eyebrow::after {
+    width: 52px;
+    height: 1px;
+    background: currentColor;
+    content: "";
+    opacity: 0.45;
+  }
+
+  .nei-insights-hero h1 {
+    max-width: 900px;
+    margin: 28px 0 20px;
+    color: #f2f4f8;
+    font-size: 72px;
+    font-weight: 500;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+
+  .nei-insights-hero-copy {
+    max-width: 720px;
+    margin: 0;
+    color: rgba(242, 244, 248, 0.72);
+    font-size: 19px;
+    line-height: 1.55;
+  }
+
+  .nei-insights-hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 72px;
+    border-top: 1px solid rgba(242, 244, 248, 0.18);
+  }
+
+  .nei-insights-hero-metric {
+    display: flex;
+    min-width: 0;
+    min-height: 166px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 28px 26px;
+    border-left: 1px solid rgba(242, 244, 248, 0.14);
+  }
+
+  .nei-insights-hero-metric:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .nei-insights-hero-metric > span {
+    color: rgba(242, 244, 248, 0.58);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-transform: uppercase;
+  }
+
+  .nei-insights-hero-metric > strong {
+    margin-top: 12px;
+    color: #f2f4f8;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .nei-insights-hero-metric > small {
+    margin-top: 9px;
+    color: #82dca7;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .nei-insight-section {
+    background: #fff;
+  }
+
+  .nei-insight-section.is-soft {
+    background: #f4f6f9;
+  }
+
+  .nei-insight-section.is-dark {
+    background: var(--insights-navy);
+    color: #f2f4f8;
+  }
+
+  .nei-insight-inner {
+    padding-top: 96px;
+    padding-bottom: 104px;
+  }
+
+  .nei-insight-heading-block {
+    max-width: 820px;
+  }
+
+  .nei-insight-eyebrow {
+    color: rgba(11, 15, 25, 0.46);
+  }
+
+  .nei-insight-eyebrow .nei-mono {
+    color: var(--insights-orange);
+  }
+
+  .nei-insight-heading-block h2 {
+    margin: 22px 0 16px;
+    color: var(--insights-ink);
+    font-size: 48px;
+    font-weight: 500;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+
+  .nei-insight-heading-block > p {
+    max-width: 760px;
+    margin: 0;
+    color: rgba(11, 15, 25, 0.64);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .nei-insight-section.is-dark .nei-insight-eyebrow,
+  .nei-insight-section.is-dark .nei-insight-heading-block > p {
+    color: rgba(242, 244, 248, 0.64);
+  }
+
+  .nei-insight-section.is-dark .nei-insight-heading-block h2 {
+    color: #f2f4f8;
+  }
+
+  .nei-measure-chain {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 54px;
+  }
+
+  .nei-measure-node {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 112px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px;
+    border: 1px solid rgba(11, 15, 25, 0.12);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .nei-measure-node strong {
+    color: var(--insights-ink);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .nei-measure-node span {
+    margin-top: 7px;
+    color: rgba(11, 15, 25, 0.52);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .nei-measure-node em {
+    position: absolute;
+    top: 50%;
+    right: -10px;
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+    transform: translateY(-50%);
+    border: 1px solid rgba(11, 15, 25, 0.12);
+    border-radius: 50%;
+    background: #f4f6f9;
+    color: var(--insights-orange);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  .nei-insight-callouts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 38px;
+    border-top: 1px solid rgba(11, 15, 25, 0.12);
+    border-bottom: 1px solid rgba(11, 15, 25, 0.12);
+  }
+
+  .nei-insight-callouts > div {
+    display: flex;
+    min-height: 128px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px 28px;
+    border-left: 1px solid rgba(11, 15, 25, 0.12);
+  }
+
+  .nei-insight-callouts > div:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .nei-insight-callouts span,
+  .nei-insight-callouts small {
+    color: rgba(11, 15, 25, 0.5);
+    font-size: 12px;
+  }
+
+  .nei-insight-callouts strong {
+    margin: 7px 0 5px;
+    color: var(--insights-ink);
+    font-size: 19px;
+  }
+
+  .nei-reach-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 50px;
+  }
+
+  .nei-reach-group {
+    overflow: hidden;
+    border: 1px solid rgba(11, 15, 25, 0.12);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .nei-reach-group-head {
+    display: flex;
+    min-height: 88px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(11, 15, 25, 0.09);
+  }
+
+  .nei-reach-group-head strong {
+    font-size: 15px;
+  }
+
+  .nei-reach-group-head span {
+    margin-top: 5px;
+    color: rgba(11, 15, 25, 0.5);
+    font-size: 12px;
+  }
+
+  .nei-reach-rows > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    min-height: 52px;
+    padding: 11px 20px;
+    border-bottom: 1px solid rgba(11, 15, 25, 0.07);
+  }
+
+  .nei-reach-rows > div:last-child {
+    border-bottom: 0;
+  }
+
+  .nei-reach-rows span {
+    min-width: 0;
+    color: rgba(11, 15, 25, 0.67);
+    font-size: 13px;
+  }
+
+  .nei-reach-rows strong {
+    color: var(--insights-navy);
+    font-size: 18px;
+  }
+
+  .nei-insight-read {
+    margin: 26px 0 0;
+    padding-left: 15px;
+    border-left: 3px solid var(--insights-orange);
+    color: rgba(11, 15, 25, 0.62);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .nei-insight-read strong {
+    color: var(--insights-ink);
+  }
+
+  .nei-pool-chart {
+    margin-top: 54px;
+    border-top: 1px solid rgba(242, 244, 248, 0.16);
+  }
+
+  .nei-pool-row {
+    display: grid;
+    grid-template-columns: 34px minmax(190px, 0.72fr) minmax(220px, 1.65fr) minmax(130px, auto);
+    align-items: center;
+    gap: 18px;
+    min-height: 64px;
+    border-bottom: 1px solid rgba(242, 244, 248, 0.1);
+  }
+
+  .nei-pool-rank {
+    color: rgba(242, 244, 248, 0.38);
+    font-size: 11px;
+  }
+
+  .nei-pool-name {
+    color: rgba(242, 244, 248, 0.8);
+    font-size: 14px;
+  }
+
+  .nei-pool-track {
+    display: block;
+    height: 8px;
+    overflow: hidden;
+    background: rgba(242, 244, 248, 0.09);
+  }
+
+  .nei-pool-track > span {
+    display: block;
+    height: 100%;
+    background: #ed8c62;
+  }
+
+  .nei-pool-row > strong {
+    color: #f2f4f8;
+    font-size: 14px;
+    text-align: right;
+  }
+
+  .nei-growth-chart {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 48px;
+    margin-top: 50px;
+    border-top: 1px solid rgba(11, 15, 25, 0.12);
+  }
+
+  .nei-growth-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(90px, 1fr) 68px;
+    align-items: center;
+    gap: 14px;
+    min-height: 64px;
+    border-bottom: 1px solid rgba(11, 15, 25, 0.1);
+  }
+
+  .nei-growth-row > span {
+    color: rgba(11, 15, 25, 0.7);
+    font-size: 13px;
+  }
+
+  .nei-growth-track {
+    height: 7px;
+    overflow: hidden;
+    background: rgba(23, 44, 84, 0.09);
+  }
+
+  .nei-growth-track > span {
+    display: block;
+    height: 100%;
+    background: var(--insights-green);
+  }
+
+  .nei-growth-row.is-negative .nei-growth-track > span {
+    background: var(--insights-red);
+  }
+
+  .nei-growth-row > strong {
+    color: var(--insights-green);
+    font-size: 14px;
+    text-align: right;
+  }
+
+  .nei-growth-row.is-negative > strong {
+    color: var(--insights-red);
+  }
+
+  .nei-engine-table {
+    margin-top: 50px;
+    overflow: hidden;
+    border: 1px solid rgba(11, 15, 25, 0.12);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .nei-engine-head,
+  .nei-engine-row {
+    display: grid;
+    grid-template-columns: minmax(190px, 1.4fr) repeat(4, minmax(90px, 0.7fr));
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nei-engine-head {
+    min-height: 48px;
+    padding: 0 22px;
+    background: rgba(23, 44, 84, 0.05);
+    color: rgba(11, 15, 25, 0.46);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .nei-engine-head span:not(:first-child),
+  .nei-engine-row > :not(:first-child) {
+    text-align: right;
+  }
+
+  .nei-engine-row {
+    min-height: 76px;
+    padding: 12px 22px;
+    border-top: 1px solid rgba(11, 15, 25, 0.08);
+  }
+
+  .nei-engine-row > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .nei-engine-row > div strong {
+    font-size: 14px;
+  }
+
+  .nei-engine-row > div span {
+    margin-top: 4px;
+    color: rgba(11, 15, 25, 0.5);
+    font-size: 12px;
+  }
+
+  .nei-engine-row > strong,
+  .nei-engine-row > span {
+    color: rgba(11, 15, 25, 0.68);
+    font-size: 13px;
+  }
+
+  .nei-engine-row .is-driver {
+    color: var(--insights-green);
+    font-weight: 700;
+  }
+
+  .nei-engine-row .is-down {
+    color: var(--insights-red);
+  }
+
+  .nei-profit-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
+    gap: 56px;
+    margin-top: 54px;
+  }
+
+  .nei-profit-subhead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 48px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(242, 244, 248, 0.14);
+  }
+
+  .nei-profit-subhead strong {
+    color: #f2f4f8;
+    font-size: 14px;
+  }
+
+  .nei-profit-subhead span {
+    color: rgba(242, 244, 248, 0.48);
+    font-size: 11px;
+    text-align: right;
+  }
+
+  .nei-margin-axis {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    padding: 13px 66px 7px 178px;
+    color: rgba(242, 244, 248, 0.36);
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
+  .nei-margin-axis span:nth-child(2) {
+    text-align: center;
+  }
+
+  .nei-margin-axis span:last-child {
+    text-align: right;
+  }
+
+  .nei-margin-row {
+    display: grid;
+    grid-template-columns: 162px minmax(160px, 1fr) 52px;
+    align-items: center;
+    gap: 16px;
+    min-height: 52px;
+    border-bottom: 1px solid rgba(242, 244, 248, 0.08);
+  }
+
+  .nei-margin-row > div:first-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .nei-margin-row > div:first-child strong {
+    color: rgba(242, 244, 248, 0.86);
+    font-size: 12px;
+  }
+
+  .nei-margin-row > div:first-child span {
+    margin-top: 2px;
+    color: rgba(242, 244, 248, 0.4);
+    font-size: 10px;
+  }
+
+  .nei-margin-track {
+    position: relative;
+    height: 7px;
+    background: linear-gradient(to right, transparent calc(50% - 0.5px), rgba(242, 244, 248, 0.24) calc(50% - 0.5px), rgba(242, 244, 248, 0.24) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  }
+
+  .nei-margin-track > span {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 7px;
+    background: #72d49a;
+  }
+
+  .nei-margin-track > span.is-negative {
+    right: 50%;
+    left: auto;
+    background: #ed8c62;
+  }
+
+  .nei-margin-row > strong {
+    color: #72d49a;
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .nei-margin-row > strong.is-negative,
+  .nei-marketplace-grid .is-negative {
+    color: #ed8c62;
+  }
+
+  .nei-marketplace-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .nei-marketplace-grid article {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    min-height: 128px;
+    padding: 15px;
+    border: 1px solid rgba(242, 244, 248, 0.14);
+    border-radius: 8px;
+    background: rgba(242, 244, 248, 0.04);
+  }
+
+  .nei-marketplace-grid img {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: contain;
+    background: #fff;
+  }
+
+  .nei-marketplace-grid article > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .nei-marketplace-grid article > div strong {
+    color: #f2f4f8;
+    font-size: 12px;
+  }
+
+  .nei-marketplace-grid article > div span {
+    margin-top: 3px;
+    color: rgba(242, 244, 248, 0.44);
+    font-size: 10px;
+  }
+
+  .nei-marketplace-grid article > strong {
+    grid-column: 1 / -1;
+    color: #72d49a;
+    font-size: 22px;
+  }
+
+  .nei-marketplace-grid article > small {
+    grid-column: 1 / -1;
+    margin-top: -6px;
+    color: rgba(242, 244, 248, 0.62);
+    font-size: 10px;
+  }
+
+  .nei-company-snapshot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 52px;
+  }
+
+  .nei-company-snapshot {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(11, 15, 25, 0.12);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .nei-company-snapshot-head {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 11px;
+    min-height: 82px;
+    padding: 15px 17px;
+    border-bottom: 1px solid rgba(11, 15, 25, 0.09);
+  }
+
+  .nei-company-snapshot-head img {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(11, 15, 25, 0.08);
+    border-radius: 6px;
+    object-fit: contain;
+    background: #fff;
+  }
+
+  .nei-company-snapshot-head > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .nei-company-snapshot-head > div strong {
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nei-company-snapshot-head > div span {
+    margin-top: 3px;
+    color: rgba(11, 15, 25, 0.5);
+    font-size: 11px;
+  }
+
+  .nei-company-snapshot-head em {
+    color: var(--insights-green);
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  .nei-company-snapshot-head em.is-negative {
+    color: var(--insights-red);
+  }
+
+  .nei-company-snapshot-metrics {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+  }
+
+  .nei-company-snapshot-metrics > div {
+    display: flex;
+    min-height: 86px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 17px;
+    border-right: 1px solid rgba(11, 15, 25, 0.08);
+    border-bottom: 1px solid rgba(11, 15, 25, 0.08);
+  }
+
+  .nei-company-snapshot-metrics > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .nei-company-snapshot-metrics > div:last-child {
+    grid-column: 1 / -1;
+    min-height: 72px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .nei-company-snapshot-metrics span {
+    color: rgba(11, 15, 25, 0.46);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .nei-company-snapshot-metrics strong {
+    margin-top: 7px;
+    color: var(--insights-navy);
+    font-size: 16px;
+  }
+
+  .nei-company-snapshot-metrics small {
+    margin-top: 4px;
+    color: var(--insights-green);
+    font-size: 11px;
+  }
+
+  .nei-takeaway-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 52px;
+  }
+
+  .nei-takeaway-grid article {
+    display: flex;
+    min-height: 260px;
+    flex-direction: column;
+    padding: 25px;
+    border: 1px solid rgba(11, 15, 25, 0.12);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .nei-takeaway-grid article > span {
+    color: var(--insights-orange);
+    font-size: 11px;
+  }
+
+  .nei-takeaway-grid h3 {
+    margin: 24px 0 12px;
+    color: var(--insights-ink);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .nei-takeaway-grid p {
+    margin: 0;
+    color: rgba(11, 15, 25, 0.61);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .nei-takeaway-grid article > strong {
+    margin-top: auto;
+    padding-top: 24px;
+    color: var(--insights-navy);
+    font-size: 12px;
+  }
+
+  .nei-insights-source {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding-top: 42px;
+    padding-bottom: 42px;
+  }
+
+  .nei-insights-source > div {
+    max-width: 820px;
+  }
+
+  .nei-insights-source strong {
+    color: var(--insights-ink);
+    font-size: 13px;
+  }
+
+  .nei-insights-source p {
+    margin: 8px 0 0;
+    color: rgba(11, 15, 25, 0.55);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .nei-insights-source > a {
+    flex-shrink: 0;
+    color: var(--insights-navy);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .nei-insights-page a:focus-visible {
+    outline: 2px solid #f09a6d;
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 1100px) {
+    .nei-insights-hero h1 {
+      max-width: 760px;
+      font-size: 60px;
+    }
+
+    .nei-insights-hero-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .nei-insights-hero-metric:nth-child(3) {
+      padding-left: 0;
+      border-left: 0;
+      border-top: 1px solid rgba(242, 244, 248, 0.14);
+    }
+
+    .nei-insights-hero-metric:nth-child(4) {
+      border-top: 1px solid rgba(242, 244, 248, 0.14);
+    }
+
+    .nei-measure-chain {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .nei-measure-node:nth-child(3) em {
+      display: none;
+    }
+
+    .nei-profit-layout {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+
+    .nei-company-snapshot-grid,
+    .nei-takeaway-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 800px) {
+    .nei-insights-hero-inner,
+    .nei-insight-inner,
+    .nei-insights-source {
+      padding-right: 22px;
+      padding-left: 22px;
+    }
+
+    .nei-insights-hero-inner {
+      padding-top: 64px;
+    }
+
+    .nei-insights-hero h1 {
+      font-size: 48px;
+    }
+
+    .nei-insights-hero-copy {
+      font-size: 17px;
+    }
+
+    .nei-insight-inner {
+      padding-top: 72px;
+      padding-bottom: 78px;
+    }
+
+    .nei-insight-heading-block h2 {
+      font-size: 38px;
+    }
+
+    .nei-reach-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .nei-growth-chart {
+      grid-template-columns: 1fr;
+    }
+
+    .nei-engine-head {
+      display: none;
+    }
+
+    .nei-engine-row {
+      grid-template-columns: minmax(150px, 1.3fr) repeat(4, minmax(65px, 0.7fr));
+      overflow-x: auto;
+    }
+
+    .nei-pool-row {
+      grid-template-columns: 28px minmax(150px, 0.9fr) minmax(140px, 1.1fr) minmax(112px, auto);
+      gap: 12px;
+    }
+
+    .nei-insights-source {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .nei-insights-page .nei-footer-inner {
+      padding: 40px 22px 32px;
+    }
+
+    .nei-insights-page .nei-footer-top {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    .nei-insights-page .nei-footer-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      justify-content: start;
+      gap: 32px;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .nei-insights-page .nei-doc-topbar-right {
+      gap: 12px;
+    }
+
+    .nei-insights-page .nei-doc-logo {
+      width: 94px;
+    }
+
+    .nei-insights-page .nei-doc-topbar-cta {
+      display: none;
+    }
+
+    .nei-insights-hero-inner,
+    .nei-insight-inner,
+    .nei-insights-source {
+      padding-right: 18px;
+      padding-left: 18px;
+    }
+
+    .nei-insights-hero-inner {
+      padding-top: 52px;
+    }
+
+    .nei-insights-kicker,
+    .nei-insight-eyebrow {
+      font-size: 10px;
+    }
+
+    .nei-insights-hero h1 {
+      margin-top: 22px;
+      font-size: 40px;
+      line-height: 1.06;
+    }
+
+    .nei-insights-hero-copy {
+      font-size: 15px;
+    }
+
+    .nei-insights-hero-metrics {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+    }
+
+    .nei-insights-hero-metric,
+    .nei-insights-hero-metric:first-child,
+    .nei-insights-hero-metric:nth-child(3) {
+      min-height: 118px;
+      padding: 22px 0;
+      border-top: 1px solid rgba(242, 244, 248, 0.14);
+      border-left: 0;
+    }
+
+    .nei-insights-hero-metric:first-child {
+      border-top: 0;
+    }
+
+    .nei-insights-hero-metric > strong {
+      font-size: 26px;
+    }
+
+    .nei-insight-inner {
+      padding-top: 60px;
+      padding-bottom: 64px;
+    }
+
+    .nei-insight-heading-block h2 {
+      margin-top: 18px;
+      font-size: 32px;
+      line-height: 1.12;
+    }
+
+    .nei-insight-heading-block > p {
+      font-size: 14px;
+    }
+
+    .nei-measure-chain {
+      grid-template-columns: 1fr;
+      gap: 9px;
+      margin-top: 38px;
+    }
+
+    .nei-measure-node {
+      min-height: 84px;
+    }
+
+    .nei-measure-node em,
+    .nei-measure-node:nth-child(3) em {
+      display: block;
+      top: auto;
+      right: auto;
+      bottom: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .nei-insight-callouts {
+      grid-template-columns: 1fr;
+      margin-top: 32px;
+    }
+
+    .nei-insight-callouts > div,
+    .nei-insight-callouts > div:first-child {
+      min-height: 102px;
+      padding: 18px 0;
+      border-top: 1px solid rgba(11, 15, 25, 0.1);
+      border-left: 0;
+    }
+
+    .nei-insight-callouts > div:first-child {
+      border-top: 0;
+    }
+
+    .nei-reach-grid,
+    .nei-growth-chart,
+    .nei-engine-table,
+    .nei-profit-layout,
+    .nei-company-snapshot-grid,
+    .nei-takeaway-grid,
+    .nei-pool-chart {
+      margin-top: 38px;
+    }
+
+    .nei-pool-row {
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      gap: 10px;
+      min-height: 66px;
+    }
+
+    .nei-pool-track {
+      grid-column: 2 / -1;
+      grid-row: 2;
+      margin-top: -17px;
+    }
+
+    .nei-pool-row > strong {
+      font-size: 12px;
+    }
+
+    .nei-growth-row {
+      grid-template-columns: minmax(0, 1fr) 58px;
+      gap: 10px;
+      min-height: 66px;
+      padding: 8px 0;
+    }
+
+    .nei-growth-track {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    .nei-engine-table {
+      border: 0;
+      background: transparent;
+    }
+
+    .nei-engine-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px 20px;
+      margin-bottom: 10px;
+      padding: 18px;
+      overflow: visible;
+      border: 1px solid rgba(11, 15, 25, 0.12);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .nei-engine-row > div {
+      grid-column: 1 / -1;
+      padding-bottom: 13px;
+      border-bottom: 1px solid rgba(11, 15, 25, 0.08);
+    }
+
+    .nei-engine-row > :not(:first-child) {
+      position: relative;
+      padding-top: 17px;
+      text-align: left;
+    }
+
+    .nei-engine-row > :nth-child(2)::before,
+    .nei-engine-row > :nth-child(3)::before,
+    .nei-engine-row > :nth-child(4)::before,
+    .nei-engine-row > :nth-child(5)::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: rgba(11, 15, 25, 0.42);
+      font-size: 9px;
+      font-family: var(--font-inter), system-ui, sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .nei-engine-row > :nth-child(2)::before { content: "GMV"; }
+    .nei-engine-row > :nth-child(3)::before { content: "Users"; }
+    .nei-engine-row > :nth-child(4)::before { content: "Frequency"; }
+    .nei-engine-row > :nth-child(5)::before { content: "Basket"; }
+
+    .nei-margin-axis {
+      padding-left: 132px;
+    }
+
+    .nei-margin-row {
+      grid-template-columns: 116px minmax(90px, 1fr) 48px;
+      gap: 10px;
+    }
+
+    .nei-marketplace-grid,
+    .nei-company-snapshot-grid,
+    .nei-takeaway-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .nei-takeaway-grid article {
+      min-height: 228px;
+    }
+
+    .nei-insights-source {
+      padding-top: 34px;
+      padding-bottom: 34px;
+    }
+
+    .nei-insights-page .nei-footer-v2 > div > span[aria-hidden="true"] {
+      display: none;
+    }
+
+    .nei-insights-page .nei-footer-inner {
+      padding: 34px 18px 28px;
+    }
+
+    .nei-insights-page .nei-footer-logo {
+      width: 128px;
+    }
+
+    .nei-insights-page .nei-footer-links {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .nei-insights-page .nei-footer-links a {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+    }
+
+    .nei-insights-page .nei-footer-bottom {
+      display: grid;
+      gap: 8px;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .nei-insights-hero h1 {
+      font-size: 36px;
+    }
+
+    .nei-margin-axis {
+      display: none;
+    }
+
+    .nei-margin-row {
+      grid-template-columns: 104px minmax(76px, 1fr) 44px;
+      gap: 8px;
+      min-height: 58px;
+    }
+
+    .nei-margin-row > div:first-child strong {
+      font-size: 11px;
+    }
+
+    .nei-company-snapshot-metrics {
+      grid-template-columns: 1fr;
+    }
+
+    .nei-company-snapshot-metrics > div,
+    .nei-company-snapshot-metrics > div:nth-child(2),
+    .nei-company-snapshot-metrics > div:last-child {
+      grid-column: auto;
+      min-height: 72px;
+      border-right: 0;
+      border-bottom: 1px solid rgba(11, 15, 25, 0.08);
+    }
+
+    .nei-company-snapshot-metrics > div:last-child {
+      border-bottom: 0;
+    }
+  }
+}

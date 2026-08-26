@@ -33,6 +33,7 @@ export function DashboardFooter() {
                 <Link href="/#sectors">Sectors</Link>
                 <Link href="/#market-cap">Market Cap</Link>
                 <Link href="/#constituents">Constituents</Link>
+                <Link href="/insights">Insights</Link>
                 <Link href="/methodology">Methodology</Link>
               </div>
               <div>
