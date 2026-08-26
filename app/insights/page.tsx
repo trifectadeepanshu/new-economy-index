@@ -3,7 +3,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { DashboardFooter } from "@/components/index-dashboard/DashboardFooter";
-import "../styles/nei-doc.css";
+import {
+  KineticBackdrop,
+  SectionEyebrow,
+  TickFrame,
+} from "@/components/index-dashboard/DashboardChrome";
+import { InsightsNav } from "./InsightsNav";
+import "../styles/nei-hero.css";
 import "../styles/nei-footer.css";
 import "../styles/nei-insights.css";
 
@@ -161,30 +167,42 @@ function InsightSection({
   number,
   eyebrow,
   title,
+  mutedTitle,
   copy,
   tone = "paper",
   children,
 }: {
   number: string;
   eyebrow: string;
-  title: string;
+  title: ReactNode;
+  mutedTitle?: string;
   copy: string;
   tone?: "paper" | "soft" | "dark";
   children: ReactNode;
 }) {
   return (
     <section className={`nei-insight-section is-${tone}`}>
-      <div className="nei-insight-inner">
-        <header className="nei-insight-heading-block">
-          <div className="nei-insight-eyebrow">
-            <span className="nei-mono">{number}</span>
-            <span>{eyebrow}</span>
-          </div>
-          <h2 className="nei-heading">{title}</h2>
-          <p>{copy}</p>
-        </header>
-        {children}
-      </div>
+      <TickFrame
+        className="nei-insight-frame"
+        inset={32}
+        tone={tone === "dark" ? "paper" : "ink"}
+        lineLen={44}
+        corner={14}
+        opacity={0.35}
+        padded={false}
+      >
+        <div className="nei-insight-inner">
+          <SectionEyebrow number={number} label={eyebrow} light={tone === "dark"} />
+          <header className="nei-insight-heading-block">
+            <h2 className="nei-heading">
+              {title}
+              {mutedTitle ? <span> {mutedTitle}</span> : null}
+            </h2>
+            <p>{copy}</p>
+          </header>
+          {children}
+        </div>
+      </TickFrame>
     </section>
   );
 }
@@ -195,61 +213,50 @@ export default function InsightsPage() {
 
   return (
     <div className="nei-insights-page">
-      <header className="nei-doc-topbar">
-        <Link href="/" className="nei-doc-brand" aria-label="NEI Top 50 home">
-          <Image
-            src="/trifecta-capital-logo.png"
-            alt="Trifecta Capital"
-            width={1800}
-            height={517}
-            className="nei-doc-logo"
-            priority
-          />
-        </Link>
-        <div className="nei-doc-topbar-right">
-          <Link href="/" className="nei-doc-back">
-            ← Back to the index
-          </Link>
-          <a
-            href="https://trifectacapital.in"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nei-doc-topbar-cta"
-          >
-            trifectacapital.in ↗
-          </a>
-        </div>
-      </header>
-
       <main>
         <section className="nei-insights-hero">
-          <div className="nei-insights-hero-inner">
-            <div className="nei-insights-kicker">
-              <span className="nei-mono">INSIGHTS 01</span>
-              <span>Platform sector · Q1FY27</span>
-            </div>
-            <h1 className="nei-heading">India&apos;s platform economy, decoded.</h1>
-            <p className="nei-insights-hero-copy">
-              A common operating lens for listed platforms: users × frequency × basket,
-              flowing into transaction value and, eventually, profit.
-            </p>
+          <KineticBackdrop />
+          <div className="nei-insights-hero-layer">
+            <InsightsNav />
+            <TickFrame
+              className="nei-insights-hero-frame"
+              inset={28}
+              tone="paper"
+              lineLen={44}
+              corner={14}
+              opacity={0.3}
+              padded={false}
+            >
+              <div className="nei-insights-hero-inner">
+                <SectionEyebrow number="01" label="Platform Sector · Q1FY27" light />
+                <h1 className="nei-heading">
+                  India&apos;s platform economy,
+                  <span> decoded.</span>
+                </h1>
+                <p className="nei-insights-hero-copy">
+                  A common operating lens for listed platforms: users × frequency × basket,
+                  flowing into transaction value and, eventually, profit.
+                </p>
 
-            <div className="nei-insights-hero-metrics">
-              {HERO_METRICS.map((metric) => (
-                <div key={metric.label} className="nei-insights-hero-metric">
-                  <span>{metric.label}</span>
-                  <strong className="nei-mono">{metric.value}</strong>
-                  <small>{metric.detail}</small>
+                <div className="nei-insights-hero-metrics">
+                  {HERO_METRICS.map((metric) => (
+                    <div key={metric.label} className="nei-insights-hero-metric">
+                      <span>{metric.label}</span>
+                      <strong className="nei-mono">{metric.value}</strong>
+                      <small>{metric.detail}</small>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            </TickFrame>
           </div>
         </section>
 
         <InsightSection
-          number="01"
+          number="02"
           eyebrow="The sector in one view"
-          title="A ₹2.6 lakh crore machine, still compounding at 40%."
+          title="A ₹2.6 lakh crore machine,"
+          mutedTitle="still compounding at 40%."
           copy="FY26 transaction value reached ₹2.58 lakh crore. Q1FY27 remained strong at +34% YoY, while the asset-light marketplace cohort generated ₹1,838 crore of quarterly revenue at a 31% blended margin."
         >
           <div className="nei-measure-chain" aria-label="Platform sector measurement chain">
@@ -276,18 +283,22 @@ export default function InsightsPage() {
         </InsightSection>
 
         <InsightSection
-          number="02"
+          number="03"
           eyebrow="Reach"
-          title="Digital reach is vast, but the bases are not interchangeable."
+          title="Digital reach is vast,"
+          mutedTitle="but the bases are not interchangeable."
           copy="Monthly buyers, annual shoppers and visitors measure different behaviours. They are grouped below to show scale without creating a misleading sector total."
           tone="soft"
         >
           <div className="nei-reach-grid">
-            {REACH_GROUPS.map((group) => (
-              <div key={group.title} className="nei-reach-group">
+            {REACH_GROUPS.map((group, index) => (
+              <div key={group.title} className={`nei-reach-group is-${index + 1}`}>
                 <div className="nei-reach-group-head">
-                  <strong>{group.title}</strong>
-                  <span>{group.note}</span>
+                  <span className="nei-reach-dot" aria-hidden="true" />
+                  <div>
+                    <strong>{group.title}</strong>
+                    <span>{group.note}</span>
+                  </div>
                 </div>
                 <div className="nei-reach-rows">
                   {group.rows.map(([name, value]) => (
@@ -308,40 +319,41 @@ export default function InsightsPage() {
         </InsightSection>
 
         <InsightSection
-          number="03"
+          number="04"
           eyebrow="Where value flows"
-          title="Quick commerce has overtaken food delivery."
+          title="Quick commerce has overtaken"
+          mutedTitle="food delivery."
           copy="At ₹22,949 crore in Q1FY27, quick commerce is now the largest transaction pool. It has grown from ₹13,390 crore in five quarters and crossed food delivery during H2FY26."
-          tone="dark"
         >
           <div className="nei-pool-chart" role="img" aria-label="Transaction value by platform pool in Q1 FY27">
             {VALUE_POOLS.map(([name, value], index) => (
               <div key={name} className="nei-pool-row">
                 <span className="nei-pool-rank nei-mono">{String(index + 1).padStart(2, "0")}</span>
                 <span className="nei-pool-name">{name}</span>
+                <strong className="nei-mono">₹{value.toLocaleString("en-IN")} Cr</strong>
                 <span className="nei-pool-track" aria-hidden="true">
                   <span style={barStyle(value, maxPool)} />
                 </span>
-                <strong className="nei-mono">₹{value.toLocaleString("en-IN")} Cr</strong>
               </div>
             ))}
           </div>
         </InsightSection>
 
         <InsightSection
-          number="04"
+          number="05"
           eyebrow="Growth by pool"
-          title="Growth is broad, but far from uniform."
+          title="Growth is broad,"
+          mutedTitle="but far from uniform."
           copy="Seven of the eight tracked transaction pools below are growing at double digits. Quick commerce leads; Hyperpure reflects a deliberate B2B supply-chain pullback."
         >
           <div className="nei-growth-chart" role="img" aria-label="Year on year transaction value growth by platform pool">
             {GROWTH_POOLS.map(([name, value]) => (
               <div key={name} className={`nei-growth-row ${value < 0 ? "is-negative" : ""}`}>
                 <span>{name}</span>
+                <strong className="nei-mono">{signed(value)}</strong>
                 <div className="nei-growth-track" aria-hidden="true">
                   <span style={barStyle(value, maxGrowth)} />
                 </div>
-                <strong className="nei-mono">{signed(value)}</strong>
               </div>
             ))}
           </div>
@@ -352,9 +364,10 @@ export default function InsightsPage() {
         </InsightSection>
 
         <InsightSection
-          number="05"
+          number="06"
           eyebrow="What powers growth"
-          title="This is a customer-acquisition story, not a pricing story."
+          title="This is a customer-acquisition story,"
+          mutedTitle="not a pricing story."
           copy="Across the major platforms, user growth explains most of the FY26 expansion. Frequency and average basket value are generally flat, mixed or negative."
           tone="soft"
         >
@@ -375,9 +388,10 @@ export default function InsightsPage() {
         </InsightSection>
 
         <InsightSection
-          number="06"
+          number="07"
           eyebrow="Profitability"
-          title="A profitable core, and an investing frontier."
+          title="A profitable core,"
+          mutedTitle="and an investing frontier."
           copy="Education, fashion, food delivery and travel are profitable on transaction value. Quick commerce is split: Blinkit has crossed into positive EBITDA, while Instamart continues to invest."
           tone="dark"
         >
@@ -422,9 +436,10 @@ export default function InsightsPage() {
         </InsightSection>
 
         <InsightSection
-          number="07"
+          number="08"
           eyebrow="Company depth"
-          title="Nine operating snapshots, one comparable frame."
+          title="Nine operating snapshots,"
+          mutedTitle="one comparable frame."
           copy="Transaction value, reach, basket and adjusted EBITDA margin are shown together. Reach retains each company's reported monthly or annual basis."
         >
           <div className="nei-company-snapshot-grid">
@@ -446,9 +461,10 @@ export default function InsightsPage() {
         </InsightSection>
 
         <InsightSection
-          number="08"
+          number="09"
           eyebrow="What we learned"
-          title="Six signals from the platform sector."
+          title="Six signals"
+          mutedTitle="from the platform sector."
           copy="The sector is not a single growth or margin story. These are the operating patterns that matter across pools."
           tone="soft"
         >
