@@ -1,6 +1,11 @@
 name: Cron Monitor
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/cron-monitor.yml"
   schedule:
     # Vercel starts the snapshot at 11:00 UTC. Check later and retry because
     # neither Vercel nor GitHub guarantees exact scheduled execution times.
