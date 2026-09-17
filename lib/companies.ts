@@ -71,6 +71,7 @@ export const COMPANIES: Company[] = [
     ["Urban Company Limited", "Urban Company", "URBANCO", "URBANCO.NS", "2025-09-17", 103],
     ["Physicswallah Limited", "Physics Wallah", "PWL", "PWL.NS", "2025-11-18", 109],
     ["Meesho Limited", "Meesho", "MEESHO", "MEESHO.NS", "2025-12-10", 111],
+    ["Rentomojo Limited", "Rentomojo", "RENTOMOJO", "RENTOMOJO.NS", "2026-09-17", 404],
   ]),
 
   ...withSector("Consumer Brands", [
@@ -129,6 +130,7 @@ export const COMPANIES: Company[] = [
     ["Unimech Aerospace and Manufacturing Limited", "Unimech Aerospace", "UNIMECH", "UNIMECH.NS", "2024-12-31", 785],
     ["SEDEMAC Mechatronics Limited", "SEDEMAC", "SEDEMAC", "SEDEMAC.NS", "2026-03-11", 1352],
     ["E2E Networks Limited", "E2E Networks", "E2E", "E2E.NS", "2018-05-01", null],
+    ["ESDS Software Solution Limited", "ESDS Software", "ESDS", "ESDS.NS", "2026-09-04", 429],
   ]),
 
 ];

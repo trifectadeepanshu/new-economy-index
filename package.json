@@ -15,7 +15,8 @@
     "load:baseline": "node scripts/load-test.mjs --profile baseline",
     "load:stress": "node scripts/load-test.mjs --profile stress",
     "load:spike": "node scripts/load-test.mjs --profile spike",
-    "import:capiq": "tsx scripts/import-capiq-workbook.ts"
+    "import:capiq": "tsx scripts/import-capiq-workbook.ts",
+    "onboard:constituents": "tsx scripts/onboard-constituent.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
