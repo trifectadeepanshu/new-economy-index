@@ -27,6 +27,12 @@ export function getTimeSinceBaseReturn(ratio: number | null): number | null {
   return (ratio - 1) * 100;
 }
 
+// Below one year, annualizing amplifies a short-window return into a figure
+// with no real meaning (e.g. a 2-week +284% becomes billions of percent) —
+// same convention as the 1y/3y/5y lookback buckets below, so IRR is left
+// blank until a constituent has at least a year of tracked tenure.
+const MIN_ANNUALIZATION_DAYS = 365;
+
 export function computeSinceBaseIrr(
   ratio: number | null,
   elapsedDays: number | null
@@ -37,7 +43,7 @@ export function computeSinceBaseIrr(
     ratio <= 0 ||
     elapsedDays === null ||
     !Number.isFinite(elapsedDays) ||
-    elapsedDays <= 0
+    elapsedDays < MIN_ANNUALIZATION_DAYS
   ) {
     return null;
   }

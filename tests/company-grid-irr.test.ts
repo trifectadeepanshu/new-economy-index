@@ -104,6 +104,14 @@ test("Since Base IRR rejects missing ratios and zero-day tenures", () => {
   assert.equal(computeSinceBaseIrr(1.5, 0), null);
 });
 
+test("Since Base IRR is blank under a year of tenure instead of exploding when annualized", () => {
+  // A newly listed company (e.g. 13 days, +284% since its IPO price) would
+  // otherwise annualize to a nonsensical multi-quintillion-percent figure.
+  assert.equal(computeSinceBaseIrr(3.839, 13), null);
+  assert.equal(computeSinceBaseIrr(3.839, 364), null);
+  assert.ok(computeSinceBaseIrr(3.839, 365) !== null);
+});
+
 test("IRR is blank when a company has no public price at the period start", () => {
   assert.equal(
     computeIrr({

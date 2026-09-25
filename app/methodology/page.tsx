@@ -309,8 +309,11 @@ export default function MethodologyPage() {
               Base Date. Calculations use the closing price from the start of
               the lookback period and the constituent&apos;s current price to
               annualize the absolute return. The return field is left blank
-              when a company was not yet public at the start of the period or
-              when required price or tenure data is unavailable.
+              when a company was not yet public at the start of the period,
+              when required price or tenure data is unavailable, or (for
+              Since Base Date) when a company has under a year of tracked
+              tenure — annualizing a shorter window would exaggerate it into
+              a meaningless figure.
             </li>
             <li id="note-time-since-base-date">
               <strong>Time Since Base Date measures each company&apos;s tracked tenure.</strong>{" "}
