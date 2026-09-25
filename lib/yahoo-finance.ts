@@ -3,7 +3,8 @@ const YahooFinanceClass = require("yahoo-finance2").default as YahooFinanceConst
 const yahooFinance = new YahooFinanceClass({ suppressNotices: ["yahooSurvey"] });
 
 const DEFAULT_CURRENCY = "INR";
-const NSE_SUFFIX = ".NS";
+// .NS = NSE listing, .BO = BSE-only listing (e.g. NSE India itself, which can't list on NSE).
+const EXCHANGE_SUFFIX = /\.(NS|BO)$/;
 
 interface YahooQuote {
   symbol: string;
@@ -35,10 +36,8 @@ export interface QuoteResult {
   currency: string;
 }
 
-function tickerFromYahooSymbol(yfTicker: string) {
-  return yfTicker.endsWith(NSE_SUFFIX)
-    ? yfTicker.slice(0, -NSE_SUFFIX.length)
-    : yfTicker;
+export function tickerFromYahooSymbol(yfTicker: string) {
+  return yfTicker.replace(EXCHANGE_SUFFIX, "");
 }
 
 function toNullableNumber(value: number | null | undefined) {

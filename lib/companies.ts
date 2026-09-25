@@ -94,6 +94,8 @@ export const COMPANIES: Company[] = [
     ["Pine Labs Limited", "Pine Labs", "PINELABS", "PINELABS.NS", "2025-11-14", 221],
     ["Turtlemint Fintech Solutions Limited", "Turtlemint", "TURTLEMINT", "TURTLEMINT.NS", "2026-06-29", 152],
     ["OnEMI Technology Solutions Limited", "Kissht", "KISSHT", "KISSHT.NS", "2026-05-08", 171],
+    // Lists on BSE only (an exchange can't list on itself), so the Yahoo symbol is .BO.
+    ["National Stock Exchange of India Limited", "NSE India", "NSE", "NSE.BO", "2026-09-24", 1785],
   ]),
 
   ...withSector("B2B", [
