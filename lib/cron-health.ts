@@ -27,8 +27,23 @@ function shiftDateKey(dateKey: string, days: number) {
   ].join("-");
 }
 
+// The snapshot cron runs at 11:00 UTC (16:30 IST). A monitor run before this
+// hour can't see today's snapshot yet, so it checks the previous weekday.
+const SNAPSHOT_DUE_HOUR_IST = 17;
+
+function istHour(now: Date) {
+  return Number(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Kolkata",
+      hour: "numeric",
+      hourCycle: "h23",
+    }).format(now)
+  );
+}
+
 export function getExpectedSnapshotDate(now: Date = new Date()) {
-  const dateKey = getISTDate(now);
+  let dateKey = getISTDate(now);
+  if (istHour(now) < SNAPSHOT_DUE_HOUR_IST) dateKey = shiftDateKey(dateKey, -1);
   const day = new Date(`${dateKey}T12:00:00Z`).getUTCDay();
   if (day === 6) return shiftDateKey(dateKey, -1);
   if (day === 0) return shiftDateKey(dateKey, -2);

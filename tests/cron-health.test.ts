@@ -38,6 +38,27 @@ test("a delayed Friday monitor checks Friday after IST midnight", () => {
   );
 });
 
+test("a Tuesday monitor run after IST midnight still checks Monday's snapshot", () => {
+  assert.equal(
+    getExpectedSnapshotDate(new Date("2026-10-05T20:39:11.000Z")),
+    "2026-10-05"
+  );
+});
+
+test("a weekday monitor run before the snapshot is due checks the previous weekday", () => {
+  assert.equal(
+    getExpectedSnapshotDate(new Date("2026-08-31T06:00:00.000Z")),
+    "2026-08-28"
+  );
+});
+
+test("a weekday monitor run once the snapshot is due checks today", () => {
+  assert.equal(
+    getExpectedSnapshotDate(new Date("2026-10-06T11:30:00.000Z")),
+    "2026-10-06"
+  );
+});
+
 test("Saturday evening monitor still checks the preceding Friday", () => {
   assert.equal(
     getExpectedSnapshotDate(new Date("2026-08-29T16:00:00.000Z")),
