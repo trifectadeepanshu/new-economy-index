@@ -15,7 +15,22 @@ test("Shiprocket is configured with the approved index inputs", () => {
     ipoPrice: 97,
     isPortfolio: false,
   });
-  assert.equal(COMPANIES.length, 58);
+  assert.equal(COMPANIES.length, 59);
+});
+
+test("Moneyview is configured with the approved index inputs and flagged as a Trifecta company", () => {
+  const moneyview = COMPANIES.find((company) => company.ticker === "MONEYVIEW");
+
+  assert.deepEqual(moneyview, {
+    name: "Moneyview Limited",
+    displayName: "Moneyview",
+    ticker: "MONEYVIEW",
+    yfTicker: "MONEYVIEW.NS",
+    sector: "Fintech",
+    listedDate: "2026-10-01",
+    ipoPrice: 34,
+    isPortfolio: true,
+  });
 });
 
 test("NSE is configured with the approved index inputs and its BSE Yahoo symbol", () => {

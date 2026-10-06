@@ -33,6 +33,7 @@ const PORTFOLIO_TICKERS = new Set([
   "SHADOWFAX",
   "NEPHROPLUS",
   "TURTLEMINT",
+  "MONEYVIEW",
 ]);
 
 // Universe mirrors the canonical CapIQ model ("TLF New Economy Index Data" —
@@ -96,6 +97,7 @@ export const COMPANIES: Company[] = [
     ["OnEMI Technology Solutions Limited", "Kissht", "KISSHT", "KISSHT.NS", "2026-05-08", 171],
     // Lists on BSE only (an exchange can't list on itself), so the Yahoo symbol is .BO.
     ["National Stock Exchange of India Limited", "NSE India", "NSE", "NSE.BO", "2026-09-24", 1785],
+    ["Moneyview Limited", "Moneyview", "MONEYVIEW", "MONEYVIEW.NS", "2026-10-01", 34],
   ]),
 
   ...withSector("B2B", [
