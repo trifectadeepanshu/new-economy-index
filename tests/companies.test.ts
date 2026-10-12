@@ -15,7 +15,7 @@ test("Shiprocket is configured with the approved index inputs", () => {
     ipoPrice: 97,
     isPortfolio: false,
   });
-  assert.equal(COMPANIES.length, 59);
+  assert.equal(COMPANIES.length, 58);
 });
 
 test("Moneyview is configured with the approved index inputs and flagged as a Trifecta company", () => {
@@ -33,19 +33,8 @@ test("Moneyview is configured with the approved index inputs and flagged as a Tr
   });
 });
 
-test("NSE is configured with the approved index inputs and its BSE Yahoo symbol", () => {
-  const nse = COMPANIES.find((company) => company.ticker === "NSE");
-
-  assert.deepEqual(nse, {
-    name: "National Stock Exchange of India Limited",
-    displayName: "NSE India",
-    ticker: "NSE",
-    yfTicker: "NSE.BO",
-    sector: "Fintech",
-    listedDate: "2026-09-24",
-    ipoPrice: 1785,
-    isPortfolio: false,
-  });
+test("NSE was removed from the index and is not in the universe", () => {
+  assert.equal(COMPANIES.some((company) => company.ticker === "NSE"), false);
 });
 
 test("ESDS Software Solution is configured with the approved index inputs", () => {
