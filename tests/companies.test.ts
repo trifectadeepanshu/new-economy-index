@@ -15,7 +15,22 @@ test("Shiprocket is configured with the approved index inputs", () => {
     ipoPrice: 97,
     isPortfolio: false,
   });
-  assert.equal(COMPANIES.length, 58);
+  assert.equal(COMPANIES.length, 59);
+});
+
+test("Zetwerk is configured with the approved index inputs", () => {
+  const zetwerk = COMPANIES.find((company) => company.ticker === "ZETWERK");
+
+  assert.deepEqual(zetwerk, {
+    name: "Zetwerk Manufacturing Businesses Limited",
+    displayName: "Zetwerk",
+    ticker: "ZETWERK",
+    yfTicker: "ZETWERK.NS",
+    sector: "B2B",
+    listedDate: "2026-10-23",
+    ipoPrice: 151,
+    isPortfolio: false,
+  });
 });
 
 test("Moneyview is configured with the approved index inputs and flagged as a Trifecta company", () => {
