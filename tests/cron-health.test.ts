@@ -107,25 +107,32 @@ test("failed, empty, and incomplete snapshots fail immediately", () => {
   }
 });
 
-test("quarterly refresh remains monitored through the fourth IST day", () => {
+test("quarterly refresh remains monitored through the 23rd IST day", () => {
   assert.equal(
-    getExpectedRefreshDate(new Date("2026-10-04T08:00:00.000Z")),
-    "2026-10-01"
+    getExpectedRefreshDate(new Date("2026-11-23T08:00:00.000Z")),
+    "2026-11-20"
   );
   assert.equal(
-    getExpectedRefreshDate(new Date("2026-10-05T08:00:00.000Z")),
+    getExpectedRefreshDate(new Date("2026-11-24T08:00:00.000Z")),
+    null
+  );
+});
+
+test("quarterly refresh is not expected outside a refresh month", () => {
+  assert.equal(
+    getExpectedRefreshDate(new Date("2026-10-04T08:00:00.000Z")),
     null
   );
 });
 
 test("quarterly refresh is matched by its actual start date", () => {
-  const now = new Date("2026-10-02T12:30:00.000Z");
-  const snapshot = run({ date: "2026-10-02" });
+  const now = new Date("2026-11-20T12:30:00.000Z"); // a Friday
+  const snapshot = run({ date: "2026-11-20" });
   const refresh = run({
     id: "2",
     job: "refresh",
     date: "2026-09-30",
-    startedAt: "2026-10-01T03:05:00.000Z",
+    startedAt: "2026-11-20T03:05:00.000Z",
   });
   const health = evaluateCronHealth([snapshot, refresh], now);
 

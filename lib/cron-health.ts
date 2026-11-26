@@ -53,12 +53,16 @@ export function getExpectedSnapshotDate(now: Date = new Date()) {
 export function getExpectedRefreshDate(now: Date = new Date()) {
   const dateKey = getISTDate(now);
   const [year, month, day] = dateKey.split("-");
-  const isQuarterStartMonth = ["01", "04", "07", "10"].includes(month);
+  // Runs the 20th of the month after each quarter-end (Feb/May/Aug/Nov), not
+  // the 1st of the quarter-start month — that was too early to catch most
+  // Indian companies' results, which land within SEBI's 45-day window and
+  // often later in the following month.
+  const isRefreshMonth = ["02", "05", "08", "11"].includes(month);
 
-  // Keep checking through the fourth day so a quarter-start weekend or a
-  // delayed GitHub runner cannot make the refresh invisible to the monitor.
-  if (!isQuarterStartMonth || Number(day) > 4) return null;
-  return `${year}-${month}-01`;
+  // Keep checking through the 23rd so a weekend or a delayed GitHub runner
+  // cannot make the refresh invisible to the monitor.
+  if (!isRefreshMonth || Number(day) < 20 || Number(day) > 23) return null;
+  return `${year}-${month}-20`;
 }
 
 function runStartedOn(run: CronRunRecord, dateKey: string) {
